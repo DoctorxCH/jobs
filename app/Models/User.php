@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -19,6 +22,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'company_id',
         'name',
         'email',
         'password',
@@ -45,5 +49,40 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * @return BelongsTo<Company, User>
+     */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    /**
+     * @return HasMany<CompanyUser>
+     */
+    public function companyMemberships(): HasMany
+    {
+        return $this->hasMany(CompanyUser::class);
+    }
+
+    /**
+     * @return BelongsToMany<Company>
+     */
+    public function companies(): BelongsToMany
+    {
+        return $this->belongsToMany(Company::class)
+            ->using(CompanyUser::class)
+            ->withPivot(['role', 'status'])
+            ->withTimestamps();
+    }
+
+    /**
+     * @return HasMany<Job>
+     */
+    public function createdJobs(): HasMany
+    {
+        return $this->hasMany(Job::class, 'created_by_user_id');
     }
 }

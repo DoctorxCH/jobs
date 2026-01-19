@@ -13,35 +13,27 @@ return new class extends Migration
     {
         Schema::create('jobs', function (Blueprint $table) {
             $table->id();
-            $table->string('queue')->index();
-            $table->longText('payload');
-            $table->unsignedTinyInteger('attempts');
-            $table->unsignedInteger('reserved_at')->nullable();
-            $table->unsignedInteger('available_at');
-            $table->unsignedInteger('created_at');
-        });
-
-        Schema::create('job_batches', function (Blueprint $table) {
-            $table->string('id')->primary();
-            $table->string('name');
-            $table->integer('total_jobs');
-            $table->integer('pending_jobs');
-            $table->integer('failed_jobs');
-            $table->longText('failed_job_ids');
-            $table->mediumText('options')->nullable();
-            $table->integer('cancelled_at')->nullable();
-            $table->integer('created_at');
-            $table->integer('finished_at')->nullable();
-        });
-
-        Schema::create('failed_jobs', function (Blueprint $table) {
-            $table->id();
-            $table->string('uuid')->unique();
-            $table->text('connection');
-            $table->text('queue');
-            $table->longText('payload');
-            $table->longText('exception');
-            $table->timestamp('failed_at')->useCurrent();
+            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('created_by_user_id')->constrained('users')->cascadeOnDelete();
+            $table->string('status')->default('pending_created')->index();
+            $table->string('occupation')->nullable();
+            $table->string('category')->nullable();
+            $table->string('title');
+            $table->string('short_description', 30)->nullable();
+            $table->longText('description')->nullable();
+            $table->string('location')->nullable();
+            $table->boolean('is_remote')->default(false);
+            $table->string('workload')->nullable();
+            $table->json('languages')->nullable();
+            $table->string('education_level')->nullable();
+            $table->json('requirements')->nullable();
+            $table->string('contact_name')->nullable();
+            $table->string('contact_email')->nullable();
+            $table->json('attachments')->nullable();
+            $table->boolean('is_featured')->default(false);
+            $table->boolean('is_top')->default(false);
+            $table->timestamp('expires_at')->nullable()->index();
+            $table->timestamps();
         });
     }
 
@@ -51,7 +43,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('jobs');
-        Schema::dropIfExists('job_batches');
-        Schema::dropIfExists('failed_jobs');
     }
 };
