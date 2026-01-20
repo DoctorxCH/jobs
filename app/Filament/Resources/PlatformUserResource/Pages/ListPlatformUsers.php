@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\PlatformUserResource\Pages;
 
 use App\Filament\Resources\PlatformUserResource;
+use App\Services\PermissionService;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
@@ -13,7 +14,8 @@ class ListPlatformUsers extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->visible(fn () => PermissionService::can(PlatformUserResource::getPermissionKey(), 'create')),
         ];
     }
 }

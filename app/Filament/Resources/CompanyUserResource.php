@@ -17,6 +17,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 
 class CompanyUserResource extends Resource
@@ -44,12 +45,12 @@ class CompanyUserResource extends Resource
         return PermissionService::can(static::getPermissionKey(), 'create');
     }
 
-    public static function canEdit($record): bool
+    public static function canEdit(Model $record): bool
     {
         return PermissionService::can(static::getPermissionKey(), 'edit');
     }
 
-    public static function canDelete($record): bool
+    public static function canDelete(Model $record): bool
     {
         return PermissionService::can(static::getPermissionKey(), 'delete');
     }
@@ -90,13 +91,12 @@ class CompanyUserResource extends Resource
                             ->required()
                             ->getOptionLabelFromRecordUsing(function (User $record): string {
                                 $name = trim((string) ($record->name ?? ''));
-                                return $name !== '' ? "$name ({$record->email})" : $record->email;
+                                return $name !== '' ? "{$name} ({$record->email})" : $record->email;
                             })
                             ->unique(
                                 table: CompanyUser::class,
                                 column: 'user_id',
-                                ignoreRecord: true,
-                                modifyRuleUsing: fn ($rule) => $rule
+                                ignoreRecord: true
                             )
                             ->helperText('Es muss ein existierender User sein (Team Member hat eigenes Login).'),
 
@@ -234,9 +234,10 @@ class CompanyUserResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->visible(fn () => static::canEdit(null)),
+                    ->visible(fn () => static::canEdit(new CompanyUser())),
+
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn (CompanyUser $record) => static::isPlatformAdmin() || ($record->role !== 'owner' && static::canDelete(null))),
+                    ->visible(fn (CompanyUser $record) => static::isPlatformAdmin() || ($record->role !== 'owner' && static::canDelete($record))),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -249,9 +250,7 @@ class CompanyUserResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            // none
-        ];
+        return [];
     }
 
     public static function getPages(): array
