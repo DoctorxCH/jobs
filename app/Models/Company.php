@@ -42,12 +42,17 @@ class Company extends Model
         'active',
         'notes_internal',
         'seats_purchased',
+        'seats_locked',
     ];
 
     protected $casts = [
         'social_links' => 'array',
         'verified_at' => 'datetime',
         'active' => 'boolean',
+        'seats_purchased' => 'integer',
+        'seats_locked' => 'integer',
+        'team_size' => 'integer',
+        'founded_year' => 'integer',
     ];
 
     /* -----------------
