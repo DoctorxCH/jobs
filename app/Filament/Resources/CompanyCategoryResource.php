@@ -72,7 +72,7 @@ class CompanyCategoryResource extends Resource
                         ->maxLength(255)
                         ->unique(ignoreRecord: true),
 
-                    Forms\Components\Toggle::make('active')
+                    Forms\Components\Toggle::make('is_active')
                         ->label('Active')
                         ->default(true),
                 ])
@@ -97,7 +97,7 @@ class CompanyCategoryResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\IconColumn::make('active')
+                Tables\Columns\IconColumn::make('is_active')
                     ->label('Active')
                     ->boolean()
                     ->sortable(),
@@ -115,7 +115,7 @@ class CompanyCategoryResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('active')
+                SelectFilter::make('is_active')
                     ->label('Active')
                     ->options([1 => 'Active', 0 => 'Inactive']),
             ])
@@ -133,12 +133,12 @@ class CompanyCategoryResource extends Resource
                     Tables\Actions\BulkAction::make('activate')
                         ->label('Set Active')
                         ->requiresConfirmation()
-                        ->action(fn ($records) => $records->each->update(['active' => true])),
+                        ->action(fn ($records) => $records->each->update(['is_active' => true])),
 
                     Tables\Actions\BulkAction::make('deactivate')
                         ->label('Set Inactive')
                         ->requiresConfirmation()
-                        ->action(fn ($records) => $records->each->update(['active' => false])),
+                        ->action(fn ($records) => $records->each->update(['is_active' => false])),
                 ]),
             ]);
     }

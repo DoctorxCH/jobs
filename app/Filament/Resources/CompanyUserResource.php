@@ -69,9 +69,9 @@ class CompanyUserResource extends Resource
                             ->required()
                             ->disabled(fn () => ! static::isPlatformAdmin())
                             ->default(fn () => auth()->user()?->company_id)
-                            ->rules([
-                                function (string $attribute, $value, \Closure $fail) {
-                                    $company = Company::find($value);
+                            ->rule(function () {
+                                return function (string $attribute, $value, \Closure $fail) {
+                                    $company = \App\Models\Company::find($value);
                                     if (! $company) {
                                         return;
                                     }
@@ -79,9 +79,9 @@ class CompanyUserResource extends Resource
                                     if (! $company->hasFreeSeats()) {
                                         $fail('No free seats available for this company.');
                                     }
-                                },
-                            ])
-                            ->helperText('Wenn kein Platform Admin: wird automatisch auf deine Company gesetzt.'),
+                                };
+                            })
+                            ->helperText('If not a platform admin, this will be set to your company automatically.'),
 
                         Select::make('user_id')
                             ->label('User')
@@ -98,7 +98,7 @@ class CompanyUserResource extends Resource
                                 column: 'user_id',
                                 ignoreRecord: true
                             )
-                            ->helperText('Es muss ein existierender User sein (Team Member hat eigenes Login).'),
+                            ->helperText('Must be an existing user (team member has their own login).'),
 
                         Select::make('role')
                             ->options([
@@ -110,7 +110,7 @@ class CompanyUserResource extends Resource
                             ->required()
                             ->default('member')
                             ->disabled(fn ($record) => $record?->role === 'owner' && ! static::isPlatformAdmin())
-                            ->helperText('Owner kann Company/Seats verwalten; Member kann posten.'),
+                            ->helperText('Owners can manage company and seats; members can post.'),
 
                         Select::make('status')
                             ->options([
@@ -122,9 +122,9 @@ class CompanyUserResource extends Resource
                             ->default('active'),
 
                         Toggle::make('set_primary_company')
-                            ->label('Als Primary Company setzen')
+                            ->label('Set as primary company')
                             ->default(true)
-                            ->helperText('Wenn aktiv: user.company_id wird auf diese Company gesetzt (damit er immer im Namen der Company postet).')
+                            ->helperText('If enabled: the user.company_id will be set to this company (so they post on behalf of the company).')
                             ->dehydrated(false),
                     ])
                     ->columns(2),
@@ -149,7 +149,7 @@ class CompanyUserResource extends Resource
                 Section::make('Actions')
                     ->schema([
                         Placeholder::make('hint')
-                            ->content('Hinweis: Seats/Einladungen werden im echten Invite-Flow ueber CompanyInvitations gemacht. Dieses CRUD ist fuer Admin/Debug & manuelles Management.')
+                            ->content('Note: seats/invitations are handled in the invite flow via CompanyInvitations. This CRUD is for admin/debug and manual management.')
                             ->columnSpanFull(),
                     ])
                     ->collapsed(),

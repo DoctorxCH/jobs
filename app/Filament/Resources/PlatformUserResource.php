@@ -11,7 +11,9 @@ use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class PlatformUserResource extends Resource
@@ -49,6 +51,13 @@ class PlatformUserResource extends Resource
         return PermissionService::can(static::getPermissionKey(), 'delete');
     }
 
+    /** NUR platform.* users */
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->whereHas('roles', fn (Builder $q) => $q->where('name', 'like', 'platform.%'));
+    }
+
     public static function form(Form $form): Form
     {
         return $form->schema([
@@ -68,6 +77,7 @@ class PlatformUserResource extends Resource
                         ->password()
                         ->revealable()
                         ->dehydrated(fn (Get $get) => filled($get('password')))
+                        ->dehydrateStateUsing(fn (?string $state) => filled($state) ? Hash::make($state) : null)
                         ->helperText('Leer lassen, um Passwort beim Bearbeiten nicht zu ändern.')
                         ->suffixAction(
                             Forms\Components\Actions\Action::make('generatePassword')
@@ -87,7 +97,7 @@ class PlatformUserResource extends Resource
                         ->relationship(
                             name: 'roles',
                             titleAttribute: 'name',
-                            modifyQueryUsing: fn ($query) => $query
+                            modifyQueryUsing: fn (Builder $query) => $query
                                 ->where('name', 'like', 'platform.%')
                                 ->orderBy('name')
                         )
