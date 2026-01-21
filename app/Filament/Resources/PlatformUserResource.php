@@ -1,113 +1,138 @@
 <?php
 
-namespace App\Services;
+namespace App\Filament\Resources;
 
-use App\Models\ResourcePermission;
-use Closure;
-use Illuminate\Cache\TaggableStore;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
+use App\Filament\Resources\PlatformUserResource\Pages;
+use App\Models\User;
+use App\Services\PermissionService;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class PermissionService
+class PlatformUserResource extends Resource
 {
-    private const CACHE_TAG = 'resource-permissions';
-    private const CACHE_INDEX_KEY = 'resource-permissions:keys';
-    private const CACHE_TTL_SECONDS = 60;
+    protected static ?string $model = User::class;
 
-    public static function can(string $resource, string $action): bool
+    protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static ?string $navigationLabel = 'Platform Users';
+    protected static ?string $modelLabel = 'Platform User';
+    protected static ?string $pluralModelLabel = 'Platform Users';
+    protected static ?string $navigationGroup = 'System';
+
+    public static function getPermissionKey(): string
     {
-        $user = Auth::user();
-        if (! $user) {
-            return false;
-        }
-
-        // Platform roles only
-        $roleNames = $user
-            ->getRoleNames()
-            ->filter(fn (string $roleName) => Str::startsWith($roleName, 'platform.'))
-            ->values();
-
-        if ($roleNames->contains('platform.super_admin')) {
-            return true;
-        }
-
-        if ($roleNames->isEmpty()) {
-            return false;
-        }
-
-        $actionColumn = self::actionColumn($action);
-        if ($actionColumn === null) {
-            return false;
-        }
-
-        $roleHash = md5($roleNames->sort()->implode('|'));
-        $cacheKey = sprintf(
-            'resource-permissions:%s:%s:%s:%s',
-            $user->getAuthIdentifier(),
-            $roleHash,
-            $resource,
-            $actionColumn
-        );
-
-        return self::remember($cacheKey, function () use ($resource, $roleNames, $actionColumn): bool {
-            return ResourcePermission::query()
-                ->where('resource', $resource)
-                ->whereIn('role_name', $roleNames)
-                ->where($actionColumn, true)
-                ->exists();
-        });
+        return 'platform_users';
     }
 
-    public static function invalidateCache(): void
+    public static function canViewAny(): bool
     {
-        if (self::supportsTags()) {
-            Cache::tags(self::CACHE_TAG)->flush();
-            return;
-        }
-
-        $keys = Cache::pull(self::CACHE_INDEX_KEY, []);
-        foreach ($keys as $key) {
-            Cache::forget($key);
-        }
+        return PermissionService::can(static::getPermissionKey(), 'view');
     }
 
-    private static function actionColumn(string $action): ?string
+    public static function canCreate(): bool
     {
-        return match ($action) {
-            'view' => 'can_view',
-            'create' => 'can_create',
-            'edit' => 'can_edit',
-            'delete' => 'can_delete',
-            default => null,
-        };
+        return PermissionService::can(static::getPermissionKey(), 'create');
     }
 
-    private static function remember(string $cacheKey, Closure $callback): bool
+    public static function canEdit(Model $record): bool
     {
-        $ttl = now()->addSeconds(self::CACHE_TTL_SECONDS);
-
-        if (self::supportsTags()) {
-            return Cache::tags(self::CACHE_TAG)->remember($cacheKey, $ttl, $callback);
-        }
-
-        $value = Cache::remember($cacheKey, $ttl, $callback);
-        self::trackCacheKey($cacheKey);
-
-        return $value;
+        return PermissionService::can(static::getPermissionKey(), 'edit');
     }
 
-    private static function trackCacheKey(string $cacheKey): void
+    public static function canDelete(Model $record): bool
     {
-        $keys = Cache::get(self::CACHE_INDEX_KEY, []);
-        if (! in_array($cacheKey, $keys, true)) {
-            $keys[] = $cacheKey;
-            Cache::put(self::CACHE_INDEX_KEY, $keys, now()->addHour());
-        }
+        return PermissionService::can(static::getPermissionKey(), 'delete');
     }
 
-    private static function supportsTags(): bool
+    public static function form(Form $form): Form
     {
-        return Cache::getStore() instanceof TaggableStore;
+        return $form->schema([
+            Forms\Components\Section::make('User')
+                ->schema([
+                    Forms\Components\TextInput::make('name')
+                        ->required()
+                        ->maxLength(255),
+
+                    Forms\Components\TextInput::make('email')
+                        ->email()
+                        ->required()
+                        ->maxLength(255)
+                        ->unique(ignoreRecord: true),
+
+                    Forms\Components\TextInput::make('password')
+                        ->password()
+                        ->revealable()
+                        ->dehydrated(fn (Get $get) => filled($get('password')))
+                        ->helperText('Leer lassen, um Passwort beim Bearbeiten nicht zu ändern.')
+                        ->suffixAction(
+                            Forms\Components\Actions\Action::make('generatePassword')
+                                ->label('Generate')
+                                ->action(function (callable $set) {
+                                    $pw = Str::password(20, true, true, false, false);
+                                    $set('password', $pw);
+                                })
+                        ),
+                ])
+                ->columns(2),
+
+            Forms\Components\Section::make('Roles')
+                ->schema([
+                    Forms\Components\Select::make('roles')
+                        ->label('Platform Roles')
+                        ->relationship(
+                            name: 'roles',
+                            titleAttribute: 'name',
+                            modifyQueryUsing: fn ($query) => $query
+                                ->where('name', 'like', 'platform.%')
+                                ->orderBy('name')
+                        )
+                        ->preload()
+                        ->searchable()
+                        ->multiple()
+                        ->helperText('Nur platform.* Rollen werden hier angezeigt. Company-Rollen laufen ueber Company Team (Pivot).'),
+                ]),
+        ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('email')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('roles.name')
+                    ->label('Roles')
+                    ->badge()
+                    ->separator(', ')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
+            ])
+            ->defaultSort('created_at', 'desc')
+            ->actions([
+                Tables\Actions\EditAction::make()
+                    ->visible(fn (User $record) => static::canEdit($record)),
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn (User $record) => static::canDelete($record)),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn () => static::canDelete(new User())),
+                ]),
+            ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListPlatformUsers::route('/'),
+            'create' => Pages\CreatePlatformUser::route('/create'),
+            'edit' => Pages\EditPlatformUser::route('/{record}/edit'),
+        ];
     }
 }
