@@ -1,0 +1,137 @@
+Analyse: Abgleich Filament Resources / Services / Models vs. Migrations
+=====================================================================
+
+Scope
+-----
+Geprüft wurden die Filament Resources, relevante Pages, Services und Models gegenüber den existierenden Migrationen im Repo. Fokus: Feldnamen, Typen, Beziehungen, Constraints und UI-Funktionalität.
+
+1) CompanyCategory (company_categories)
+--------------------------------------
+Migration: 2026_01_19_224500_create_company_categories_table.php
+- Spalten: id, name, slug, description (nullable), is_active (bool), timestamps.
+
+Model: app/Models/CompanyCategory.php
+- $guarded = [] (ok für flexible Spalten).
+- casts: 'active' => boolean, 'sort' => integer.
+  -> Problem: Die Migration enthält 'is_active' (nicht 'active') und kein 'sort'.
+     Damit wird 'is_active' nicht als boolean gecastet; 'active'/'sort' existieren im Schema nicht.
+     Risiko: UI/Business-Logik sieht "aktiv" ggf. als string/int, und Cast wirkt auf falsches Feld.
+
+Resource: app/Filament/Resources/CompanyCategoryResource.php
+- Form verwendet 'name', 'slug', 'is_active' (passt zur Migration).
+- 'description' ist in der Migration vorhanden, wird im Resource-Formular nicht abgebildet.
+  -> Funktionalität eingeschränkt: Beschreibung kann im Admin nicht gepflegt werden.
+
+Ergebnis: Schema/Resource matcht grundsätzlich, aber Model-Casts sind inkonsistent und die Beschreibung fehlt im UI.
+
+2) Company (companies)
+----------------------
+Migration: 2026_01_19_224600_create_companies_table.php + 2026_01_19_224650_add_seats_fields_to_companies_table.php
+- Spalten decken sich mit dem Model-gefüllten Satz (owner_user_id, category_id, legal_name, slug, ico/dic/ic_dph, public fields, address, contact, team_size, founded_year, status, verified_at, active, notes_internal, seats_purchased, seats_locked, timestamps, soft deletes).
+
+Model: app/Models/Company.php
+- $fillable entspricht den Migrationsspalten.
+- casts: social_links (array), verified_at (datetime), active (bool), seats_purchased/locked (int), team_size/founded_year (int).
+- hasFreeSeats() rechnet gegen members()->count() < seats_purchased.
+  -> seats_locked wird im Check nicht berücksichtigt (Seats werden evtl. als frei gezählt, obwohl reserviert).
+
+Resource: app/Filament/Resources/CompanyResource.php
+- Form deckt alle Spalten ab, inkl. seats_purchased/locked, status, verified_at, etc.
+- Validierungen spiegeln DB-Constraints (unique, regex, etc.) gut wider.
+
+Ergebnis: Migration, Model und Resource sind weitgehend konsistent. Hinweis: seats_locked wird in der Logik noch nicht berücksichtigt.
+
+3) CompanyUser (company_user)
+-----------------------------
+Migrationen:
+- 2026_01_19_224652_create_company_user_table.php
+- 2026_01_21_004207_alter_company_user_unique_user_id.php
+
+Schema nach Migrationen:
+- Pivot mit company_id, user_id, role, status, invited_at, accepted_at.
+- Unique Index: Anfangs (company_id, user_id), später geändert auf nur user_id.
+
+Model: app/Models/CompanyUser.php
+- $fillable passt, casts ok.
+- Relation company/user vorhanden.
+
+Resource: app/Filament/Resources/CompanyUserResource.php
+- Form validiert user_id unique (table: CompanyUser, column: user_id). Das passt zur späteren Migration (Unique nur auf user_id).
+- Hinweis zur Funktionalität: In User-Model existiert belongsToMany(Company::class) -> deutet auf mögliche Multi-Company-Mitgliedschaft. Unique(user_id) widerspricht dieser Idee (User kann nur in 1 Firma Mitglied sein). Bitte fachlich klären.
+
+Pages:
+- CreateCompanyUser::afterCreate(): prüft seats via Company::hasFreeSeats(), löscht bei Überschreitung.
+- set_primary_company Toggle ist im Form "dehydrated(false)" und wird via request()->boolean('set_primary_company') ausgewertet.
+  -> Risiko: Nicht-dehydrierte Felder werden evtl. nicht in den Request übertragen, sodass der Toggle nie greift.
+     (Dann wird user.company_id nicht gesetzt.)
+
+Ergebnis: Migration vs. Resource-Validierung stimmt (nach der Alter-Migration). Potenzielles Funktionalitätsrisiko durch set_primary_company und fachliche Mehrfachzuordnung.
+
+4) CompanyInvitation (company_invitations)
+------------------------------------------
+Migrationen:
+- create_company_invitations_table.php
+- alter_company_invitations_constraints.php (expires_at nullable; unique company_id+email)
+
+Model: app/Models/CompanyInvitation.php
+- $fillable passt; casts ok.
+
+Resource/UI: aktuell keine Filament Resource für Invitations.
+- Dadurch kein Admin-CRUD für Einladungen vorhanden (falls gewünscht).
+
+Ergebnis: Model/Migration konsistent; UI-Funktionalität fehlt.
+
+5) Users (users)
+----------------
+Migration: 0001_01_01_000000_create_users_table.php + 2026_01_19_224651_add_company_fields_to_users_table.php
+- zusätzliche Felder: company_id, is_company_owner.
+
+Model: app/Models/User.php
+- $fillable enthält company_id, is_company_owner; casts setzen int/bool -> ok.
+
+Resources:
+- PlatformUserResource / UserResource decken diese Felder nicht im Form ab.
+  -> Kein UI zum Setzen von company_id / is_company_owner über diese Resources.
+  -> Falls das gewollt ist (z.B. nur über CompanyUser/Einladungen), ok. Sonst fehlt UI.
+
+6) ResourcePermission (resource_permissions)
+--------------------------------------------
+Migration: 2026_01_19_154600_create_resource_permissions_table.php
+Model: app/Models/ResourcePermission.php
+- Felder/boolean-casts passen.
+
+Resource: app/Filament/Resources/ResourcePermissionResource.php
+- Unique-Regel (resource + role_name) entspricht Migration.
+- Bulk/Actions invalidieren Cache via PermissionService -> ok.
+
+Service: app/Services/PermissionService.php
+- Erwartet resource_permissions Tabelle und Spatie roles; Logik passt zu Migration.
+
+Ergebnis: Migration, Model, Resource und Service konsistent.
+
+7) Filament v5 Regeln / Typen-Compliance (projektweite Regeln)
+--------------------------------------------------------------
+Aus den Projektregeln (Filament v5) ergeben sich mehrere Abweichungen in den Resources/Pages:
+- navigationIcon ist überall als "protected static ?string $navigationIcon" typisiert.
+  Laut Regel: "protected static \BackedEnum|string|null $navigationIcon".
+- Form-Komponenten verwenden Filament\Forms\Components\Section/Select/TextInput/etc.
+  Laut Regel: Nutzung des Schema-Systems (Filament\Schemas\Schema, Filament\Schemas\Components\Section/Grid).
+- EditCompanyUser Page nutzt Filament\Actions\DeleteAction (verboten laut Regel 4.2).
+
+Betroffene Dateien (Auswahl):
+- app/Filament/Resources/CompanyResource.php
+- app/Filament/Resources/CompanyCategoryResource.php
+- app/Filament/Resources/CompanyUserResource.php
+- app/Filament/Resources/PlatformUserResource.php
+- app/Filament/Resources/UserResource.php
+- app/Filament/Resources/ResourcePermissionResource.php
+- app/Filament/Resources/CompanyUserResource/Pages/EditCompanyUser.php
+
+Ergebnis: Migrationen können passen, aber die Filament v5 Projektregeln sind an mehreren Stellen verletzt.
+
+Gesamtfazit
+-----------
+- Datenmodell vs. Migration: größtenteils konsistent, mit klaren Ausnahmen bei CompanyCategory (casts/fehlende description) und bei Mehrfachzuordnung CompanyUser (Unique user_id vs. belongsToMany-Intention).
+- Filament-UI: viele Felder korrekt abgebildet (Company), aber einige nicht (CompanyCategory.description, User.company_id/is_company_owner), plus potenzielles Toggle-Problem bei set_primary_company.
+- Filament v5 Regelkonformität: mehrere Abweichungen (Schema-System, navigationIcon-Typen, Actions-Import in EditCompanyUser).
+
