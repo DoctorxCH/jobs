@@ -51,86 +51,73 @@ class CompanyCategoryResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Section::make('Category')
+            Forms\Components\Section::make('Basics')
                 ->schema([
                     Forms\Components\TextInput::make('name')
+                        ->label('Name')
                         ->required()
                         ->maxLength(255)
                         ->live(onBlur: true)
                         ->afterStateUpdated(function ($state, callable $set, $get) {
-                            // nur setzen wenn slug leer ist oder noch zum alten name passt
-                            $slug = (string) ($get('slug') ?? '');
-                            if ($slug === '' || $slug === Str::slug((string) ($get('name') ?? ''))) {
+                            $currentSlug = (string) ($get('slug') ?? '');
+                            $currentName = (string) ($get('name') ?? '');
+                            if ($currentSlug === '' || $currentSlug === Str::slug($currentName)) {
                                 $set('slug', Str::slug((string) $state));
                             }
                         }),
 
                     Forms\Components\TextInput::make('slug')
+                        ->label('Slug')
                         ->required()
                         ->maxLength(255)
                         ->unique(ignoreRecord: true),
 
                     Forms\Components\Toggle::make('active')
+                        ->label('Active')
                         ->default(true),
-
-                    Forms\Components\TextInput::make('sort')
-                        ->numeric()
-                        ->default(0)
-                        ->helperText('Kleinere Zahl = weiter oben.')
                 ])
                 ->columns(2),
-
-            Forms\Components\Section::make('Meta')
-                ->schema([
-                    Forms\Components\Textarea::make('description')
-                        ->columnSpanFull()
-                        ->rows(3)
-                        ->maxLength(1000)
-                        ->nullable(),
-                ])
-                ->collapsed(),
         ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
-            ->defaultSort('sort', 'asc')
+            // safe default sort: created_at existiert praktisch immer; falls nicht, kommentieren.
+            ->defaultSort('created_at', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('name')
+                    ->label('Name')
                     ->searchable()
-                    ->sortable()
-                    ->toggleable(),
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('slug')
+                    ->label('Slug')
                     ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\IconColumn::make('active')
+                    ->label('Active')
                     ->boolean()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('sort')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Updated')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Created')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('active')
-                    ->options([
-                        1 => 'Active',
-                        0 => 'Inactive',
-                    ]),
+                    ->label('Active')
+                    ->options([1 => 'Active', 0 => 'Inactive']),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
@@ -142,10 +129,12 @@ class CompanyCategoryResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
                         ->visible(fn () => static::canDelete(null)),
+
                     Tables\Actions\BulkAction::make('activate')
                         ->label('Set Active')
                         ->requiresConfirmation()
                         ->action(fn ($records) => $records->each->update(['active' => true])),
+
                     Tables\Actions\BulkAction::make('deactivate')
                         ->label('Set Inactive')
                         ->requiresConfirmation()
@@ -157,9 +146,9 @@ class CompanyCategoryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCompanyCategories::route('/'),
+            'index'  => Pages\ListCompanyCategories::route('/'),
             'create' => Pages\CreateCompanyCategory::route('/create'),
-            'edit' => Pages\EditCompanyCategory::route('/{record}/edit'),
+            'edit'   => Pages\EditCompanyCategory::route('/{record}/edit'),
         ];
     }
 }
