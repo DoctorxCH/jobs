@@ -16,6 +16,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
 
 class ResourcePermissionResource extends Resource
@@ -23,13 +24,9 @@ class ResourcePermissionResource extends Resource
     protected static ?string $model = ResourcePermission::class;
 
     protected static ?string $navigationGroup = 'System';
-
     protected static ?string $navigationLabel = 'Permission Settings';
-
     protected static ?string $modelLabel = 'Permission Setting';
-
     protected static ?string $pluralModelLabel = 'Permission Settings';
-
     protected static ?string $navigationIcon = 'heroicon-o-lock-closed';
 
     public static function form(Form $form): Form
@@ -39,20 +36,27 @@ class ResourcePermissionResource extends Resource
                 Select::make('resource')
                     ->label('Resource')
                     ->options(self::resourceOptions())
-                    ->required(),
+                    ->required()
+                    ->live(),
+
                 Select::make('role_name')
                     ->label('Role')
                     ->options(self::roleOptions())
                     ->searchable()
-                    ->required(),
-                Toggle::make('can_view')
-                    ->label('Can View'),
-                Toggle::make('can_create')
-                    ->label('Can Create'),
-                Toggle::make('can_edit')
-                    ->label('Can Edit'),
-                Toggle::make('can_delete')
-                    ->label('Can Delete'),
+                    ->required()
+                    ->rule(function (callable $get, ?ResourcePermission $record) {
+                        return Rule::unique('resource_permissions', 'role_name')
+                            ->where(fn ($q) => $q->where('resource', $get('resource')))
+                            ->ignore($record?->id);
+                    })
+                    ->validationMessages([
+                        'unique' => 'Diese Kombination aus Resource und Role existiert bereits.',
+                    ]),
+
+                Toggle::make('can_view')->label('Can View'),
+                Toggle::make('can_create')->label('Can Create'),
+                Toggle::make('can_edit')->label('Can Edit'),
+                Toggle::make('can_delete')->label('Can Delete'),
             ]);
     }
 
@@ -60,38 +64,21 @@ class ResourcePermissionResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('resource')
-                    ->sortable()
-                    ->searchable(),
-                TextColumn::make('role_name')
-                    ->label('Role')
-                    ->sortable()
-                    ->searchable(),
-                IconColumn::make('can_view')
-                    ->label('View')
-                    ->boolean(),
-                IconColumn::make('can_create')
-                    ->label('Create')
-                    ->boolean(),
-                IconColumn::make('can_edit')
-                    ->label('Edit')
-                    ->boolean(),
-                IconColumn::make('can_delete')
-                    ->label('Delete')
-                    ->boolean(),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable(),
+                TextColumn::make('resource')->sortable()->searchable(),
+                TextColumn::make('role_name')->label('Role')->sortable()->searchable(),
+                IconColumn::make('can_view')->label('View')->boolean(),
+                IconColumn::make('can_create')->label('Create')->boolean(),
+                IconColumn::make('can_edit')->label('Edit')->boolean(),
+                IconColumn::make('can_delete')->label('Delete')->boolean(),
+                TextColumn::make('updated_at')->dateTime()->sortable(),
             ])
             ->filters([
-                SelectFilter::make('resource')
-                    ->options(self::resourceOptions()),
-                SelectFilter::make('role_name')
-                    ->label('Role')
-                    ->options(self::roleOptions()),
+                SelectFilter::make('resource')->options(self::resourceOptions()),
+                SelectFilter::make('role_name')->label('Role')->options(self::roleOptions()),
             ])
             ->actions([
-                EditAction::make(),
+                EditAction::make()
+                    ->after(fn () => PermissionService::invalidateCache()),
                 DeleteAction::make()
                     ->after(fn () => PermissionService::invalidateCache()),
             ])
