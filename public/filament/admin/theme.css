@@ -1,0 +1,43 @@
+/* Filament theme overrides (loaded AFTER Filament's own CSS)
+   - Keep changes scoped to Filament selectors
+*/
+
+@import url("https://fonts.bunny.net/css?family=space-mono:400,700&display=swap");
+
+.dark\:text-gray-200:is(.dark *) {
+    --tw-text-opacity: 1;
+    color: rgb 4 4 5 / var(--tw-text-opacity) !important;
+}
+
+/* 0-radius "pixel" feel, but only inside Filament */
+.fi-body,
+.fi-body * {
+    border-radius: 0 !important;
+    font-family: "Space Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+}
+
+/* login/simple layout card */
+.fi-simple-main {
+    box-shadow: 0 0 0 3px #08162f, 18px 18px 0 rgba(8, 22, 47, 0.18) !important;
+    border-radius: 0 !important;
+}
+
+/* subtle grid background on auth pages (Filament uses simple layout) */
+.fi-simple-layout {
+    background-image:
+        linear-gradient(90deg, rgba(8, 22, 47, 0.06) 1px, transparent 1px),
+        linear-gradient(rgba(8, 22, 47, 0.06) 1px, transparent 1px);
+    background-size: 18px 18px;
+    background-color: #f6f8fc;
+}
+
+/* Inputs pixel outline */
+.fi-input,
+.fi-input-wrp {
+    border-radius: 0 !important;
+}
+
+/* Buttons more pixel-ish without breaking sizing */
+.fi-btn {
+    border-radius: 0 !important;
+}

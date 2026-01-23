@@ -1,9 +1,19 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminGateController;
+use App\Http\Controllers\CompanyInvitationController;
 
-Route::get('/', function () {
-    return view('home');
+Route::middleware('web')->group(function () {
+    Route::get('/365gate', [AdminGateController::class, 'show'])->name('login');
+    Route::post('/365gate', [AdminGateController::class, 'authenticate'])->name('365gate.authenticate');
+    Route::post('/365gate/logout', [AdminGateController::class, 'logout'])->name('365gate.logout');
+});
+
+Route::get('/', fn () => view('home'));
+
+Route::any('/admin/login', function () {
+    abort(410);
 });
 
 Route::get('/jobs', function () {
@@ -104,5 +114,5 @@ Route::get('/company/dashboard', function () {
     return view('company.dashboard', ['company' => $company]);
 });
 
-Route::get('/company-invite/{token}', [\App\Http\Controllers\CompanyInvitationController::class, 'accept'])
+Route::get('/company-invite/{token}', [CompanyInvitationController::class, 'accept'])
     ->name('company.invite.accept');
