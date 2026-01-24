@@ -1,0 +1,89 @@
+:root{
+    color-scheme: light;
+
+    --ink: #08162f;
+    --muted: #5b6b85;
+    --paper: #ffffff;
+    --bg: #f6f8fc;
+    --grid: rgba(8, 22, 47, 0.06);
+    --accent: #1b4fd6;
+
+    --border: 3px;
+    --radius: 0px;
+
+    --shadow: 0 0 0 var(--border) var(--ink), 18px 18px 0 rgba(8, 22, 47, 0.18);
+    --shadow-soft: 0 0 0 var(--border) var(--ink), 10px 10px 0 rgba(8, 22, 47, 0.12);
+
+    --focus: 0 0 0 3px rgba(27, 79, 214, 0.20);
+}
+
+* { border-radius: 0 !important; }
+
+body{
+    font-family: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    background: var(--bg);
+    color: var(--ink);
+}
+
+.pixel-grid{
+    background-color: var(--bg);
+    background-image:
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+        linear-gradient(var(--grid) 1px, transparent 1px);
+    background-size: 18px 18px;
+}
+
+.pixel-frame{
+    background: var(--paper);
+    box-shadow: var(--shadow);
+}
+
+.pixel-outline{
+    box-shadow: inset 0 0 0 var(--border) var(--ink);
+    background: var(--paper);
+}
+
+.pixel-chip{
+    box-shadow: 0 0 0 var(--border) var(--ink);
+    background-color: #eef2ff;
+    color: var(--ink);
+}
+
+.accent{ color: var(--accent); }
+
+.pixel-input{
+    box-shadow: inset 0 0 0 var(--border) var(--ink);
+    background-color: #fbfdff;
+    transition: box-shadow .15s ease, transform .15s ease;
+}
+.pixel-input:focus{
+    outline: none;
+    box-shadow: inset 0 0 0 var(--border) var(--ink), var(--focus);
+}
+
+.pixel-button{
+    box-shadow: 0 0 0 var(--border) var(--ink), 10px 10px 0 rgba(8, 22, 47, 0.18);
+    background: var(--accent);
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: .10em;
+    transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.pixel-button:hover{
+    transform: translate(-1px, -1px);
+    box-shadow: 0 0 0 var(--border) var(--ink), 12px 12px 0 rgba(8, 22, 47, 0.18);
+    filter: brightness(1.02);
+}
+.pixel-button:active{
+    transform: translate(1px, 1px);
+    box-shadow: 0 0 0 var(--border) var(--ink), 6px 6px 0 rgba(8, 22, 47, 0.18);
+}
+
+a{ color: inherit; }
+a:hover{ color: var(--accent); }
+
+h1, h2, h3{ letter-spacing: -0.02em; }
+p{ color: var(--muted); }

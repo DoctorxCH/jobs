@@ -66,12 +66,12 @@
             <div class="mb-6">
                 <div class="text-xs uppercase tracking-[0.25em] help">365jobs.sk</div>
                 <h1 class="text-2xl font-bold tracking-tight mt-2">Admin Gate</h1>
-                <p class="mt-3 text-sm help">Login nur fuer Platform-Rollen. Kein /admin/login.</p>
+                <p class="mt-3 text-sm help">Login only for platform roles. No /admin/login.</p>
             </div>
 
             @if ($errors->any())
                 <div class="mb-4 px-4 py-3 text-sm" style="box-shadow: inset 0 0 0 var(--border) #b91c1c; background:#fff5f5;">
-                    <div class="font-bold text-red-700 mb-1">Fehler</div>
+                    <div class="font-bold text-red-700 mb-1">Error</div>
                     <ul class="list-disc pl-5 text-red-700">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -90,7 +90,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs uppercase tracking-[0.2em] mb-2 help" for="password">Passwort</label>
+                    <label class="block text-xs uppercase tracking-[0.2em] mb-2 help" for="password">Password</label>
                     <input id="password" name="password" type="password" required
                         class="w-full px-4 py-3 pixel-input">
                 </div>
