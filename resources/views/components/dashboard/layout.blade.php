@@ -4,40 +4,32 @@
 
 <x-layouts.pixel :title="$title">
     <section class="mx-auto w-full max-w-6xl">
-        <div class="grid gap-8 md:grid-cols-[220px,1fr]">
-            {{-- Left menu --}}
-            <aside class="pixel-frame p-5">
-                <div class="text-xs uppercase tracking-[0.2em] text-slate-500">
-                    Menu
-                </div>
-
-                <nav class="mt-4 flex flex-col gap-2 text-xs uppercase tracking-[0.2em]">
-                    <a
-                        href="{{ route('frontend.profile') }}"
-                        class="pixel-outline px-4 py-3 hover:text-slate-900 {{ request()->routeIs('frontend.profile') ? 'accent' : '' }}"
-                    >
-                        Profile
-                    </a>
-                </nav>
+        <div class="grid gap-8 md:grid-cols-[220px_1fr]">
+            <aside class="pixel-frame p-4">
+                <x-dashboard.menu />
             </aside>
 
-            {{-- Right content --}}
-            <div class="pixel-frame p-8">
-                <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                        <div class="text-xs uppercase tracking-[0.2em] text-slate-500">
-                            Dashboard
-                        </div>
-                        <h1 class="mt-2 text-2xl font-bold">{{ $title }}</h1>
+            <main class="pixel-frame p-8">
+                {{-- Alerts --}}
+                @if (session('status'))
+                    <div class="mb-6 pixel-outline px-4 py-3 text-sm border-2 border-green-600 bg-green-50 text-green-800">
+                        {{ session('status') }}
                     </div>
+                @endif
 
-                    <div class="text-xs uppercase tracking-[0.2em] text-slate-500">
-                        Signed in as <span class="text-slate-900">{{ auth()->user()->name ?? auth()->user()->email }}</span>
+                @if ($errors->any())
+                    <div class="mb-6 pixel-outline px-4 py-3 text-sm border-2 border-red-600 bg-red-50 text-red-800">
+                        <div class="font-bold uppercase tracking-[0.2em] text-xs mb-2">Please fix the errors</div>
+                        <ul class="list-disc pl-5 space-y-1">
+                            @foreach ($errors->all() as $err)
+                                <li>{{ $err }}</li>
+                            @endforeach
+                        </ul>
                     </div>
-                </div>
+                @endif
 
                 {{ $slot }}
-            </div>
+            </main>
         </div>
     </section>
 </x-layouts.pixel>

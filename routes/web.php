@@ -7,6 +7,7 @@ use App\Http\Controllers\CompanyInvitationController;
 
 use App\Http\Controllers\Frontend\AuthController as FrontendAuthController;
 use App\Http\Controllers\Frontend\DashboardController as FrontendDashboardController;
+use App\Http\Controllers\Frontend\ProfileController as FrontendProfileController;
 
 use App\Http\Middleware\FrontendAuthenticate;
 
@@ -54,15 +55,20 @@ Route::middleware('web')->group(function () {
     Route::post('/logout', [FrontendAuthController::class, 'logout'])->name('frontend.logout');
 
     // Protected Frontend Area
-    Route::middleware(FrontendAuthenticate::class)->group(function () {
-        Route::get('/dashboard', [FrontendDashboardController::class, 'index'])
-            ->name('frontend.dashboard');
 
-        // Profile (will contain company fields later)
-        Route::get('/dashboard/profile', fn () => view('dashboard.profile'))
-            ->name('frontend.profile');
-    });
+Route::middleware(FrontendAuthenticate::class)->group(function () {
+    Route::get('/dashboard', [FrontendDashboardController::class, 'index'])
+        ->name('frontend.dashboard');
 
+    Route::get('/dashboard/profile', fn () => view('dashboard.profile'))
+        ->name('frontend.profile');
+
+    Route::get('/dashboard/profile', [FrontendProfileController::class, 'edit'])
+        ->name('frontend.profile');
+
+    Route::post('/dashboard/profile', [FrontendProfileController::class, 'update'])
+        ->name('frontend.profile.update');
+});
     /*
     |--------------------------------------------------------------------------
     | Jobs demo pages (placeholder)

@@ -6,6 +6,8 @@
             </aside>
 
             <main class="pixel-frame p-8">
+                <x-pixel.flash />
+
                 {{ $slot }}
             </main>
         </div>
