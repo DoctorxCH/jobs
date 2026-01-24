@@ -8,6 +8,7 @@ use App\Http\Controllers\CompanyInvitationController;
 use App\Http\Controllers\Frontend\AuthController as FrontendAuthController;
 use App\Http\Controllers\Frontend\DashboardController as FrontendDashboardController;
 use App\Http\Controllers\Frontend\ProfileController as FrontendProfileController;
+use App\Http\Controllers\Frontend\SecurityController as FrontendSecurityController;
 
 use App\Http\Middleware\FrontendAuthenticate;
 
@@ -15,8 +16,7 @@ use App\Http\Middleware\FrontendAuthenticate;
 |--------------------------------------------------------------------------
 | Admin Gate (hidden Filament access)
 |--------------------------------------------------------------------------
-| - We keep the named route "login" pointing to /365gate
-|   so Laravel's AuthenticationException redirectTo() never crashes.
+| Keep named route "login" -> /365gate so AuthenticationException redirect works.
 */
 Route::middleware('web')->group(function () {
     Route::get('/365gate', [AdminGateController::class, 'show'])->name('login');
@@ -26,9 +26,8 @@ Route::middleware('web')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Kill Filament's default login URL
+| Kill Filament default login URL
 |--------------------------------------------------------------------------
-| If someone tries /admin/login, we hard-disable it.
 */
 Route::any('/admin/login', function () {
     abort(410);
@@ -38,14 +37,13 @@ Route::any('/admin/login', function () {
 |--------------------------------------------------------------------------
 | Frontend (Pixel)
 |--------------------------------------------------------------------------
-| Public pages + auth pages + protected dashboard area.
 */
 Route::middleware('web')->group(function () {
 
     // Home
     Route::get('/', fn () => view('home'))->name('frontend.home');
 
-    // Auth (Pixel)
+    // Auth
     Route::get('/login', [FrontendAuthController::class, 'showLogin'])->name('frontend.login');
     Route::post('/login', [FrontendAuthController::class, 'login'])->name('frontend.login.submit');
 
@@ -55,20 +53,23 @@ Route::middleware('web')->group(function () {
     Route::post('/logout', [FrontendAuthController::class, 'logout'])->name('frontend.logout');
 
     // Protected Frontend Area
+    Route::middleware(FrontendAuthenticate::class)->group(function () {
+        Route::get('/dashboard', [FrontendDashboardController::class, 'index'])
+            ->name('frontend.dashboard');
 
-Route::middleware(FrontendAuthenticate::class)->group(function () {
-    Route::get('/dashboard', [FrontendDashboardController::class, 'index'])
-        ->name('frontend.dashboard');
+        Route::get('/dashboard/profile', [FrontendProfileController::class, 'edit'])
+            ->name('frontend.profile');
 
-    Route::get('/dashboard/profile', fn () => view('dashboard.profile'))
-        ->name('frontend.profile');
+        Route::post('/dashboard/profile', [FrontendProfileController::class, 'update'])
+            ->name('frontend.profile.update');
 
-    Route::get('/dashboard/profile', [FrontendProfileController::class, 'edit'])
-        ->name('frontend.profile');
+        Route::get('/dashboard/security', [FrontendSecurityController::class, 'edit'])
+            ->name('frontend.security');
 
-    Route::post('/dashboard/profile', [FrontendProfileController::class, 'update'])
-        ->name('frontend.profile.update');
-});
+        Route::post('/dashboard/security', [FrontendSecurityController::class, 'update'])
+            ->name('frontend.security.update');
+    });
+
     /*
     |--------------------------------------------------------------------------
     | Jobs demo pages (placeholder)
@@ -113,76 +114,16 @@ Route::middleware(FrontendAuthenticate::class)->group(function () {
             'summary' => 'Design for crisp job interfaces that feel minimal and welcoming.',
             'location' => 'Remote · CH',
             'type' => 'Full-time',
-            'salary' => 'CHF 85k–110k',
-            'work_mode' => 'Remote-first',
-            'team_size' => '8 people',
-            'deadline' => 'Oct 30, 2024',
-            'description' => 'You will shape the visual guidelines of our job portal, optimize the user journey, and bring pixel-perfect details into a modern context.',
-            'responsibilities' => [
-                'Evolve the pixel UI design system',
-                'Structure landing pages and job detail pages',
-                'Collaborate with Engineering & Marketing',
-            ],
-            'requirements' => [
-                '3+ years UI/UX experience',
-                'Confident with Figma (or similar)',
-                'Strong sense for minimalism and clear typography',
-            ],
         ];
 
         return view('jobs.show', ['job' => $job]);
     })->name('jobs.show');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Company invite accept
-    |--------------------------------------------------------------------------
-    */
+    // Company invite accept
     Route::get('/company-invite/{token}', [CompanyInvitationController::class, 'accept'])
         ->name('company.invite.accept');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Old / demo company dashboard (optional)
-    |--------------------------------------------------------------------------
-    | Keep it if you still want it. Otherwise delete this block.
-    */
-    Route::get('/company/dashboard', function () {
-        $company = [
-            'name' => 'Axiom Tools',
-            'stats' => [
-                'active_jobs' => 5,
-                'applications' => 48,
-                'response_time' => '24h',
-            ],
-            'postings' => [
-                [
-                    'department' => 'Design',
-                    'title' => 'UI Designer (Pixel UI)',
-                    'status' => 'Active',
-                    'location' => 'Remote · CH',
-                    'candidates' => 12,
-                    'stage' => 'Interview',
-                ],
-                [
-                    'department' => 'Engineering',
-                    'title' => 'Full-Stack Laravel Engineer',
-                    'status' => 'Active',
-                    'location' => 'Zurich',
-                    'candidates' => 20,
-                    'stage' => 'Review',
-                ],
-                [
-                    'department' => 'Growth',
-                    'title' => 'Community Manager',
-                    'status' => 'Paused',
-                    'location' => 'Remote',
-                    'candidates' => 6,
-                    'stage' => 'Screening',
-                ],
-            ],
-        ];
-
-        return view('company.dashboard', ['company' => $company]);
-    })->name('company.dashboard');
+    // Old / demo company dashboard (optional)
+    Route::get('/company/dashboard', fn () => view('company.dashboard'))
+        ->name('company.dashboard');
 });

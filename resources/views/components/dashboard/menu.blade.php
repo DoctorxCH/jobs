@@ -1,7 +1,8 @@
 @php
     $items = [
         ['label' => 'Dashboard', 'route' => 'frontend.dashboard'],
-        ['label' => 'Profile', 'route' => 'frontend.profile'],
+        ['label' => 'Profile',   'route' => 'frontend.profile'],
+        ['label' => 'Security',  'route' => 'frontend.security'],
     ];
 @endphp
 
@@ -14,7 +15,8 @@
 
             <a
                 href="{{ route($item['route']) }}"
-                class="px-3 py-2 text-xs uppercase tracking-[0.2em] {{ $active ? 'accent font-bold' : 'text-slate-600 hover:text-slate-900' }}"
+                class="px-3 py-2 text-xs uppercase tracking-[0.2em]
+                       {{ $active ? 'accent font-bold' : 'text-slate-600 hover:text-slate-900' }}"
             >
                 {{ $item['label'] }}
             </a>
