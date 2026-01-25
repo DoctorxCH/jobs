@@ -53,6 +53,12 @@ class Company extends Model
         'seats_locked' => 'integer',
         'team_size' => 'integer',
         'founded_year' => 'integer',
+        'is_top_partner' => 'boolean',
+        'is_top_partner_active' => 'boolean',
+        'is_top_partner_from' => 'date',
+        'is_top_partner_until' => 'date',
+        'top_partner_activated_at' => 'datetime',
+        'social_links' => 'array',
     ];
 
     /* -----------------
@@ -94,5 +100,22 @@ class Company extends Model
     public function hasFreeSeats(): bool
     {
         return $this->members()->count() < ($this->seats_purchased ?? 1);
+    }
+
+        public function scopeActiveTopPartners($query)
+    {
+        $today = now()->toDateString();
+
+        return $query->where('is_top_partner', true)
+            ->where('is_top_partner_active', true)
+            ->where(function ($q) use ($today) {
+                $q->whereNull('is_top_partner_from')
+                  ->orWhere('is_top_partner_from', '<=', $today);
+            })
+            ->where(function ($q) use ($today) {
+                $q->whereNull('is_top_partner_until')
+                  ->orWhere('is_top_partner_until', '>=', $today);
+            })
+            ->orderBy('top_partner_sort');
     }
 }

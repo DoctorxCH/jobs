@@ -9,6 +9,7 @@ use App\Http\Controllers\Frontend\AuthController as FrontendAuthController;
 use App\Http\Controllers\Frontend\DashboardController as FrontendDashboardController;
 use App\Http\Controllers\Frontend\ProfileController as FrontendProfileController;
 use App\Http\Controllers\Frontend\SecurityController as FrontendSecurityController;
+use App\Http\Controllers\CookieConsentController;
 
 use App\Http\Middleware\FrontendAuthenticate;
 
@@ -69,6 +70,10 @@ Route::middleware('web')->group(function () {
         Route::post('/dashboard/security', [FrontendSecurityController::class, 'update'])
             ->name('frontend.security.update');
     });
+
+    // Cookie consent
+    Route::post('/cookies/consent', [CookieConsentController::class, 'store'])
+    ->name('cookies.consent');
 
     /*
     |--------------------------------------------------------------------------

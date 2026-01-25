@@ -57,49 +57,86 @@
             <div class="mt-4 grid gap-4 md:grid-cols-2">
                 <div class="md:col-span-2">
                     <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Legal name <span class="text-red-500">*</span></label>
+
+                    <input type="hidden" name="legal_name" value="{{ $val('legal_name') }}" />
+
                     <input
-                        name="legal_name"
-                        class="mt-2 pixel-input w-full px-4 py-3 text-sm text-slate-900 outline-none"
+                        class="mt-2 pixel-outline w-full px-4 py-3 text-sm text-slate-500 bg-slate-50"
                         value="{{ $val('legal_name') }}"
-                        required
+                        disabled
                     />
+
+                    <div class="mt-2 text-[11px] text-red-500">Legal name is locked after registration.</div>
+
                     @error('legal_name')
                         <div class="mt-2 text-xs text-red-700">{{ $message }}</div>
                     @enderror
                 </div>
 
+
                 <div>
-                    <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">ICO (8 digits) <span class="text-red-500">*</span></label>
+                    <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">IČO (8 digits) <span class="text-red-500">*</span></label>
+
+                    <input type="hidden" name="ico" value="{{ old('ico', $c?->ico ?? '') }}" />
+
                     <input
-                        name="ico"
-                        inputmode="numeric"
-                        maxlength="8"
-                        class="mt-2 pixel-input w-full px-4 py-3 text-sm text-slate-900 outline-none"
+                        class="mt-2 pixel-outline w-full px-4 py-3 text-sm text-slate-500 bg-slate-50"
                         value="{{ old('ico', $c?->ico ?? '') }}"
-                        placeholder="12345678"
-                        required
+                        disabled
                     />
+
+                    <div class="mt-2 text-[11px] text-red-500">IČO is locked after registration.</div>
+
                     @error('ico')
                         <div class="mt-2 text-xs text-red-700">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div>
-                    <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Country code <span class="text-red-500">*</span></label>
-                    <input
+                    <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Country<span class="text-red-500">*</span></label>
+                    <select
                         name="country_code"
-                        maxlength="2"
                         class="mt-2 pixel-input w-full px-4 py-3 text-sm text-slate-900 outline-none"
                         value="{{ old('country_code', $c?->country_code ?? 'SK') }}"
                         required
-                    />
+                    >
+                        <option value="AT">Austria</option>
+                        <option value="BE">Belgium</option>
+                        <option value="BG">Bulgaria</option>
+                        <option value="HR">Croatia</option>
+                        <option value="CY">Cyprus</option>
+                        <option value="CZ">Czech Republic</option>
+                        <option value="DK">Denmark</option>
+                        <option value="EE">Estonia</option>
+                        <option value="FI">Finland</option>
+                        <option value="FR">France</option>
+                        <option value="DE">Germany</option>
+                        <option value="GB">United Kingdom</option>
+                        <option value="GR">Greece</option>
+                        <option value="HU">Hungary</option>
+                        <option value="IE">Ireland</option>
+                        <option value="IT">Italy</option>
+                        <option value="LV">Latvia</option>
+                        <option value="LT">Lithuania</option>
+                        <option value="LU">Luxembourg</option>
+                        <option value="MT">Malta</option>
+                        <option value="NL">Netherlands</option>
+                        <option value="PL">Poland</option>
+                        <option value="PT">Portugal</option>
+                        <option value="RO">Romania</option>
+                        <option value="SK" selected>Slovakia</option>
+                        <option value="SI">Slovenia</option>
+                        <option value="ES">Spain</option>
+                        <option value="SE">Sweden</option>
+                        <option value="00">Other</option>
+                    </select>
                     @error('country_code')
                         <div class="mt-2 text-xs text-red-700">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div>
-                    <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">DIC</label>
+                    <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">DIČ</label>
                     <input
                         name="dic"
                         maxlength="10"
@@ -113,7 +150,7 @@
                 </div>
 
                 <div>
-                    <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">IC DPH</label>
+                    <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">IČ DPH</label>
                     <input
                         name="ic_dph"
                         maxlength="12"

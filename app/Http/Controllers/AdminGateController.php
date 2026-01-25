@@ -58,6 +58,8 @@ class AdminGateController extends Controller
             }
         }
 
+        session(['admin_gate' => true]);
+
         return redirect()->intended('/admin');
     }
 

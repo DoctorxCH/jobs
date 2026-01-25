@@ -8,8 +8,6 @@
     <title>{{ $title ?? config('app.name', '365jobs') }}</title>
 
     {{-- Font --}}
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=space-mono:400,700&display=swap" rel="stylesheet" />
 
     {{-- Tailwind CDN --}}
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,6 +16,12 @@
     <link rel="stylesheet" href="{{ asset('assets/pixel.css') }}">
 
     @stack('head')
+    @php($consent = request()->cookie('cookie_consent'))
+    @if(isset($cookieSettings) && $cookieSettings->ga_enabled && $consent === 'stats' && filled($cookieSettings->ga_measurement_id))
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ $cookieSettings->ga_measurement_id }}"></script>
+
+    @endif
+
 </head>
 
 <body class="min-h-screen">
@@ -35,5 +39,7 @@
     <script src="{{ asset('assets/pixel.js') }}" defer></script>
 
     @stack('scripts')
+    @include('partials.cookie-banner')
+
 </body>
 </html>

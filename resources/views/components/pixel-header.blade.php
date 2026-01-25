@@ -3,7 +3,8 @@
 
     $user = Auth::user();
 
-    $brandMain = '365jobs';
+    $brandNumAccent = '365';
+    $brandMain = 'jobs';
     $brandAccent = '.sk';
 
     $initials = null;
@@ -20,17 +21,50 @@
 <header class="px-6 pt-6">
     <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-6">
         {{-- Logo --}}
-        <a href="{{ url('/') }}" class="flex items-center gap-3">
-            <div class="pixel-outline px-3 py-2 text-xs font-bold tracking-[0.2em]">365</div>
-            <div class="leading-tight">
-                <div class="text-sm font-bold tracking-[0.2em] uppercase">
-                    {{ $brandMain }}<span class="accent">{{ $brandAccent }}</span>
-                </div>
-                <div class="text-[10px] uppercase tracking-[0.28em] text-slate-500">
-                    Minimal • Pixel • Clear
-                </div>
-            </div>
-        </a>
+        <a href="{{ url('/') }}" class="brand365 group" id="brand365">
+<!-- Pixel-Kalender (2-layer flip: current klappt bis 90°, next liegt darunter) -->
+<span class="pxcal" aria-hidden="true">
+  <span class="pxcal__shadow" aria-hidden="true"></span>
+  <span class="pxcal__frame" aria-hidden="true"></span>
+  <span class="pxcal__rings" aria-hidden="true"></span>
+
+  <!-- NEXT sheet (unten sichtbar) -->
+  <span class="pxcal__sheet pxcal__sheet--next" id="pxcalNext" aria-hidden="true">
+    <span class="pxcal__header" aria-hidden="true"></span>
+
+    <span class="pxcal__month" id="pxcalNextMonth">MAR</span>
+
+    <span class="pxcal__mini" aria-hidden="true">
+      <i></i><i></i><i></i><i></i><i></i><i></i>
+      <i></i><i></i><i></i><i></i><i></i><i></i>
+    </span>
+
+    <span class="pxcal__fold" aria-hidden="true"></span>
+  </span>
+
+  <!-- CURRENT sheet (oben, klappt weg) -->
+  <span class="pxcal__sheet pxcal__sheet--current" id="pxcalCurrent" aria-hidden="true">
+    <span class="pxcal__header" aria-hidden="true"></span>
+
+    <span class="pxcal__month" id="pxcalCurrentMonth">FEB</span>
+
+    <span class="pxcal__mini" aria-hidden="true">
+      <i></i><i></i><i></i><i></i><i></i><i></i>
+      <i></i><i></i><i></i><i></i><i></i><i></i>
+    </span>
+
+    <span class="pxcal__fold" aria-hidden="true"></span>
+  </span>
+</span>
+
+  <span class="brand365__text">
+    <span class="brand365__name">
+      <span class="accent">{{ $brandNumAccent }}</span>{{ $brandMain }}<span class="accent">{{ $brandAccent }}</span>
+    </span>
+    <span class="brand365__tag">Minimal • Pixel • Clear</span>
+  </span>
+</a>
+
 
         {{-- Right side --}}
         <div class="flex items-center gap-3">

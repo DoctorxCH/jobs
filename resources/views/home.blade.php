@@ -44,17 +44,69 @@
             @endforeach
         </div>
 
-        <div class="pixel-frame p-8">
-            <div class="flex flex-col gap-6">
-                <h3 class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ content('home.sponsors.title') }}</h3>
+@php
+    $partners = \Illuminate\Support\Facades\Cache::remember('home_top_partners_v1', 3600, function () {
+        return \App\Models\Company::activeTopPartners()
+            ->get([
+                'id',
+                'legal_name',
+                'slug',
+                'website_url',
+                'top_partner_logo_path',
+                'top_partner_sort',
+            ]);
+    });
+@endphp
 
-                <div class="grid gap-4 text-sm font-semibold uppercase tracking-[0.2em] text-slate-600 sm:grid-cols-2 md:grid-cols-4">
-                    @foreach (content('home.sponsors.items', []) as $sponsor)
-                        <div class="pixel-outline px-4 py-3 text-center">{{ $sponsor }}</div>
-                    @endforeach
-                </div>
+@if($partners->count())
+    <div class="pixel-frame p-8">
+        <div class="flex flex-col gap-6">
+            <h3 class="text-xs uppercase tracking-[0.2em] text-slate-500">
+                {{ content('home.sponsors.title') }}
+            </h3>
+
+            <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6 items-center">
+                @foreach ($partners as $c)
+                    @php
+                        $href = $c->website_url ?: url('/company/' . $c->slug);
+                        $src = $c->top_partner_logo_path
+                            ? \Illuminate\Support\Facades\Storage::disk('public')->url($c->top_partner_logo_path)
+                            : null;
+                    @endphp
+
+                    <a href="{{ $href }}"
+                       class="pixel-outline flex items-center justify-center px-4 py-3"
+                       title="{{ $c->legal_name }}"
+                       rel="nofollow sponsored">
+                        @if($src)
+                            <img src="{{ $src }}"
+                                 alt="{{ $c->legal_name }}"
+                                 class="max-h-10 w-auto"
+                                 loading="lazy" />
+                        @else
+                            <span class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-600">
+                                {{ $c->legal_name }}
+                            </span>
+                        @endif
+                    </a>
+                @endforeach
             </div>
         </div>
+    </div>
+@else
+    {{-- Fallback: alter statischer Sponsor-Content --}}
+    <div class="pixel-frame p-8">
+        <div class="flex flex-col gap-6">
+            <h3 class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ content('home.sponsors.title') }}</h3>
+
+            <div class="grid gap-4 text-sm font-semibold uppercase tracking-[0.2em] text-slate-600 sm:grid-cols-2 md:grid-cols-4">
+                @foreach (content('home.sponsors.items', []) as $sponsor)
+                    <div class="pixel-outline px-4 py-3 text-center">{{ $sponsor }}</div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+@endif
 
         <div class="pixel-frame p-10">
             <div class="flex flex-col gap-4">

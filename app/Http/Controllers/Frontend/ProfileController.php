@@ -35,20 +35,35 @@ class ProfileController extends Controller
             ->first();
 
         $companyId = $company?->id;
+        $isExistingCompany = (bool) $company;
+
+        // Locked fields: if company exists, only allow the already stored values (tamper-proof)
+        $lockedLegalName = $company?->legal_name;
+        $lockedIco = $company?->ico;
+
+        $legalNameRules = ['required', 'string', 'max:255'];
+        if ($isExistingCompany && $lockedLegalName !== null) {
+            $legalNameRules[] = Rule::in([$lockedLegalName]);
+        }
+
+        $icoRules = [
+            'required',
+            'string',
+            'size:8',
+            'regex:/^\d{8}$/', // SK IČO: 8 digits
+            Rule::unique('companies', 'ico')->ignore($companyId),
+        ];
+        if ($isExistingCompany && $lockedIco !== null) {
+            $icoRules[] = Rule::in([$lockedIco]);
+        }
 
         $data = $request->validate([
             // User
             'user_name' => ['required', 'string', 'max:120'],
 
-            // Company Identity (required by DB + SK rules)
-            'legal_name' => ['required', 'string', 'max:255'],
-            'ico' => [
-                'required',
-                'string',
-                'size:8',
-                'regex:/^\d{8}$/', // SK IČO: 8 digits
-                Rule::unique('companies', 'ico')->ignore($companyId),
-            ],
+            // Company Identity
+            'legal_name' => $legalNameRules,
+            'ico' => $icoRules,
 
             // Optional but unique (IMPORTANT: allow NULL; do NOT store empty string!)
             'dic' => [
@@ -77,7 +92,7 @@ class ProfileController extends Controller
             // Social (DB is JSON)
             'social_links' => ['nullable', 'json'],
 
-            // Address (country_code NOT NULL default SK)
+            // Address
             'country_code' => ['required', 'string', 'size:2'],
             'region' => ['nullable', 'string', 'max:255'],
             'city' => ['nullable', 'string', 'max:255'],
@@ -93,14 +108,11 @@ class ProfileController extends Controller
             // Team
             'team_size' => ['nullable', 'integer', 'min:1', 'max:100000'],
             'founded_year' => ['nullable', 'integer', 'min:1800', 'max:' . (int) date('Y')],
-
-            // Admin-ish (we keep editable OFF for now, but show later)
-            // 'status' => ['nullable', 'string', 'max:20'],
-            // 'active' => ['nullable', 'boolean'],
-            // 'notes_internal' => ['nullable', 'string'],
         ], [
             'ico.size' => 'ICO must be exactly 8 digits.',
             'ico.regex' => 'ICO must contain only digits (8 digits).',
+            'legal_name.in' => 'Legal name is locked after registration.',
+            'ico.in' => 'IČO is locked after registration.',
         ]);
 
         // Normalize nullable unique fields: empty => NULL (important!)
@@ -127,7 +139,6 @@ class ProfileController extends Controller
             $company = new Company();
             $company->owner_user_id = $user->id;
 
-            // DB defaults exist but we set explicitly for clarity
             $company->country_code = strtoupper($data['country_code'] ?? 'SK');
 
             // slug required + unique
@@ -139,9 +150,14 @@ class ProfileController extends Controller
             $company->slug = $this->makeUniqueCompanySlug($data['legal_name'], $company->id);
         }
 
-        // Fill allowed columns (all editable as requested)
-        $company->legal_name = $data['legal_name'];
-        $company->ico = $data['ico'];
+        // Locked after registration:
+        // - if existing company: keep stored values
+        // - if new company: set from request
+        if (!$isExistingCompany) {
+            $company->legal_name = $data['legal_name'];
+            $company->ico = $data['ico'];
+        }
+
         $company->dic = $data['dic'] ?? null;
         $company->ic_dph = $data['ic_dph'] ?? null;
 
