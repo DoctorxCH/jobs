@@ -13,7 +13,6 @@ class CreateCompanyUser extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // Fallback: set company to user's effective company if missing
         if (empty($data['company_id']) && auth()->user() && method_exists(auth()->user(), 'effectiveCompanyId')) {
             $data['company_id'] = auth()->user()->effectiveCompanyId();
         }
@@ -34,7 +33,6 @@ class CreateCompanyUser extends CreateRecord
             return;
         }
 
-        // Seats-Limit erzwingen
         if (! $company->hasFreeSeats()) {
             $record->delete();
 
@@ -43,13 +41,11 @@ class CreateCompanyUser extends CreateRecord
             ]);
         }
 
-        // Company-role -> Spatie role sync (ohne platform.* zu loeschen)
         $user = $record->user;
         if ($user) {
             $role = (string) ($record->role ?? 'member');
 
             if ($role === 'owner' && ! static::isPlatformAdmin()) {
-                // sollte durch UI gar nicht moeglich sein, aber sicher ist sicher
                 $record->delete();
 
                 throw ValidationException::withMessages([
@@ -57,17 +53,15 @@ class CreateCompanyUser extends CreateRecord
                 ]);
             }
 
-            $companyRoles = ['company.owner', 'company.member', 'company.recruiter', 'company.viewer'];
-            foreach ($companyRoles as $r) {
+            // remove existing company.* roles only (keep platform.*)
+            foreach (['company.owner', 'company.member', 'company.recruiter', 'company.viewer'] as $r) {
                 if ($user->hasRole($r)) {
                     $user->removeRole($r);
                 }
             }
 
-            $spatieRole = 'company.' . $role;
-            $user->assignRole($spatieRole);
+            $user->assignRole('company.' . $role);
 
-            // Primary company setzen (Form-State, weil Toggle dehydrated(false))
             $state = $this->form->getState();
             $setPrimary = (bool) ($state['set_primary_company'] ?? false);
 
@@ -77,7 +71,6 @@ class CreateCompanyUser extends CreateRecord
                     'is_company_owner' => ($role === 'owner'),
                 ]);
             } else {
-                // Owner-Flag sauber halten
                 if ($role !== 'owner') {
                     $user->update(['is_company_owner' => false]);
                 }

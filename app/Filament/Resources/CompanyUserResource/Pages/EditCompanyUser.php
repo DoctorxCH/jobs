@@ -29,9 +29,7 @@ class EditCompanyUser extends EditRecord
 
         $role = (string) ($record->role ?? 'member');
 
-        // Company-role -> Spatie role sync (ohne platform.* zu loeschen)
-        $companyRoles = ['company.owner', 'company.member', 'company.recruiter', 'company.viewer'];
-        foreach ($companyRoles as $r) {
+        foreach (['company.owner', 'company.member', 'company.recruiter', 'company.viewer'] as $r) {
             if ($user->hasRole($r)) {
                 $user->removeRole($r);
             }
@@ -39,7 +37,6 @@ class EditCompanyUser extends EditRecord
 
         $user->assignRole('company.' . $role);
 
-        // Primary company setzen (Form-State, weil Toggle dehydrated(false))
         $state = $this->form->getState();
         $setPrimary = (bool) ($state['set_primary_company'] ?? false);
 

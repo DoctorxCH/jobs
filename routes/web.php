@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Mail;
+
 
 use App\Http\Controllers\AdminGateController;
 use App\Http\Controllers\CompanyInvitationController;
@@ -123,12 +125,29 @@ Route::middleware('web')->group(function () {
 
         return view('jobs.show', ['job' => $job]);
     })->name('jobs.show');
-
     // Company invite accept
-    Route::get('/company-invite/{token}', [CompanyInvitationController::class, 'accept'])
-        ->name('company.invite.accept');
+    Route::get('/company-invite/{token}', [CompanyInvitationController::class, 'accept'])->name('company.invite.accept');
+
+    Route::get('/dashboard/team/invite', function () {
+        $company = \App\Models\Company::where('owner_user_id', auth()->id())->first();
+        $invitations = $company ? \App\Models\CompanyInvitation::where('company_id', $company->id)->get() : collect();
+        return view('dashboard.team', compact('company', 'invitations'));
+    })->middleware(\App\Http\Middleware\FrontendAuthenticate::class)->name('frontend.team');
+
+    Route::post('/dashboard/team/invite', [CompanyInvitationController::class, 'send'])
+        ->middleware(\App\Http\Middleware\FrontendAuthenticate::class)
+        ->name('frontend.team.invite');
 
     // Old / demo company dashboard (optional)
     Route::get('/company/dashboard', fn () => view('company.dashboard'))
         ->name('company.dashboard');
+
+    Route::get('/company-invite/{token}', [CompanyInvitationController::class, 'accept'])
+        ->name('company.invite.accept');
+
+    // NEW: finalize invite (set password + attach role)
+    Route::post('/company-invite/{token}', [CompanyInvitationController::class, 'complete'])
+        ->name('company.invite.complete');
 });
+
+

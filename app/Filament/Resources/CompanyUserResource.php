@@ -59,7 +59,6 @@ class CompanyUserResource extends Resource
             return PermissionService::can(static::getPermissionKey(), 'edit');
         }
 
-        // Company team managers may edit members of their own company, but not owner row.
         /** @var \App\Models\CompanyUser $record */
         if (! static::isCompanyTeamManager()) {
             return false;

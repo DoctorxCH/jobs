@@ -7,8 +7,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CompanyInvitation extends Model
 {
-    protected $table = 'company_invitations';
-
     protected $fillable = [
         'company_id',
         'email',
@@ -16,7 +14,7 @@ class CompanyInvitation extends Model
         'token',
         'expires_at',
         'accepted_at',
-        'created_by_user_id',
+        'accepted_by_user_id',
     ];
 
     protected $casts = [
@@ -27,10 +25,5 @@ class CompanyInvitation extends Model
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
-    }
-
-    public function createdBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by_user_id');
     }
 }
