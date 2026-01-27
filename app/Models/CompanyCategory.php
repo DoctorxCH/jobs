@@ -19,8 +19,7 @@ class CompanyCategory extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'active' => 'boolean',
-        'sort' => 'integer',
+        'is_active' => 'boolean',
     ];
 
     public function companies(): HasMany
