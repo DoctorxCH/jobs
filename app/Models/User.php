@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -49,19 +48,5 @@ class User extends Authenticatable
         return $this->belongsTo(Company::class);
     }
 
-    /**
-     * Companies the user is a member of (pivot: company_user).
-     */
-    public function companies(): BelongsToMany
-    {
-        return $this->belongsToMany(Company::class)
-            ->using(CompanyUser::class)
-            ->withPivot([
-                'role',
-                'status',
-                'invited_at',
-                'accepted_at',
-            ])
-            ->withTimestamps();
-    }
+    // Hinweis: Ein User ist aktuell genau einer Company zugeordnet (company_id).
 }

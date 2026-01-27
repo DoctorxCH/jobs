@@ -238,6 +238,23 @@ class CompanyUserResource extends Resource
 
                 Tables\Actions\DeleteAction::make()
                     ->visible(fn (CompanyUser $record) => static::isPlatformAdmin() || ($record->role !== 'owner' && static::canDelete($record))),
+
+                Tables\Actions\Action::make('disable')
+                    ->label('Disable')
+                    ->requiresConfirmation()
+                    ->color('danger')
+                    ->action(function (CompanyUser $record): void {
+                        $record->update(['status' => 'disabled']);
+
+                        $user = $record->user;
+                        if ($user && $user->company_id === $record->company_id) {
+                            $user->update([
+                                'company_id' => null,
+                                'is_company_owner' => false,
+                            ]);
+                        }
+                    })
+                    ->visible(fn (CompanyUser $record) => $record->status !== 'disabled' && (static::isPlatformAdmin() || static::isCompanyOwner())),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -270,5 +287,15 @@ class CompanyUserResource extends Resource
         }
 
         return method_exists($user, 'hasAnyRole') && $user->hasAnyRole(['platform.super_admin', 'platform.admin']);
+    }
+
+    private static function isCompanyOwner(): bool
+    {
+        $user = auth()->user();
+        if (! $user) {
+            return false;
+        }
+
+        return (bool) $user->is_company_owner;
     }
 }
