@@ -93,6 +93,9 @@ class Company extends Model
 
     public function hasFreeSeats(): bool
     {
-        return $this->members()->count() < ($this->seats_purchased ?? 1);
+        $purchased = (int) ($this->seats_purchased ?? 1);
+        $locked = (int) ($this->seats_locked ?? 0);
+
+        return $this->members()->count() < max($purchased - $locked, 0);
     }
 }
