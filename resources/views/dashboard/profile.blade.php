@@ -56,48 +56,6 @@
         && auth()->user()->canCompanyManageTeam();
 @endphp
 
-@if($c && $canManageTeam)
-    <div class="mt-6 pt-6 border-t border-slate-200">
-        <div class="text-xs uppercase tracking-[0.2em] text-slate-700 font-bold">Invite team member</div>
-
-        @if(session('status'))
-            <div class="mt-3 text-xs text-green-700">{{ session('status') }}</div>
-        @endif
-
-        <form method="POST" action="{{ route('dashboard.team.invite') }}" class="mt-4 grid gap-4 md:grid-cols-3">
-            @csrf
-
-            <div class="md:col-span-2">
-                <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Email</label>
-                <input
-                    name="email"
-                    type="email"
-                    class="mt-2 pixel-input w-full px-4 py-3 text-sm text-slate-900 outline-none"
-                    value="{{ old('email') }}"
-                    placeholder="teammate@company.com"
-                    required
-                />
-                @error('email') <div class="mt-2 text-xs text-red-700">{{ $message }}</div> @enderror
-            </div>
-
-            <div>
-                <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Role</label>
-                <select name="role" class="mt-2 pixel-input w-full px-4 py-3 text-sm text-slate-900 outline-none" required>
-                    <option value="member" @selected(old('role') === 'member')>Member</option>
-                    <option value="recruiter" @selected(old('role') === 'recruiter')>Recruiter</option>
-                    <option value="viewer" @selected(old('role') === 'viewer')>Viewer</option>
-                </select>
-                @error('role') <div class="mt-2 text-xs text-red-700">{{ $message }}</div> @enderror
-            </div>
-
-            <div class="md:col-span-3 flex flex-wrap items-center gap-3">
-                <button type="submit" class="pixel-button px-6 py-3 text-xs">Send invitation</button>
-                <div class="text-[11px] text-slate-500">Invite expires in 7 days. Seat is consumed on accept.</div>
-            </div>
-        </form>
-    </div>
-@endif
-
 
         {{-- Company Identity --}}
         <div class="pixel-outline p-6">

@@ -20,7 +20,7 @@
                     type="email"
                     value="{{ $invite->email }}"
                     disabled
-                    class="mt-1 pixel-input w-full bg-slate-100"
+                    class="mt-2 pixel-input w-full px-4 py-3 text-sm text-slate-900 outline-none"
                 />
             </div>
 
@@ -32,7 +32,7 @@
                     type="password"
                     name="password"
                     required
-                    class="mt-1 pixel-input w-full"
+                    class="mt-2 pixel-input w-full px-4 py-3 text-sm text-slate-900 outline-none"
                 />
             </div>
 
@@ -44,7 +44,7 @@
                     type="password"
                     name="password_confirmation"
                     required
-                    class="mt-1 pixel-input w-full"
+                    class="mt-2 pixel-input w-full px-4 py-3 text-sm text-slate-900 outline-none"
                 />
             </div>
 

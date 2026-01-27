@@ -5,6 +5,7 @@
     @endphp
 
     <div class="flex flex-col gap-8">
+        {{-- Header --}}
         <div>
             <div class="text-s uppercase tracking-[0.2em] text-slate-800 font-bold">Team</div>
             <h1 class="mt-2 text-2xl font-bold">Team Invitations</h1>
@@ -14,6 +15,7 @@
         </div>
 
         @if($c)
+            {{-- Send Invitation Form --}}
             <div class="pixel-outline p-6">
                 <div class="text-s uppercase tracking-[0.2em] text-slate-800 font-bold">Send Invitation</div>
 
@@ -43,9 +45,8 @@
                                 required
                             >
                                 <option value="">Select Role</option>
-                                <option value="member" {{ old('role') === 'member' ? 'selected' : '' }}>Member</option>
-                                <option value="recruiter" {{ old('role') === 'recruiter' ? 'selected' : '' }}>Recruiter</option>
-                                <option value="viewer" {{ old('role') === 'viewer' ? 'selected' : '' }}>Viewer</option>
+                                <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
+                                <option value="member" {{ old('role') == 'member' ? 'selected' : '' }}>Member</option>
                             </select>
                             @error('role')
                                 <div class="mt-2 text-xs text-red-700">{{ $message }}</div>
@@ -59,6 +60,7 @@
                 </form>
             </div>
 
+            {{-- Pending Invitations --}}
             <div class="pixel-outline p-6">
                 <div class="text-s uppercase tracking-[0.2em] text-slate-800 font-bold">Pending Invitations</div>
 
@@ -70,10 +72,7 @@
                             <div class="flex items-center justify-between p-4 bg-slate-50 rounded">
                                 <div>
                                     <div class="text-sm font-bold">{{ $invitation->email }}</div>
-                                    <div class="text-xs text-slate-500">
-                                        Role: {{ $invitation->role }}
-                                        | Expires: {{ $invitation->expires_at ? $invitation->expires_at->format('d.m.Y') : 'Never' }}
-                                    </div>
+                                    <div class="text-xs text-slate-500">Role: {{ $invitation->role }} | Expires: {{ $invitation->expires_at ? $invitation->expires_at->format('d.m.Y') : 'Never' }}</div>
                                 </div>
                                 <div class="text-xs text-slate-500">
                                     @if($invitation->accepted_at)

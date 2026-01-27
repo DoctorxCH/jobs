@@ -7,7 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class CompanyInvitationMail extends Mailable
+class CompanyInviteMail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -17,9 +17,11 @@ class CompanyInvitationMail extends Mailable
 
     public function build()
     {
-        return $this->subject('Company invitation')
-            ->view('mails.company-invitation', [
+        return $this->subject('You have been invited to join a company')
+            ->view('mails.company-invite')
+            ->with([
                 'invite' => $this->invite,
+                'acceptUrl' => route('company.invite.accept', ['token' => $this->invite->token]),
             ]);
     }
 }

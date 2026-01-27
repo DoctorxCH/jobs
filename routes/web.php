@@ -125,14 +125,22 @@ Route::middleware('web')->group(function () {
 
         return view('jobs.show', ['job' => $job]);
     })->name('jobs.show');
-    // Company invite accept
-    Route::get('/company-invite/{token}', [CompanyInvitationController::class, 'accept'])->name('company.invite.accept');
 
     Route::get('/dashboard/team/invite', function () {
-        $company = \App\Models\Company::where('owner_user_id', auth()->id())->first();
-        $invitations = $company ? \App\Models\CompanyInvitation::where('company_id', $company->id)->get() : collect();
-        return view('dashboard.team', compact('company', 'invitations'));
-    })->middleware(\App\Http\Middleware\FrontendAuthenticate::class)->name('frontend.team');
+    $user = auth()->user();
+
+    abort_unless($user && method_exists($user, 'canCompanyManageTeam') && $user->canCompanyManageTeam(), 403);
+
+    $companyId = method_exists($user, 'effectiveCompanyId') ? $user->effectiveCompanyId() : null;
+
+    $company = $companyId ? \App\Models\Company::find($companyId) : null;
+
+    $invitations = $company
+        ? \App\Models\CompanyInvitation::where('company_id', $company->id)->latest()->get()
+        : collect();
+
+    return view('dashboard.team', compact('company', 'invitations'));
+})->middleware(\App\Http\Middleware\FrontendAuthenticate::class)->name('frontend.team');
 
     Route::post('/dashboard/team/invite', [CompanyInvitationController::class, 'send'])
         ->middleware(\App\Http\Middleware\FrontendAuthenticate::class)
@@ -142,12 +150,13 @@ Route::middleware('web')->group(function () {
     Route::get('/company/dashboard', fn () => view('company.dashboard'))
         ->name('company.dashboard');
 
+    // Company invite accept + complete
     Route::get('/company-invite/{token}', [CompanyInvitationController::class, 'accept'])
         ->name('company.invite.accept');
 
-    // NEW: finalize invite (set password + attach role)
     Route::post('/company-invite/{token}', [CompanyInvitationController::class, 'complete'])
         ->name('company.invite.complete');
+        
 });
 
 

@@ -15,10 +15,12 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
 
-        // Owner is unique => simplest + fastest
-        $company = Company::query()
-            ->where('owner_user_id', $user->id)
-            ->first();
+        $company = null;
+        $effectiveCompanyId = method_exists($user, 'effectiveCompanyId') ? $user->effectiveCompanyId() : null;
+
+        if ($effectiveCompanyId) {
+            $company = Company::query()->find($effectiveCompanyId);
+        }
 
         return view('dashboard.profile', [
             'user' => $user,
@@ -30,31 +32,39 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
 
-        $company = Company::query()
-            ->where('owner_user_id', $user->id)
-            ->first();
+        $company = null;
+        $effectiveCompanyId = method_exists($user, 'effectiveCompanyId') ? $user->effectiveCompanyId() : null;
+        if ($effectiveCompanyId) {
+            $company = Company::query()->find($effectiveCompanyId);
+        }
+
+        $isOwner = ($company && (int) $company->owner_user_id === (int) $user->id);
+
+        // If user is member of a company but not owner: do NOT allow creating a new company here.
+        if (! $company && method_exists($user, 'companyMembership') && $user->companyMembership()) {
+            abort(403, 'You are already a member of a company. Company creation is not allowed here.');
+        }
 
         $companyId = $company?->id;
         $isExistingCompany = (bool) $company;
 
-        // Locked fields: if company exists, only allow the already stored values (tamper-proof)
+        // Locked fields if company exists (and user is not owner => fully locked)
         $lockedLegalName = $company?->legal_name;
         $lockedIco = $company?->ico;
 
         $legalNameRules = ['required', 'string', 'max:255'];
-        if ($isExistingCompany && $lockedLegalName !== null) {
-            $legalNameRules[] = Rule::in([$lockedLegalName]);
-        }
-
         $icoRules = [
             'required',
             'string',
             'size:8',
-            'regex:/^\d{8}$/', // SK IČO: 8 digits
+            'regex:/^\d{8}$/',
             Rule::unique('companies', 'ico')->ignore($companyId),
         ];
-        if ($isExistingCompany && $lockedIco !== null) {
-            $icoRules[] = Rule::in([$lockedIco]);
+
+        if ($isExistingCompany && (! $isOwner)) {
+            // non-owner: cannot change identity fields at all
+            if ($lockedLegalName !== null) $legalNameRules[] = Rule::in([$lockedLegalName]);
+            if ($lockedIco !== null) $icoRules[] = Rule::in([$lockedIco]);
         }
 
         $data = $request->validate([
@@ -65,19 +75,8 @@ class ProfileController extends Controller
             'legal_name' => $legalNameRules,
             'ico' => $icoRules,
 
-            // Optional but unique (IMPORTANT: allow NULL; do NOT store empty string!)
-            'dic' => [
-                'nullable',
-                'string',
-                'max:10',
-                Rule::unique('companies', 'dic')->ignore($companyId),
-            ],
-            'ic_dph' => [
-                'nullable',
-                'string',
-                'max:12',
-                Rule::unique('companies', 'ic_dph')->ignore($companyId),
-            ],
+            'dic' => ['nullable', 'string', 'max:10', Rule::unique('companies', 'dic')->ignore($companyId)],
+            'ic_dph' => ['nullable', 'string', 'max:12', Rule::unique('companies', 'ic_dph')->ignore($companyId)],
 
             // Web / Contacts
             'website_url' => ['nullable', 'string', 'max:255'],
@@ -85,11 +84,10 @@ class ProfileController extends Controller
             'phone' => ['nullable', 'string', 'max:255'],
 
             // Branding
-            'logo_path' => ['nullable', 'string', 'max:255'], // later upload
+            'logo_path' => ['nullable', 'string', 'max:255'],
             'description_short' => ['nullable', 'string', 'max:280'],
             'bio' => ['nullable', 'string', 'max:5000'],
 
-            // Social (DB is JSON)
             'social_links' => ['nullable', 'json'],
 
             // Address
@@ -111,11 +109,10 @@ class ProfileController extends Controller
         ], [
             'ico.size' => 'ICO must be exactly 8 digits.',
             'ico.regex' => 'ICO must contain only digits (8 digits).',
-            'legal_name.in' => 'Legal name is locked after registration.',
-            'ico.in' => 'IČO is locked after registration.',
+            'legal_name.in' => 'Legal name is locked.',
+            'ico.in' => 'IČO is locked.',
         ]);
 
-        // Normalize nullable unique fields: empty => NULL (important!)
         foreach (['dic', 'ic_dph'] as $key) {
             if (array_key_exists($key, $data)) {
                 $val = trim((string) $data[$key]);
@@ -123,7 +120,6 @@ class ProfileController extends Controller
             }
         }
 
-        // Normalize socials JSON -> array|null
         $socialLinks = null;
         if (!empty($data['social_links'])) {
             $decoded = json_decode($data['social_links'], true);
@@ -134,30 +130,25 @@ class ProfileController extends Controller
         $user->name = $data['user_name'];
         $user->save();
 
-        // Create company if missing (must include NOT NULL columns)
-        if (!$company) {
+        // Create company only if user has none AND is not member
+        if (! $company) {
             $company = new Company();
             $company->owner_user_id = $user->id;
-
             $company->country_code = strtoupper($data['country_code'] ?? 'SK');
-
-            // slug required + unique
             $company->slug = $this->makeUniqueCompanySlug($data['legal_name']);
         }
 
-        // If slug missing (shouldn't happen anymore)
         if (empty($company->slug)) {
             $company->slug = $this->makeUniqueCompanySlug($data['legal_name'], $company->id);
         }
 
-        // Locked after registration:
-        // - if existing company: keep stored values
-        // - if new company: set from request
-        if (!$isExistingCompany) {
+        // Only owner can set identity fields
+        if (! $isExistingCompany || $isOwner) {
             $company->legal_name = $data['legal_name'];
             $company->ico = $data['ico'];
         }
 
+        // The rest: if member, you may still want to lock these later, but for now allow
         $company->dic = $data['dic'] ?? null;
         $company->ic_dph = $data['ic_dph'] ?? null;
 
@@ -187,15 +178,19 @@ class ProfileController extends Controller
 
         $company->save();
 
+        // Ensure user's primary company_id aligns
+        if ((int) $user->company_id !== (int) $company->id) {
+            $user->company_id = $company->id;
+            $user->save();
+        }
+
         return back()->with('status', 'Profile updated successfully.');
     }
 
     private function makeUniqueCompanySlug(string $legalName, ?int $ignoreCompanyId = null): string
     {
         $base = Str::slug($legalName);
-        if ($base === '') {
-            $base = 'company';
-        }
+        if ($base === '') $base = 'company';
 
         $slug = $base;
         $i = 2;
@@ -215,11 +210,7 @@ class ProfileController extends Controller
     private function companySlugExists(string $slug, ?int $ignoreCompanyId = null): bool
     {
         $q = Company::query()->where('slug', $slug);
-
-        if ($ignoreCompanyId) {
-            $q->where('id', '!=', $ignoreCompanyId);
-        }
-
+        if ($ignoreCompanyId) $q->where('id', '!=', $ignoreCompanyId);
         return $q->exists();
     }
 }

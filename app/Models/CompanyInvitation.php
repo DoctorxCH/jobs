@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CompanyInvitation extends Model
 {
@@ -12,17 +11,16 @@ class CompanyInvitation extends Model
         'email',
         'role',
         'token',
-        'expires_at',
         'accepted_at',
-        'accepted_by_user_id',
+        'expires_at',
     ];
 
     protected $casts = [
-        'expires_at' => 'datetime',
         'accepted_at' => 'datetime',
+        'expires_at' => 'datetime',
     ];
 
-    public function company(): BelongsTo
+    public function company()
     {
         return $this->belongsTo(Company::class);
     }
