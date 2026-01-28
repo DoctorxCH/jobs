@@ -19,6 +19,14 @@ class ResourcePermissionSeeder extends Seeder
             'platform_users',
             'jobs',
             'company_categories',
+            'benefits',
+            'skills',
+            'countries',
+            'regions',
+            'cities',
+            'education_levels',
+            'education_fields',
+            'sknice_positions',
         ];
 
         $roles = [

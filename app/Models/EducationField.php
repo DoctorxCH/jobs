@@ -1,0 +1,25 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class EducationField extends Model
+{
+    use HasFactory;
+
+    public $timestamps = false;
+
+    protected $fillable = [
+        'key',
+        'label',
+        'sort',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'sort' => 'integer',
+        'is_active' => 'boolean',
+    ];
+}

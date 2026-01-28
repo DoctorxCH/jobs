@@ -4,14 +4,30 @@ namespace App\Services\Billing;
 
 use App\Models\Billing\CreditLedger;
 use App\Models\Billing\CreditReservation;
+use Illuminate\Support\Facades\DB;
 
 class CreditService
 {
-    public function reserveForJob($company, int $jobId): CreditReservation
+    public function availableCredits(int $companyId): int
+    {
+        $creditsTotal = (int) DB::table('credit_ledger')
+            ->where('company_id', $companyId)
+            ->sum('change');
+
+        $creditsReserved = (int) DB::table('credit_reservations')
+            ->where('company_id', $companyId)
+            ->whereIn('status', ['active', 'reserved'])
+            ->where('expires_at', '>', now())
+            ->sum('amount');
+
+        return max(0, $creditsTotal - $creditsReserved);
+    }
+
+    public function reserveForJob($company, int $jobId, int $days = 1): CreditReservation
     {
         return CreditReservation::query()->create([
             'company_id' => $company->id,
-            'amount' => 1,
+            'amount' => $days,
             'purpose' => 'job_post',
             'reference_type' => 'job',
             'reference_id' => $jobId,
@@ -20,18 +36,21 @@ class CreditService
         ]);
     }
 
-    public function consumeReservation(CreditReservation $reservation, int $jobId): void
+    public function consumeReservation(CreditReservation $reservation, int $jobId, ?int $days = null): void
     {
+        $amount = $days ?? (int) $reservation->amount ?? 1;
         $reservation->update(['status' => 'consumed']);
 
-        CreditLedger::query()->create([
-            'company_id' => $reservation->company_id,
-            'change' => -1,
-            'reason' => 'job_post',
-            'reference_type' => 'job',
-            'reference_id' => $jobId,
-            'created_at' => now(),
-        ]);
+        for ($i = 0; $i < $amount; $i++) {
+            CreditLedger::query()->create([
+                'company_id' => $reservation->company_id,
+                'change' => -1,
+                'reason' => 'job_post',
+                'reference_type' => 'job',
+                'reference_id' => $jobId,
+                'created_at' => now(),
+            ]);
+        }
     }
 
     public function releaseReservation(CreditReservation $reservation): void
