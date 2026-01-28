@@ -45,6 +45,17 @@ class ProfileController extends Controller
             abort(403, 'You are already a member of a company. Company creation is not allowed here.');
         }
 
+        if ($company && ! $isOwner) {
+            $data = $request->validate([
+                'user_name' => ['required', 'string', 'max:120'],
+            ]);
+
+            $user->name = $data['user_name'];
+            $user->save();
+
+            return back()->with('status', 'Profile updated. Company data is read-only for team members.');
+        }
+
         $companyId = $company?->id;
         $isExistingCompany = (bool) $company;
 
