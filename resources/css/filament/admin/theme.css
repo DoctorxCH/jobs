@@ -1,0 +1,142 @@
+/* resources/css/filament/admin/theme.css
+   Minimalist "Atari/Terminal/CRT" vibe for Filament login (dark blue)
+*/
+
+/* --- Palette --- */
+:root {
+  --crt-bg-0: #020617;              /* very dark navy */
+  --crt-bg-1: #04112a;              /* deep blue */
+  --crt-line: rgba(120, 200, 255, 0.06);
+  --crt-glow: rgba(80, 160, 255, 0.18);
+  --crt-accent: #79ffe1;            /* cyan/teal */
+  --crt-accent2: #a8ff60;           /* retro green */
+  --crt-text: rgba(235, 245, 255, 0.92);
+  --crt-muted: rgba(235, 245, 255, 0.65);
+  --crt-border: rgba(120, 200, 255, 0.16);
+}
+
+/* Monospace feel everywhere */
+html, body {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+               "Liberation Mono", "Courier New", monospace !important;
+}
+
+/* Filament page background */
+.fi-body {
+  background:
+    radial-gradient(1200px 800px at 30% 20%, rgba(80,160,255,0.12), transparent 60%),
+    radial-gradient(900px 600px at 70% 70%, rgba(121,255,225,0.10), transparent 55%),
+    linear-gradient(180deg, var(--crt-bg-1), var(--crt-bg-0)) !important;
+  color: var(--crt-text);
+}
+
+/* CRT scanlines overlay */
+.fi-body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.03),
+      rgba(255,255,255,0.00) 2px,
+      rgba(0,0,0,0.00) 4px
+    );
+  background-size: 100% 6px;
+  mix-blend-mode: overlay;
+  opacity: 0.35;
+  z-index: 5;
+}
+
+/* Subtle noise overlay (inline SVG) */
+.fi-body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E");
+  opacity: 0.10;
+  z-index: 6;
+}
+
+/* Login card look */
+.fi-simple-layout .fi-card,
+.fi-simple-layout .fi-section,
+.fi-simple-layout .fi-form {
+  background: rgba(2, 6, 23, 0.55) !important;
+  border: 1px solid var(--crt-border) !important;
+  box-shadow:
+    0 0 0 1px rgba(80,160,255,0.10),
+    0 18px 60px rgba(0,0,0,0.55);
+  backdrop-filter: blur(10px);
+}
+
+/* Inputs */
+.fi-input-wrp {
+  border-color: rgba(120, 200, 255, 0.18) !important;
+  background: rgba(4, 17, 42, 0.55) !important;
+}
+
+.fi-input-wrp:focus-within {
+  border-color: rgba(121, 255, 225, 0.45) !important;
+  box-shadow: 0 0 0 3px rgba(121,255,225,0.10) !important;
+}
+
+/* Labels & helper text */
+.fi-fo-field-wrp-label,
+.fi-fo-field-wrp-hint,
+.fi-fo-field-wrp-helper-text {
+  color: var(--crt-muted) !important;
+  letter-spacing: 0.03em;
+}
+
+/* Buttons */
+.fi-btn {
+  border: 1px solid rgba(121, 255, 225, 0.22) !important;
+  background: linear-gradient(
+    180deg,
+    rgba(121,255,225,0.15),
+    rgba(80,160,255,0.10)
+  ) !important;
+}
+
+.fi-btn:hover {
+  box-shadow:
+    0 0 0 1px rgba(121,255,225,0.20),
+    0 0 24px rgba(121,255,225,0.08);
+  transform: translateY(-1px);
+}
+
+/* Primary action button */
+.fi-btn-color-primary {
+  color: rgba(235,245,255,0.95) !important;
+  border-color: rgba(168,255,96,0.30) !important;
+  background: linear-gradient(
+    180deg,
+    rgba(168,255,96,0.18),
+    rgba(121,255,225,0.10)
+  ) !important;
+}
+
+/* Links */
+a, .fi-link {
+  color: rgba(121, 255, 225, 0.92) !important;
+  text-decoration: none;
+}
+a:hover, .fi-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Heading glow */
+.fi-simple-header-heading {
+  text-shadow: 0 0 18px var(--crt-glow);
+  letter-spacing: 0.06em;
+}
+
+/* Make subheading a bit "console-like" */
+.fi-simple-header-subheading {
+  color: var(--crt-muted) !important;
+  letter-spacing: 0.04em;
+}

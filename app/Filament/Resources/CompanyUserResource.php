@@ -37,22 +37,50 @@ class CompanyUserResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return PermissionService::can(static::getPermissionKey(), 'view');
+        if (static::isPlatformAdmin()) {
+            return PermissionService::can(static::getPermissionKey(), 'view');
+        }
+
+        return static::isCompanyTeamManager();
     }
 
     public static function canCreate(): bool
     {
-        return PermissionService::can(static::getPermissionKey(), 'create');
+        if (static::isPlatformAdmin()) {
+            return PermissionService::can(static::getPermissionKey(), 'create');
+        }
+
+        return static::isCompanyTeamManager();
     }
 
     public static function canEdit(Model $record): bool
     {
-        return PermissionService::can(static::getPermissionKey(), 'edit');
+        if (static::isPlatformAdmin()) {
+            return PermissionService::can(static::getPermissionKey(), 'edit');
+        }
+
+        /** @var \App\Models\CompanyUser $record */
+        if (! static::isCompanyTeamManager()) {
+            return false;
+        }
+
+        return $record->company_id === static::effectiveCompanyId()
+            && ($record->role !== 'owner');
     }
 
     public static function canDelete(Model $record): bool
     {
-        return PermissionService::can(static::getPermissionKey(), 'delete');
+        if (static::isPlatformAdmin()) {
+            return PermissionService::can(static::getPermissionKey(), 'delete');
+        }
+
+        /** @var \App\Models\CompanyUser $record */
+        if (! static::isCompanyTeamManager()) {
+            return false;
+        }
+
+        return $record->company_id === static::effectiveCompanyId()
+            && ($record->role !== 'owner');
     }
 
     public static function form(Form $form): Form
@@ -68,10 +96,10 @@ class CompanyUserResource extends Resource
                             ->preload()
                             ->required()
                             ->disabled(fn () => ! static::isPlatformAdmin())
-                            ->default(fn () => auth()->user()?->company_id)
+                            ->default(fn () => static::effectiveCompanyId())
                             ->rule(function () {
                                 return function (string $attribute, $value, \Closure $fail) {
-                                    $company = \App\Models\Company::find($value);
+                                    $company = Company::find($value);
                                     if (! $company) {
                                         return;
                                     }
@@ -101,16 +129,22 @@ class CompanyUserResource extends Resource
                             ->helperText('Must be an existing user (team member has their own login).'),
 
                         Select::make('role')
-                            ->options([
-                                'owner' => 'Owner',
-                                'member' => 'Member',
-                                'recruiter' => 'Recruiter',
-                                'viewer' => 'Viewer',
-                            ])
+                            ->options(fn () => static::isPlatformAdmin()
+                                ? [
+                                    'owner' => 'Owner',
+                                    'member' => 'Member',
+                                    'recruiter' => 'Recruiter',
+                                    'viewer' => 'Viewer',
+                                ]
+                                : [
+                                    'member' => 'Member',
+                                    'recruiter' => 'Recruiter',
+                                    'viewer' => 'Viewer',
+                                ])
                             ->required()
                             ->default('member')
-                            ->disabled(fn ($record) => $record?->role === 'owner' && ! static::isPlatformAdmin())
-                            ->helperText('Owners can manage company and seats; members can post.'),
+                            ->disabled(fn ($record) => ($record?->role === 'owner'))
+                            ->helperText('Members can manage billing/seats/team. Recruiter manages jobs. Viewer read-only.'),
 
                         Select::make('status')
                             ->options([
@@ -124,7 +158,7 @@ class CompanyUserResource extends Resource
                         Toggle::make('set_primary_company')
                             ->label('Set as primary company')
                             ->default(true)
-                            ->helperText('If enabled: the user.company_id will be set to this company (so they post on behalf of the company).')
+                            ->helperText('If enabled: the user.company_id will be set to this company.')
                             ->dehydrated(false),
                     ])
                     ->columns(2),
@@ -169,8 +203,9 @@ class CompanyUserResource extends Resource
                     return $query;
                 }
 
-                if (! empty($user->company_id)) {
-                    return $query->where('company_id', $user->company_id);
+                $companyId = static::effectiveCompanyId();
+                if ($companyId) {
+                    return $query->where('company_id', $companyId);
                 }
 
                 return $query->whereRaw('1=0');
@@ -234,27 +269,10 @@ class CompanyUserResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->visible(fn () => static::canEdit(new CompanyUser())),
+                    ->visible(fn (CompanyUser $record) => static::canEdit($record)),
 
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn (CompanyUser $record) => static::isPlatformAdmin() || ($record->role !== 'owner' && static::canDelete($record))),
-
-                Tables\Actions\Action::make('disable')
-                    ->label('Disable')
-                    ->requiresConfirmation()
-                    ->color('danger')
-                    ->action(function (CompanyUser $record): void {
-                        $record->update(['status' => 'disabled']);
-
-                        $user = $record->user;
-                        if ($user && $user->company_id === $record->company_id) {
-                            $user->update([
-                                'company_id' => null,
-                                'is_company_owner' => false,
-                            ]);
-                        }
-                    })
-                    ->visible(fn (CompanyUser $record) => $record->status !== 'disabled' && (static::isPlatformAdmin() || static::isCompanyOwner())),
+                    ->visible(fn (CompanyUser $record) => static::canDelete($record)),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -289,13 +307,25 @@ class CompanyUserResource extends Resource
         return method_exists($user, 'hasAnyRole') && $user->hasAnyRole(['platform.super_admin', 'platform.admin']);
     }
 
-    private static function isCompanyOwner(): bool
+    private static function isCompanyTeamManager(): bool
     {
         $user = auth()->user();
         if (! $user) {
             return false;
         }
 
-        return (bool) $user->is_company_owner;
+        return method_exists($user, 'companyRole') && in_array($user->companyRole(), ['owner', 'member'], true);
+    }
+
+    private static function effectiveCompanyId(): ?int
+    {
+        $user = auth()->user();
+        if (! $user) {
+            return null;
+        }
+
+        return method_exists($user, 'effectiveCompanyId')
+            ? $user->effectiveCompanyId()
+            : ($user->company_id ?: null);
     }
 }
