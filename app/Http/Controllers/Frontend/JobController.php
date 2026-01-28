@@ -68,21 +68,18 @@ class JobController extends Controller
         // Skills levels (falls im Blade verwendet)
         $skillLevels = ['basic', 'intermediate', 'advanced', 'expert'];
 
-        $regions = collect();
-        if (!empty($countryId)) {
-            $regions = DB::table('regions')
-                ->where('country_id', $countryId)
-                ->orderBy('name')
-                ->get();
-        }
+        // Regionen immer laden (für alle Länder oder mindestens SK)
+        $regions = DB::table('regions')
+            ->when(!empty($countryId), fn ($q) => $q->where('country_id', $countryId))
+            ->orderBy('name')
+            ->get();
 
-        $cities = collect();
-        if (!empty($regionId)) {
-            $cities = DB::table('cities')
-                ->where('region_id', $regionId)
-                ->orderBy('name')
-                ->get();
-        }
+        $cities = DB::table('cities as ci')
+            ->join('regions as r', 'r.id', '=', 'ci.region_id')
+            ->when(!empty($countryId), fn ($q) => $q->where('r.country_id', $countryId))
+            ->select('ci.*')
+            ->orderBy('ci.name')
+            ->get();
 
         // WICHTIG: teamMembers als CompanyUser-Model + user-Relation, damit $member->user->... funktioniert
         $teamMembers = collect();
