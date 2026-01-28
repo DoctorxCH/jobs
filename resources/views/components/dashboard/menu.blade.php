@@ -3,6 +3,7 @@
         ['label' => 'Dashboard', 'route' => 'frontend.dashboard'],
         ['label' => 'Profile',   'route' => 'frontend.profile'],
         ['label' => 'Security',  'route' => 'frontend.security'],
+        ['label' => 'Jobs',  'route' => 'frontend.jobs.index'],
         ['label' => 'Team Invitations', 'route' => 'frontend.team'],
     ];
 

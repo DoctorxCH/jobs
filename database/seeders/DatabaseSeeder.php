@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Database\Seeders\ResourcePermissionSeeder;
+use Database\Seeders\DrivingLicenseCategorySeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -24,5 +25,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call(ResourcePermissionSeeder::class);
+        $this->call(DrivingLicenseCategorySeeder::class);
     }
 }

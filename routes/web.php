@@ -14,6 +14,7 @@ use App\Http\Controllers\Frontend\Billing\OrderController as FrontendBillingOrde
 use App\Http\Controllers\Frontend\Billing\PaymentController as FrontendBillingPaymentController;
 use App\Http\Controllers\Frontend\Billing\ProductController as FrontendBillingProductController;
 use App\Http\Controllers\Frontend\ProfileController as FrontendProfileController;
+use App\Http\Controllers\Frontend\JobController as FrontendJobController;
 use App\Http\Controllers\Frontend\SecurityController as FrontendSecurityController;
 use App\Http\Controllers\CookieConsentController;
 
@@ -75,6 +76,23 @@ Route::middleware('web')->group(function () {
 
         Route::post('/dashboard/security', [FrontendSecurityController::class, 'update'])
             ->name('frontend.security.update');
+
+        Route::prefix('/dashboard/jobs')->group(function () {
+            Route::get('/', [FrontendJobController::class, 'index'])
+                ->name('frontend.jobs.index');
+            Route::get('/create', [FrontendJobController::class, 'create'])
+                ->name('frontend.jobs.create');
+            Route::post('/', [FrontendJobController::class, 'store'])
+                ->name('frontend.jobs.store');
+            Route::get('/{job}/edit', [FrontendJobController::class, 'edit'])
+                ->name('frontend.jobs.edit');
+            Route::put('/{job}', [FrontendJobController::class, 'update'])
+                ->name('frontend.jobs.update');
+            Route::post('/{job}/post', [FrontendJobController::class, 'post'])
+                ->name('frontend.jobs.post');
+            Route::post('/{job}/archive', [FrontendJobController::class, 'archive'])
+                ->name('frontend.jobs.archive');
+        });
 
         Route::prefix('/dashboard/billing')->group(function () {
             Route::get('/products', [FrontendBillingProductController::class, 'index'])
@@ -190,4 +208,3 @@ Route::middleware('web')->group(function () {
         ->name('company.invite.complete');
         
 });
-

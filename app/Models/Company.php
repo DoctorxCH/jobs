@@ -93,6 +93,11 @@ class Company extends Model
         return $this->belongsTo(CompanyCategory::class);
     }
 
+    public function jobs()
+    {
+        return $this->hasMany(Job::class);
+    }
+
     /* -----------------
      | Helpers
      |-----------------*/
