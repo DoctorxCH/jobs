@@ -2,76 +2,64 @@
 
 namespace Database\Seeders;
 
-use App\Models\ResourcePermission;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\DB;
 
 class ResourcePermissionSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $resources = [
+            // Core/Admin
+            'users',
             'companies',
-            'company_users',
-            'platform_users',
+            'company-categories',
+            'company-users',
+            'company-invitations',
+            'resource-permissions',
+
+            // Jobs
             'jobs',
-            'company_categories',
             'benefits',
             'skills',
+            'job-languages',
+            'job-skills',
             'countries',
             'regions',
             'cities',
-            'education_levels',
-            'education_fields',
-            'sknice_positions',
-        ];
+            'education-levels',
+            'education-fields',
+            'sknice-positions',
 
-        $roles = [
-            'platform.super_admin',
-            'platform.admin',
-            'platform.moderator',
-            'platform.finance',
+            // Billing
+            'billing/products',
+            'billing/product-prices',
+            'billing/coupons',
+            'billing/tax-rates',
+            'billing/settings',
+            'billing/orders',
+            'billing/invoices',
+            'billing/payments',
+            'billing/entitlements',
+            'billing/credit-ledgers',
+            'billing/credit-reservations',
         ];
-
-        foreach ($roles as $roleName) {
-            Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
-        }
 
         foreach ($resources as $resource) {
-            ResourcePermission::updateOrCreate(
-                ['resource' => $resource, 'role_name' => 'platform.super_admin'],
-                ['can_view' => true, 'can_create' => true, 'can_edit' => true, 'can_delete' => true],
+            DB::table('resource_permissions')->updateOrInsert(
+                [
+                    'resource' => $resource,
+                    'role_name' => 'platform.super_admin',
+                ],
+                [
+                    'can_view' => 1,
+                    'can_create' => 1,
+                    'can_edit' => 1,
+                    'can_delete' => 1,
+                    'updated_at' => now(),
+                    'created_at' => now(),
+                ]
             );
         }
-
-        foreach (['companies', 'company_users', 'platform_users'] as $resource) {
-            ResourcePermission::updateOrCreate(
-                ['resource' => $resource, 'role_name' => 'platform.admin'],
-                ['can_view' => true, 'can_create' => true, 'can_edit' => true, 'can_delete' => true],
-            );
-        }
-
-        ResourcePermission::updateOrCreate(
-            ['resource' => 'jobs', 'role_name' => 'platform.moderator'],
-            ['can_view' => true, 'can_create' => false, 'can_edit' => true, 'can_delete' => false],
-        );
-
-        ResourcePermission::updateOrCreate(
-            ['resource' => 'companies', 'role_name' => 'platform.moderator'],
-            ['can_view' => true, 'can_create' => false, 'can_edit' => false, 'can_delete' => false],
-        );
-
-        ResourcePermission::updateOrCreate(
-            ['resource' => 'companies', 'role_name' => 'platform.finance'],
-            ['can_view' => true, 'can_create' => false, 'can_edit' => false, 'can_delete' => false],
-        );
-
-        ResourcePermission::updateOrCreate(
-            ['resource' => 'platform_users', 'role_name' => 'platform.finance'],
-            ['can_view' => false, 'can_create' => false, 'can_edit' => false, 'can_delete' => false],
-        );
     }
 }

@@ -6,38 +6,116 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\JobPostRequest;
 use App\Http\Requests\JobStoreRequest;
 use App\Http\Requests\JobUpdateRequest;
-use App\Models\Benefit;
-use App\Models\City;
 use App\Models\Company;
 use App\Models\CompanyUser;
-use App\Models\Country;
-use App\Models\DrivingLicenseCategory;
-use App\Models\EducationField;
-use App\Models\EducationLevel;
 use App\Models\Job;
-use App\Models\Region;
-use App\Models\Skill;
-use App\Models\SknicePosition;
 use App\Services\Billing\CreditService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 
 class JobController extends Controller
 {
-    public function index(Request $request)
+    protected function companyForUser(): ?Company
     {
-        $company = $this->resolveCompany($request);
-        $this->authorizeCompanyManage($request);
+        $user = Auth::user();
 
-        if (! $company) {
-            abort(404);
+        return Company::query()
+            ->where('owner_user_id', $user->id)
+            ->whereNull('deleted_at')
+            ->first();
+    }
+
+    protected function assertJobBelongsToCompany(Job $job, Company $company): void
+    {
+        abort_unless((int) $job->company_id === (int) $company->id, 403);
+    }
+
+    /**
+     * Liefert alle Lookup-Listen, die dashboard/jobs/_form.blade.php braucht.
+     */
+    protected function formLookups(?int $countryId = null, ?int $regionId = null, ?int $companyId = null): array
+    {
+        $sknicePositions = DB::table('sknice_positions')->orderBy('title')->get();
+        $benefits = DB::table('benefits')->orderBy('label')->get();
+        $drivingLicenseCategories = DB::table('driving_license_categories')->orderBy('label')->get();
+        $skills = DB::table('skills')->orderBy('name')->get();
+
+        $educationLevels = DB::table('education_levels')->orderBy('label')->get();
+        $educationFields = DB::table('education_fields')->orderBy('label')->get();
+
+        $countries = DB::table('countries')->orderBy('name')->get();
+
+        // Languages + levels (falls im Blade verwendet)
+        $languageOptions = [
+            'sk' => 'Slovak',
+            'cs' => 'Czech',
+            'de' => 'German',
+            'en' => 'English',
+            'hu' => 'Hungarian',
+            'pl' => 'Polish',
+            'uk' => 'Ukrainian',
+            'ru' => 'Russian',
+        ];
+        $languageLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'native'];
+
+        // Skills levels (falls im Blade verwendet)
+        $skillLevels = ['basic', 'intermediate', 'advanced', 'expert'];
+
+        $regions = collect();
+        if (!empty($countryId)) {
+            $regions = DB::table('regions')
+                ->where('country_id', $countryId)
+                ->orderBy('name')
+                ->get();
         }
+
+        $cities = collect();
+        if (!empty($regionId)) {
+            $cities = DB::table('cities')
+                ->where('region_id', $regionId)
+                ->orderBy('name')
+                ->get();
+        }
+
+        // WICHTIG: teamMembers als CompanyUser-Model + user-Relation, damit $member->user->... funktioniert
+        $teamMembers = collect();
+        if (!empty($companyId)) {
+            $teamMembers = CompanyUser::query()
+                ->with('user')
+                ->where('company_id', $companyId)
+                ->orderBy('id')
+                ->get();
+        }
+
+        return compact(
+            'sknicePositions',
+            'benefits',
+            'drivingLicenseCategories',
+            'skills',
+            'educationLevels',
+            'educationFields',
+            'countries',
+            'regions',
+            'cities',
+            'teamMembers',
+            'languageOptions',
+            'languageLevels',
+            'skillLevels',
+        );
+    }
+
+    public function index(Request $request): View
+    {
+        $company = $this->companyForUser();
+        abort_unless($company, 403);
 
         $jobs = Job::query()
             ->where('company_id', $company->id)
-            ->latest('id')
-            ->get();
+            ->orderByDesc('id')
+            ->paginate(20);
 
         return view('dashboard.jobs.index', [
             'company' => $company,
@@ -45,262 +123,208 @@ class JobController extends Controller
         ]);
     }
 
-    public function create(Request $request, CreditService $creditService)
+    public function create(): View
     {
-        $company = $this->resolveCompany($request);
-        $this->authorizeCompanyManage($request);
+        $company = $this->companyForUser();
+        abort_unless($company, 403);
 
-        if (! $company) {
-            abort(404);
-        }
+        $creditService = new CreditService();
+        $availableCredits = $creditService->availableCredits((int) $company->id);
 
-        return view('dashboard.jobs.create', $this->formData($company, $creditService));
+        $lookups = $this->formLookups(null, null, (int) $company->id);
+
+        return view('dashboard.jobs.create', array_merge([
+            'company' => $company,
+            'availableCredits' => $availableCredits,
+        ], $lookups));
     }
 
-    public function store(JobStoreRequest $request, CreditService $creditService)
+    public function store(JobStoreRequest $request): RedirectResponse
     {
-        $company = $this->resolveCompany($request);
-        $this->authorizeCompanyManage($request);
-
-        if (! $company) {
-            abort(404);
-        }
+        $company = $this->companyForUser();
+        abort_unless($company, 403);
 
         $data = $request->validated();
+        $data['company_id'] = $company->id;
 
-        $job = new Job();
-        $job->company_id = $company->id;
-        $job->status = 'draft';
-        $job->fill($this->jobFillData($data));
-        $this->applyHrSnapshot($job, $data, $company);
-        $job->save();
+        $job = Job::create($data);
 
-        $this->syncRelations($job, $data);
+        if (array_key_exists('benefits', $data)) {
+            $job->benefits()->sync($data['benefits'] ?? []);
+        }
+
+        if (array_key_exists('driving_license_categories', $data)) {
+            $job->drivingLicenseCategories()->sync($data['driving_license_categories'] ?? []);
+        }
+
+        if (array_key_exists('job_languages', $data)) {
+            $job->jobLanguages()->delete();
+            foreach (($data['job_languages'] ?? []) as $row) {
+                if (!empty($row['language_code']) && !empty($row['level'])) {
+                    $job->jobLanguages()->create($row);
+                }
+            }
+        }
+
+        if (array_key_exists('job_skills', $data)) {
+            $job->jobSkills()->delete();
+            foreach (($data['job_skills'] ?? []) as $row) {
+                if (!empty($row['skill_id']) && !empty($row['level'])) {
+                    $job->jobSkills()->create($row);
+                }
+            }
+        }
 
         return redirect()
             ->route('frontend.jobs.edit', $job)
-            ->with('status', 'Job saved as draft.');
+            ->with('success', 'Job created.');
     }
 
-    public function edit(Request $request, Job $job, CreditService $creditService)
+    public function edit(Job $job): View
     {
-        $company = $this->resolveCompany($request);
-        $this->authorizeCompanyManage($request);
-        $this->ensureOwnership($company, $job);
+        $company = $this->companyForUser();
+        abort_unless($company, 403);
 
-        return view('dashboard.jobs.edit', array_merge(
-            $this->formData($company, $creditService),
-            ['job' => $job]
-        ));
+        $this->assertJobBelongsToCompany($job, $company);
+
+        $creditService = new CreditService();
+        $availableCredits = $creditService->availableCredits((int) $company->id);
+
+        $lookups = $this->formLookups(
+            $job->country_id ? (int) $job->country_id : null,
+            $job->region_id ? (int) $job->region_id : null,
+            (int) $company->id,
+        );
+
+        return view('dashboard.jobs.edit', array_merge([
+            'company' => $company,
+            'job' => $job,
+            'availableCredits' => $availableCredits,
+        ], $lookups));
     }
 
-    public function update(JobUpdateRequest $request, Job $job, CreditService $creditService)
+    public function update(JobUpdateRequest $request, Job $job): RedirectResponse
     {
-        $company = $this->resolveCompany($request);
-        $this->authorizeCompanyManage($request);
-        $this->ensureOwnership($company, $job);
+        $company = $this->companyForUser();
+        abort_unless($company, 403);
+
+        $this->assertJobBelongsToCompany($job, $company);
+
+        \Log::info('JOB UPDATE incoming', [
+            'job_id' => $job->id,
+            'all' => $request->all(),
+            'validated' => $request->validated(),
+        ]);
 
         $data = $request->validated();
+        $job->update($data);
 
-        $job->fill($this->jobFillData($data));
-        $this->applyHrSnapshot($job, $data, $company);
-        $job->save();
+        if (array_key_exists('benefits', $data)) {
+            $job->benefits()->sync($data['benefits'] ?? []);
+        }
 
-        $this->syncRelations($job, $data);
+        if (array_key_exists('driving_license_categories', $data)) {
+            $job->drivingLicenseCategories()->sync($data['driving_license_categories'] ?? []);
+        }
+
+        if (array_key_exists('job_languages', $data)) {
+            $job->jobLanguages()->delete();
+            foreach (($data['job_languages'] ?? []) as $row) {
+                if (!empty($row['language_code']) && !empty($row['level'])) {
+                    $job->jobLanguages()->create($row);
+                }
+            }
+        }
+
+        if (array_key_exists('job_skills', $data)) {
+            $job->jobSkills()->delete();
+            foreach (($data['job_skills'] ?? []) as $row) {
+                if (!empty($row['skill_id']) && !empty($row['level'])) {
+                    $job->jobSkills()->create($row);
+                }
+            }
+        }
 
         return redirect()
             ->route('frontend.jobs.edit', $job)
-            ->with('status', 'Job updated successfully.');
+            ->with('success', 'Job updated.');
     }
 
-    public function post(JobPostRequest $request, Job $job, CreditService $creditService)
+    public function archive(Request $request, Job $job): RedirectResponse
     {
-        $company = $this->resolveCompany($request);
-        $this->authorizeCompanyManage($request);
-        $this->ensureOwnership($company, $job);
+        $company = $this->companyForUser();
+        abort_unless($company, 403);
 
-        $days = (int) $request->validated()['days'];
-        $available = $creditService->availableCredits($company->id);
+        $this->assertJobBelongsToCompany($job, $company);
 
-        if ($available < $days) {
-            throw ValidationException::withMessages([
-                'days' => 'Not enough credits available for this posting.',
+        $job->update(['status' => 'archived']);
+
+        return redirect()
+            ->route('frontend.jobs.index')
+            ->with('success', 'Job archived.');
+    }
+
+    public function post(JobPostRequest $request, Job $job): RedirectResponse
+    {
+        $company = $this->companyForUser();
+        abort_unless($company, 403);
+
+        $this->assertJobBelongsToCompany($job, $company);
+
+        $days = (int) ($request->validated()['days'] ?? 0);
+        if ($days < 1) {
+            return redirect()
+                ->route('frontend.jobs.edit', $job)
+                ->with('error', 'Invalid days.');
+        }
+
+        $creditService = new CreditService();
+        $available = $creditService->availableCredits((int) $company->id);
+
+        $now = now()->startOfDay();
+        $currentExpiry = $job->expires_at ? $job->expires_at->copy()->startOfDay() : null;
+
+        // User input bedeutet: "bis heute + days"
+        $desiredExpiry = $now->copy()->addDays($days);
+
+        // Nie ein bestehendes späteres expires_at verkürzen
+        $finalExpiry = ($currentExpiry && $currentExpiry->greaterThan($desiredExpiry))
+            ? $currentExpiry
+            : $desiredExpiry;
+
+        // Credits nur für Verlängerung über das spätere von (now, currentExpiry)
+        $base = ($currentExpiry && $currentExpiry->greaterThan($now)) ? $currentExpiry : $now;
+        $required = $finalExpiry->greaterThan($base) ? $base->diffInDays($finalExpiry) : 0;
+
+        if ($required > 0 && $available < $required) {
+            return redirect()
+                ->route('frontend.jobs.edit', $job)
+                ->withErrors(['days' => 'Not enough credits available for this extension.'])
+                ->withInput();
+        }
+
+        DB::transaction(function () use ($company, $job, $required, $finalExpiry): void {
+            if ($required > 0) {
+                DB::table('credit_ledger')->insert([
+                    'company_id' => (int) $company->id,
+                    'change' => -1 * (int) $required,
+                    'reason' => 'job_post',
+                    'reference_type' => 'job',
+                    'reference_id' => (int) $job->id,
+                    'created_by_admin_id' => null,
+                    'created_at' => now(),
+                ]);
+            }
+
+            $job->update([
+                'status' => 'published',
+                'published_at' => $job->published_at ?? now(),
+                'expires_at' => $finalExpiry->copy()->endOfDay(),
             ]);
-        }
-
-        DB::transaction(function () use ($creditService, $company, $job, $days): void {
-            $reservation = $creditService->reserveForJob($company, $job->id, $days);
-            $creditService->consumeReservation($reservation, $job->id, $days);
-
-            $job->status = 'published';
-            $job->published_at = now();
-            $job->expires_at = now()->addDays($days);
-            $job->save();
         });
 
         return redirect()
             ->route('frontend.jobs.edit', $job)
-            ->with('status', 'Job published successfully.');
-    }
-
-    public function archive(Request $request, Job $job)
-    {
-        $company = $this->resolveCompany($request);
-        $this->authorizeCompanyManage($request);
-        $this->ensureOwnership($company, $job);
-
-        $job->status = 'archived';
-        $job->save();
-
-        return redirect()
-            ->route('frontend.jobs.edit', $job)
-            ->with('status', 'Job archived.');
-    }
-
-    private function resolveCompany(Request $request): ?Company
-    {
-        $user = $request->user();
-        if (! $user) {
-            return null;
-        }
-
-        $companyId = method_exists($user, 'effectiveCompanyId')
-            ? $user->effectiveCompanyId()
-            : $user->company_id;
-
-        if (! $companyId) {
-            return null;
-        }
-
-        return Company::query()->find($companyId);
-    }
-
-    private function authorizeCompanyManage(Request $request): void
-    {
-        $user = $request->user();
-
-        abort_unless($user && method_exists($user, 'canCompanyManageJobs') && $user->canCompanyManageJobs(), 403);
-    }
-
-    private function ensureOwnership(?Company $company, Job $job): void
-    {
-        if (! $company || (int) $job->company_id !== (int) $company->id) {
-            abort(404);
-        }
-    }
-
-    private function jobFillData(array $data): array
-    {
-        return [
-            'title' => $data['title'],
-            'description' => $data['description'],
-            'sknice_position_id' => $data['sknice_position_id'],
-            'employment_type' => $data['employment_type'],
-            'workload_min' => $data['workload_min'],
-            'workload_max' => $data['workload_max'],
-            'country_id' => $data['country_id'],
-            'region_id' => $data['region_id'],
-            'city_id' => $data['city_id'],
-            'is_remote' => (bool) ($data['is_remote'] ?? false),
-            'is_hybrid' => (bool) ($data['is_hybrid'] ?? false),
-            'travel_required' => (bool) ($data['travel_required'] ?? false),
-            'available_from' => $data['available_from'] ?? null,
-            'application_deadline' => $data['application_deadline'] ?? null,
-            'salary_min_gross_month' => $data['salary_min_gross_month'] ?? null,
-            'salary_max_gross_month' => $data['salary_max_gross_month'] ?? null,
-            'salary_currency' => $data['salary_currency'] ?? 'EUR',
-            'salary_note' => $data['salary_note'] ?? null,
-            'salary_months' => $data['salary_months'] ?? null,
-            'education_level_id' => $data['education_level_id'] ?? null,
-            'education_field_id' => $data['education_field_id'] ?? null,
-            'min_years_experience' => $data['min_years_experience'] ?? null,
-            'is_for_graduates' => (bool) ($data['is_for_graduates'] ?? false),
-            'is_for_disabled' => (bool) ($data['is_for_disabled'] ?? false),
-            'open_positions' => $data['open_positions'] ?? 1,
-            'candidate_note' => $data['candidate_note'] ?? null,
-            'employer_reference' => $data['employer_reference'] ?? null,
-            'has_company_car' => (bool) ($data['has_company_car'] ?? false),
-        ];
-    }
-
-    private function applyHrSnapshot(Job $job, array $data, Company $company): void
-    {
-        $job->hr_team_member_id = $data['hr_team_member_id'] ?? null;
-
-        $member = null;
-        if (! empty($data['hr_team_member_id'])) {
-            $member = CompanyUser::query()
-                ->with('user')
-                ->where('company_id', $company->id)
-                ->where('id', $data['hr_team_member_id'])
-                ->first();
-        }
-
-        $job->hr_email = $data['hr_email']
-            ?? $member?->user?->email
-            ?? null;
-        $job->hr_phone = $data['hr_phone'] ?? null;
-    }
-
-    private function syncRelations(Job $job, array $data): void
-    {
-        $job->benefits()->sync($data['benefits'] ?? []);
-        $job->drivingLicenseCategories()->sync($data['driving_license_categories'] ?? []);
-
-        $job->jobLanguages()->delete();
-        foreach ($data['job_languages'] ?? [] as $language) {
-            if (empty($language['language_code']) || empty($language['level'])) {
-                continue;
-            }
-
-            $job->jobLanguages()->create([
-                'language_code' => $language['language_code'],
-                'level' => $language['level'],
-            ]);
-        }
-
-        $job->jobSkills()->delete();
-        foreach ($data['job_skills'] ?? [] as $skill) {
-            if (empty($skill['skill_id']) || empty($skill['level'])) {
-                continue;
-            }
-
-            $job->jobSkills()->create([
-                'skill_id' => $skill['skill_id'],
-                'level' => $skill['level'],
-            ]);
-        }
-    }
-
-    private function formData(Company $company, CreditService $creditService): array
-    {
-        $languageOptions = [
-            'en' => 'English',
-            'de' => 'German',
-            'fr' => 'French',
-            'it' => 'Italian',
-            'es' => 'Spanish',
-        ];
-
-        return [
-            'benefits' => Benefit::query()->orderBy('sort')->get(),
-            'skills' => Skill::query()->where('is_active', true)->orderBy('name')->get(),
-            'sknicePositions' => SknicePosition::query()->orderBy('sort')->get(),
-            'countries' => Country::query()->where('is_active', true)->orderBy('sort')->get(),
-            'regions' => Region::query()->orderBy('sort')->get(),
-            'cities' => City::query()->orderBy('sort')->get(),
-            'educationLevels' => EducationLevel::query()->orderBy('sort')->get(),
-            'educationFields' => EducationField::query()->orderBy('sort')->get(),
-            'drivingLicenseCategories' => DrivingLicenseCategory::query()->orderBy('code')->get(),
-            'teamMembers' => CompanyUser::query()
-                ->with('user')
-                ->where('company_id', $company->id)
-                ->where('status', 'active')
-                ->get(),
-            'languageOptions' => $languageOptions,
-            'languageLevels' => ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'native'],
-            'skillLevels' => ['basic', 'intermediate', 'advanced', 'expert'],
-            'availableCredits' => $creditService->availableCredits($company->id),
-        ];
+            ->with('success', $required > 0 ? 'Job published (credits consumed).' : 'Job published (no extra credits needed).');
     }
 }

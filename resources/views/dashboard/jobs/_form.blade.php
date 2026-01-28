@@ -1,4 +1,17 @@
 @php
+    $sknicePositions = $sknicePositions ?? collect();
+    $benefits = $benefits ?? collect();
+    $drivingLicenseCategories = $drivingLicenseCategories ?? collect();
+    $skills = $skills ?? collect();
+    $educationLevels = $educationLevels ?? collect();
+    $educationFields = $educationFields ?? collect();
+    $countries = $countries ?? collect();
+    $regions = $regions ?? collect();
+    $cities = $cities ?? collect();
+    $teamMembers = $teamMembers ?? collect();
+@endphp
+
+@php
     $job = $job ?? null;
     $selectedBenefits = old('benefits', $job?->benefits->pluck('id')->all() ?? []);
     $selectedLicenses = old('driving_license_categories', $job?->drivingLicenseCategories->pluck('id')->all() ?? []);

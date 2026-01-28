@@ -1,56 +1,59 @@
 <x-dashboard.layout title="Edit job">
-    <form method="POST" action="{{ route('frontend.jobs.update', $job) }}" class="space-y-6">
-        @csrf
-        @method('PUT')
-        @include('dashboard.jobs._form')
+    <form
+    method="POST"
+    action="{{ route('frontend.jobs.update', $job) }}"
+>
+    @csrf
+    @method('PUT')
 
-        <div class="flex flex-wrap gap-3 justify-end">
-            <button type="submit" class="pixel-outline px-6 py-2 text-xs uppercase tracking-[0.2em]">Save changes</button>
-        </div>
-    </form>
+    @include('dashboard.jobs._form', ['job' => $job])
 
-    <div class="mt-10 pixel-outline p-4">
-        <div class="text-xs uppercase tracking-[0.2em] text-slate-500">Publish job</div>
-        <div class="mt-2 text-sm text-slate-600">Available credits: <span class="font-semibold">{{ $availableCredits }}</span></div>
-
-        <form method="POST" action="{{ route('frontend.jobs.post', $job) }}" class="mt-4 grid gap-3 md:grid-cols-[200px_1fr_auto] items-end">
-            @csrf
-            <div>
-                <label class="text-xs uppercase tracking-[0.2em]">Days</label>
-                <input type="number" name="days" id="post-days" min="1" value="{{ old('days', 7) }}" class="mt-2 w-full pixel-outline px-3 py-2" required>
-            </div>
-            <div class="text-xs text-slate-600">
-                <div>Preview expiry: <span id="post-expiry">-</span></div>
-                <div>Credits required: <span id="post-credits">-</span></div>
-            </div>
-            <button type="submit" class="pixel-outline px-6 py-2 text-xs uppercase tracking-[0.2em]">Publish</button>
-        </form>
-
-        <form method="POST" action="{{ route('frontend.jobs.archive', $job) }}" class="mt-4">
-            @csrf
-            <button type="submit" class="pixel-outline px-4 py-2 text-xs uppercase tracking-[0.2em]">Archive</button>
-        </form>
+    <div class="mt-6 flex gap-3">
+        <button
+            type="submit"
+            class="pixel-outline px-6 py-3 bg-black text-white uppercase text-sm tracking-widest"
+        >
+            Save changes
+        </button>
     </div>
+</form>
+
+   
 
     <script>
-        const daysInput = document.getElementById('post-days');
-        const expiryEl = document.getElementById('post-expiry');
-        const creditsEl = document.getElementById('post-credits');
+        const daysInput = document.getElementById("post-days");
+        const expiryEl = document.getElementById("post-expiry");
+        const creditsEl = document.getElementById("post-credits");
+
+        const currentExpiresAt = @json(optional($job->expires_at)->toDateString());
 
         function updatePreview() {
-            const days = parseInt(daysInput.value || '0', 10);
+            const days = parseInt(daysInput.value || "0", 10);
             if (!days || days < 1) {
-                expiryEl.textContent = '-';
-                creditsEl.textContent = '-';
+                expiryEl.textContent = "-";
+                creditsEl.textContent = "-";
                 return;
             }
-            const expires = new Date();
-            expires.setDate(expires.getDate() + days);
-            expiryEl.textContent = expires.toISOString().slice(0, 10);
-            creditsEl.textContent = days;
+
+            const now = new Date();
+            const newExpiry = new Date(now);
+            newExpiry.setDate(newExpiry.getDate() + days);
+            const newExpiryStr = newExpiry.toISOString().slice(0, 10);
+            expiryEl.textContent = newExpiryStr;
+
+            // credits only for extending beyond current expiry
+            let required = days;
+            if (currentExpiresAt) {
+                const cur = new Date(currentExpiresAt + "T00:00:00Z");
+                const base = cur > now ? cur : now;
+                const ms = newExpiry - base;
+                required = Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)));
+            }
+
+            creditsEl.textContent = required;
         }
 
-        daysInput?.addEventListener('input', updatePreview);
+        daysInput?.addEventListener("input", updatePreview);
         updatePreview();
     </script>
 </x-dashboard.layout>

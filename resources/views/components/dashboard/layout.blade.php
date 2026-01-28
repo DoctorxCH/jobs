@@ -51,9 +51,15 @@
                 </div>
 
                 {{-- Alerts --}}
-                @if (session('status'))
+                @if (session('status') || session('success'))
                     <div class="mb-6 pixel-outline px-4 py-3 text-sm border-2 border-green-600 bg-green-50 text-green-800">
-                        {{ session('status') }}
+                        {{ session('status') ?? session('success') }}
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div class="mb-6 pixel-outline px-4 py-3 text-sm border-2 border-red-600 bg-red-50 text-red-800">
+                        {{ session('error') }}
                     </div>
                 @endif
 
@@ -61,8 +67,8 @@
                     <div class="mb-6 pixel-outline px-4 py-3 text-sm border-2 border-red-600 bg-red-50 text-red-800">
                         <div class="font-bold uppercase tracking-[0.2em] text-xs mb-2">Please fix the errors</div>
                         <ul class="list-disc pl-5 space-y-1">
-                            @foreach ($errors->all() as $err)
-                                <li>{{ $err }}</li>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
                             @endforeach
                         </ul>
                     </div>

@@ -3,7 +3,10 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\JobResource\Pages;
+use App\Models\City;
+use App\Models\Country;
 use App\Models\Job;
+use App\Models\Region;
 use App\Services\PermissionService;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -56,12 +59,15 @@ class JobResource extends Resource
                         ->relationship('company', 'legal_name')
                         ->searchable()
                         ->required(),
+
                     Forms\Components\TextInput::make('title')
                         ->required()
                         ->maxLength(255),
+
                     Forms\Components\Textarea::make('description')
                         ->required()
                         ->rows(6),
+
                     Forms\Components\Select::make('status')
                         ->options([
                             'draft' => 'Draft',
@@ -71,12 +77,14 @@ class JobResource extends Resource
                         ->required(),
                 ])
                 ->columns(2),
+
             Forms\Components\Section::make('Position & Workload')
                 ->schema([
                     Forms\Components\Select::make('sknice_position_id')
                         ->relationship('sknicePosition', 'title')
                         ->required()
                         ->searchable(),
+
                     Forms\Components\Select::make('employment_type')
                         ->options([
                             'full_time' => 'Full time',
@@ -86,11 +94,13 @@ class JobResource extends Resource
                             'internship' => 'Internship',
                         ])
                         ->required(),
+
                     Forms\Components\TextInput::make('workload_min')
                         ->numeric()
                         ->minValue(0)
                         ->maxValue(100)
                         ->required(),
+
                     Forms\Components\TextInput::make('workload_max')
                         ->numeric()
                         ->minValue(0)
@@ -98,99 +108,132 @@ class JobResource extends Resource
                         ->required(),
                 ])
                 ->columns(2),
+
             Forms\Components\Section::make('Location')
                 ->schema([
                     Forms\Components\Select::make('country_id')
-                        ->relationship('country', 'name')
+                        ->label('Country')
+                        ->options(fn () => Country::query()->orderBy('name')->pluck('name', 'id')->toArray())
                         ->searchable()
-                        ->required(),
+                        ->preload()
+                        ->nullable()      // not required
+                        ->reactive()
+                        ->afterStateUpdated(function (callable $set) {
+                            $set('region_id', null);
+                            $set('city_id', null);
+                        }),
+
                     Forms\Components\Select::make('region_id')
-                        ->relationship('region', 'name')
+                        ->label('Region')
+                        ->options(function (callable $get) {
+                            $countryId = $get('country_id');
+                            if (! $countryId) {
+                                return [];
+                            }
+
+                            return Region::query()
+                                ->where('country_id', $countryId)
+                                ->orderBy('name')
+                                ->pluck('name', 'id')
+                                ->toArray();
+                        })
                         ->searchable()
-                        ->required(),
+                        ->preload()
+                        ->nullable()      // not required
+                        ->reactive()
+                        ->afterStateUpdated(function (callable $set) {
+                            $set('city_id', null);
+                        })
+                        ->disabled(fn (callable $get) => blank($get('country_id'))),
+
                     Forms\Components\Select::make('city_id')
-                        ->relationship('city', 'name')
+                        ->label('City')
+                        ->options(function (callable $get) {
+                            $regionId = $get('region_id');
+                            if (! $regionId) {
+                                return [];
+                            }
+
+                            return City::query()
+                                ->where('region_id', $regionId)
+                                ->orderBy('name')
+                                ->pluck('name', 'id')
+                                ->toArray();
+                        })
                         ->searchable()
-                        ->required(),
+                        ->preload()
+                        ->nullable() // not required
+                        ->disabled(fn (callable $get) => blank($get('region_id'))),
+
                     Forms\Components\Toggle::make('is_remote'),
                     Forms\Components\Toggle::make('is_hybrid'),
                     Forms\Components\Toggle::make('travel_required'),
                 ])
                 ->columns(3),
+
             Forms\Components\Section::make('Timing & Salary')
                 ->schema([
                     Forms\Components\DatePicker::make('available_from'),
                     Forms\Components\DatePicker::make('application_deadline'),
-                    Forms\Components\TextInput::make('salary_min_gross_month')
-                        ->numeric(),
-                    Forms\Components\TextInput::make('salary_max_gross_month')
-                        ->numeric(),
-                    Forms\Components\TextInput::make('salary_currency')
-                        ->maxLength(3),
-                    Forms\Components\TextInput::make('salary_note')
-                        ->maxLength(255),
-                    Forms\Components\Select::make('salary_months')
-                        ->options(['12' => '12', '13' => '13']),
+                    Forms\Components\TextInput::make('salary_min_gross_month')->numeric(),
+                    Forms\Components\TextInput::make('salary_max_gross_month')->numeric(),
+                    Forms\Components\TextInput::make('salary_currency')->maxLength(3),
+                    Forms\Components\TextInput::make('salary_note')->maxLength(255),
+                    Forms\Components\Select::make('salary_months')->options(['12' => '12', '13' => '13']),
                 ])
                 ->columns(3),
+
             Forms\Components\Section::make('Requirements')
                 ->schema([
                     Forms\Components\Select::make('education_level_id')
                         ->relationship('educationLevel', 'label')
                         ->searchable(),
+
                     Forms\Components\Select::make('education_field_id')
                         ->relationship('educationField', 'label')
                         ->searchable(),
-                    Forms\Components\TextInput::make('min_years_experience')
-                        ->numeric(),
+
+                    Forms\Components\TextInput::make('min_years_experience')->numeric(),
                     Forms\Components\Toggle::make('is_for_graduates'),
                     Forms\Components\Toggle::make('is_for_disabled'),
                 ])
                 ->columns(2),
+
             Forms\Components\Section::make('Recruiting')
                 ->schema([
-                    Forms\Components\TextInput::make('open_positions')
-                        ->numeric()
-                        ->default(1),
-                    Forms\Components\Textarea::make('candidate_note')
-                        ->rows(3),
-                    Forms\Components\TextInput::make('employer_reference')
-                        ->maxLength(80),
-                    Forms\Components\TextInput::make('hr_email')
-                        ->email(),
-                    Forms\Components\TextInput::make('hr_phone')
-                        ->maxLength(50),
+                    Forms\Components\TextInput::make('open_positions')->numeric()->default(1),
+                    Forms\Components\Textarea::make('candidate_note')->rows(3),
+                    Forms\Components\TextInput::make('employer_reference')->maxLength(80),
+                    Forms\Components\TextInput::make('hr_email')->email(),
+                    Forms\Components\TextInput::make('hr_phone')->maxLength(50),
                 ])
                 ->columns(2),
+
             Forms\Components\Section::make('Relations')
                 ->schema([
                     Forms\Components\Select::make('benefits')
                         ->relationship('benefits', 'label')
                         ->multiple()
                         ->searchable(),
+
                     Forms\Components\Select::make('drivingLicenseCategories')
                         ->relationship('drivingLicenseCategories', 'label')
                         ->multiple()
                         ->searchable(),
+
                     Forms\Components\Repeater::make('jobLanguages')
                         ->relationship()
                         ->schema([
-                            Forms\Components\TextInput::make('language_code')
-                                ->required()
-                                ->maxLength(2),
+                            Forms\Components\TextInput::make('language_code')->required()->maxLength(2),
                             Forms\Components\Select::make('level')
                                 ->options([
-                                    'A1' => 'A1',
-                                    'A2' => 'A2',
-                                    'B1' => 'B1',
-                                    'B2' => 'B2',
-                                    'C1' => 'C1',
-                                    'C2' => 'C2',
-                                    'native' => 'Native',
+                                    'A1' => 'A1', 'A2' => 'A2', 'B1' => 'B1', 'B2' => 'B2',
+                                    'C1' => 'C1', 'C2' => 'C2', 'native' => 'Native',
                                 ])
                                 ->required(),
                         ])
                         ->columns(2),
+
                     Forms\Components\Repeater::make('jobSkills')
                         ->relationship()
                         ->schema([
@@ -218,39 +261,26 @@ class JobResource extends Resource
         return $table
             ->defaultSort('id', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('title')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('company.legal_name')
-                    ->label('Company')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('status')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('published_at')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('expires_at')
-                    ->dateTime()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('title')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('company.legal_name')->label('Company')->sortable(),
+                Tables\Columns\TextColumn::make('status')->sortable(),
+                Tables\Columns\TextColumn::make('published_at')->dateTime()->sortable(),
+                Tables\Columns\TextColumn::make('expires_at')->dateTime()->sortable(),
             ])
             ->filters([
-                SelectFilter::make('status')
-                    ->options([
-                        'draft' => 'Draft',
-                        'published' => 'Published',
-                        'archived' => 'Archived',
-                    ]),
+                SelectFilter::make('status')->options([
+                    'draft' => 'Draft',
+                    'published' => 'Published',
+                    'archived' => 'Archived',
+                ]),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->visible(fn () => static::canEdit(null)),
-                Tables\Actions\DeleteAction::make()
-                    ->visible(fn () => static::canDelete(null)),
+                Tables\Actions\EditAction::make()->visible(fn () => static::canEdit(null)),
+                Tables\Actions\DeleteAction::make()->visible(fn () => static::canDelete(null)),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
-                        ->visible(fn () => static::canDelete(null)),
+                    Tables\Actions\DeleteBulkAction::make()->visible(fn () => static::canDelete(null)),
                 ]),
             ]);
     }
