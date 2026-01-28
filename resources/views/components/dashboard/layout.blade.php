@@ -2,6 +2,33 @@
     'title' => 'Dashboard',
 ])
 
+@php
+    // Credits badge (simple v1):
+    // - resolves company by owner_user_id (works for owner accounts)
+    // - available = sum(credit_ledger.change) - sum(active reservations not expired)
+    $creditsAvailable = null;
+
+    if (auth()->check()) {
+        $companyId = \App\Models\Company::query()
+            ->where('owner_user_id', auth()->id())
+            ->value('id');
+
+        if ($companyId) {
+            $creditsTotal = (int) \Illuminate\Support\Facades\DB::table('credit_ledger')
+                ->where('company_id', $companyId)
+                ->sum('change');
+
+            $creditsReserved = (int) \Illuminate\Support\Facades\DB::table('credit_reservations')
+                ->where('company_id', $companyId)
+                ->whereIn('status', ['active', 'reserved'])
+                ->where('expires_at', '>', now())
+                ->sum('amount');
+
+            $creditsAvailable = max(0, $creditsTotal - $creditsReserved);
+        }
+    }
+@endphp
+
 <x-layouts.pixel :title="$title">
     <section class="mx-auto w-full max-w-6xl">
         <div class="grid gap-8 md:grid-cols-[220px_1fr]">
@@ -10,6 +37,19 @@
             </aside>
 
             <main class="pixel-frame p-8">
+                {{-- Header row --}}
+                <div class="mb-6 flex items-center justify-between gap-4">
+                    <div class="text-[10px] uppercase tracking-[0.28em] text-slate-500">
+                        {{ $title }}
+                    </div>
+
+                    @if ($creditsAvailable !== null)
+                        <div class="pixel-outline px-4 py-2 text-xs uppercase tracking-[0.2em]">
+                            Credits: <span class="font-bold tabular-nums">{{ $creditsAvailable }}</span>
+                        </div>
+                    @endif
+                </div>
+
                 {{-- Alerts --}}
                 @if (session('status'))
                     <div class="mb-6 pixel-outline px-4 py-3 text-sm border-2 border-green-600 bg-green-50 text-green-800">

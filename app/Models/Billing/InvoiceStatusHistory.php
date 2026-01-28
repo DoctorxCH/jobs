@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InvoiceStatusHistory extends Model
 {
+    protected $table = 'invoice_status_history';
+
     public $timestamps = false;
 
     protected $fillable = [

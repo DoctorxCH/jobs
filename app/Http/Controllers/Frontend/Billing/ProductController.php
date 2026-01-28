@@ -86,8 +86,7 @@ class ProductController extends BaseBillingController
             'taxMinor' => $price ? $this->taxMinor($price->unit_net_amount_minor, $taxRate) : null,
         ]);
     }
-
-    public function checkout(Request $request, Product $product)
+public function checkout(Request $request, Product $product)
     {
         $company = $this->resolveCompany($request);
         if (! $company) {
@@ -110,18 +109,34 @@ class ProductController extends BaseBillingController
         $taxRule = $this->taxRuleService->determineForCompany($company);
         $taxRate = $this->resolveTaxRate($price, $company, $taxRule);
 
+        // Allow preselect via ?qty=30 (slider persistence)
+        $qty = (int) $request->query('qty', 1);
+        if ($qty < 1) { $qty = 1; }
+        if ($qty > 100) { $qty = 100; }
+
+        $unitTaxMinor = $this->taxMinor($price->unit_net_amount_minor, $taxRate);
+        $unitGrossMinor = $this->grossMinor($price->unit_net_amount_minor, $taxRate);
+
+        $subtotalNetMinor = $price->unit_net_amount_minor * $qty;
+        $taxMinor = $unitTaxMinor * $qty;
+        $grossMinor = $unitGrossMinor * $qty;
+
         return view('dashboard.billing.products.checkout', [
             'company' => $company,
             'product' => $product,
             'price' => $price,
             'taxRate' => $taxRate,
             'taxRule' => $taxRule,
-            'grossMinor' => $this->grossMinor($price->unit_net_amount_minor, $taxRate),
-            'taxMinor' => $this->taxMinor($price->unit_net_amount_minor, $taxRate),
+
+            'qty' => $qty,
+            'unitTaxMinor' => $unitTaxMinor,
+            'unitGrossMinor' => $unitGrossMinor,
+            'subtotalNetMinor' => $subtotalNetMinor,
+            'taxMinor' => $taxMinor,
+            'grossMinor' => $grossMinor,
         ]);
     }
-
-    public function placeOrder(Request $request, Product $product): RedirectResponse
+public function placeOrder(Request $request, Product $product): RedirectResponse
     {
         $company = $this->resolveCompany($request);
         if (! $company) {
@@ -145,10 +160,22 @@ class ProductController extends BaseBillingController
                 ->with('status', 'This product is not available for purchase right now.');
         }
 
+        $qty = (int) $request->input('qty', 1);
+        if ($qty < 1 || $qty > 100) {
+            return redirect()
+                ->route('frontend.billing.products.checkout', $product)
+                ->with('status', 'Invalid quantity. Please choose between 1 and 100.');
+        }
+
         $taxRule = $this->taxRuleService->determineForCompany($company);
         $taxRate = $this->resolveTaxRate($price, $company, $taxRule);
-        $taxMinor = $this->taxMinor($price->unit_net_amount_minor, $taxRate);
-        $grossMinor = $this->grossMinor($price->unit_net_amount_minor, $taxRate);
+
+        $unitTaxMinor = $this->taxMinor($price->unit_net_amount_minor, $taxRate);
+        $unitGrossMinor = $this->grossMinor($price->unit_net_amount_minor, $taxRate);
+
+        $subtotalNetMinor = $price->unit_net_amount_minor * $qty;
+        $taxMinor = $unitTaxMinor * $qty;
+        $grossMinor = $unitGrossMinor * $qty;
 
         $order = $this->orderService->createDraft($company, $request->user(), $price->currency, []);
         $order->update([
@@ -156,7 +183,7 @@ class ProductController extends BaseBillingController
             'tax_rule_applied' => $taxRule['tax_rule'],
             'reverse_charge' => $taxRule['reverse_charge'],
             'tax_rate_percent_snapshot' => $taxRate,
-            'subtotal_net_minor' => $price->unit_net_amount_minor,
+            'subtotal_net_minor' => $subtotalNetMinor,
             'discount_minor' => 0,
             'tax_minor' => $taxMinor,
             'total_gross_minor' => $grossMinor,
@@ -167,7 +194,7 @@ class ProductController extends BaseBillingController
             'order_id' => $order->id,
             'product_id' => $product->id,
             'name_snapshot' => $product->name,
-            'qty' => 1,
+            'qty' => $qty,
             'unit_net_minor' => $price->unit_net_amount_minor,
             'tax_rate_percent' => $taxRate,
             'tax_minor' => $taxMinor,
@@ -200,7 +227,7 @@ class ProductController extends BaseBillingController
             'tax_rule_applied' => $taxRule['tax_rule'],
             'reverse_charge' => $taxRule['reverse_charge'],
             'tax_rate_percent_snapshot' => $taxRate,
-            'subtotal_net_minor' => $price->unit_net_amount_minor,
+            'subtotal_net_minor' => $subtotalNetMinor,
             'discount_minor' => 0,
             'tax_minor' => $taxMinor,
             'total_gross_minor' => $grossMinor,
@@ -210,7 +237,7 @@ class ProductController extends BaseBillingController
             'invoice_id' => $invoice->id,
             'product_id' => $product->id,
             'name_snapshot' => $product->name,
-            'qty' => 1,
+            'qty' => $qty,
             'unit_net_minor' => $price->unit_net_amount_minor,
             'tax_rate_percent' => $taxRate,
             'tax_minor' => $taxMinor,
@@ -231,6 +258,7 @@ class ProductController extends BaseBillingController
             ->route('frontend.billing.invoices.show', $invoice)
             ->with('status', 'Order placed! Your invoice is ready below.');
     }
+
 
     private function selectPrice(Product $product): ?ProductPrice
     {

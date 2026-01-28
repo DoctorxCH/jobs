@@ -1,15 +1,16 @@
 <?php
 
 if (! function_exists('format_money_minor')) {
-    function format_money_minor(?int $amountMinor, string $currency = 'EUR'): string
+    /**
+     * Format money from minor units (cents) into "12.34 EUR".
+     * Input: 1234, "EUR" => "12.34 EUR"
+     */
+    function format_money_minor(int $minor, ?string $currency = 'EUR'): string
     {
-        if ($amountMinor === null) {
-            return '—';
-        }
+        $currency = $currency ?: 'EUR';
+        $amount = $minor / 100;
 
-        $amount = $amountMinor / 100;
-        $formatted = number_format($amount, 2, '.', ' ');
-
-        return $formatted.' '.$currency;
+        // 2 decimals, comma as decimal separator is not enforced; keep neutral
+        return number_format($amount, 2, '.', ' ') . ' ' . strtoupper($currency);
     }
 }
