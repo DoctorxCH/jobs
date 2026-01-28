@@ -189,3 +189,36 @@
 - `2026_01_27_000019_create_credit_reservations_table.php`
 - `2026_01_27_000020_create_entitlement_history_table.php`
 - `2026_01_27_000021_create_coupon_redemptions_table.php`
+
+## 6) Codex-Implementierungs-Notizen (verbindlich)
+
+### 6.1 Credits-Mechanik (bestehender Stack verwenden)
+- **Wichtig**: Es existiert bereits ein vollständiger Credits-/Entitlement-Stack. **Keine neuen Tabellen** anlegen.
+- **1 Credit = 1 Tag** (beim Job-Posting).
+- **Buchung/Logik**:
+  - **Purchase → Credits**: `app/Services/Billing/FulfillmentService.php` erzeugt `Entitlement` + schreibt in `CreditLedger` (`reason: purchase`). 
+  - **Job-Posting → Verbrauch**: `app/Services/Billing/CreditService.php` reserviert (`CreditReservation`) und bucht Verbrauch in `CreditLedger` (`change: -1`, `reason: job_post`).
+- **Zentrale Models**: 
+  - `app/Models/Billing/Entitlement.php`
+  - `app/Models/Billing/EntitlementHistory.php`
+  - `app/Models/Billing/CreditLedger.php`
+  - `app/Models/Billing/CreditReservation.php`
+
+### 6.2 Jobs DB (bestehende Tabelle)
+- **Jobs-Tabelle existiert bereits**: `database/migrations/0001_01_01_000002_create_jobs_table.php`.
+- **Regel**: Nur **ALTER/ADD**-Migrationen erstellen, niemals `create_jobs_table` neu.
+
+### 6.3 TeamMember / HR-Kontakt (Quelle)
+- **TeamMember-Quelle**: `CompanyUser` (Pivot Model).
+- Pfad: `app/Models/CompanyUser.php`.
+- `User::companies()` nutzt das Pivot-Modell; `company_user` hat u. a. `role`, `status`, `invited_at`, `accepted_at`.
+
+### 6.4 Rollen & Permissions (Job-Management)
+- **Verbindliche Matrix** basiert auf `User::canCompanyManageJobs()`:
+  - **Dürfen Jobs erstellen/posten/editieren**: `owner`, `member`, `recruiter`.
+  - **Nicht erlaubt**: `viewer`.
+- Quelle: `app/Models/User.php`.
+
+### 6.5 SKNICE (Import/Mapping)
+- **Aktuell kein SKNICE-Import im Codebase** (keine Tabellen/Seeder/Services vorhanden).
+- **Vorgabe**: Zunächst nur CRUD in Filament + FK in `jobs` (falls benötigt). Import/Mapping **später** hinzufügen.
