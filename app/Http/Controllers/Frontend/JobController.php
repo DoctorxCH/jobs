@@ -44,7 +44,11 @@ class JobController extends Controller
         $skills = DB::table('skills')->orderBy('name')->get();
 
         $educationLevels = DB::table('education_levels')->orderBy('label')->get();
-        $educationFields = DB::table('education_fields')->orderBy('label')->get();
+        $educationFields = DB::table('education_fields')
+            ->where('is_active', 1)
+            ->orderBy('sort')
+            ->orderBy('label')
+            ->get();
 
         $countries = DB::table('countries')->orderBy('name')->get();
 

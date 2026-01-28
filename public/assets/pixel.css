@@ -338,3 +338,10 @@ a.pixel-button.px-4.py-2.text-xs:hover {
 @media (prefers-reduced-motion: reduce){
   .pxcal__sheet--current.is-flipping{ animation:none !important; }
 }
+
+/* Education select category headings */
+select option.edu-category{
+    font-weight:700;
+    background-color:var(--accent);
+    color: #fff;
+}

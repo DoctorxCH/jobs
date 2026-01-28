@@ -5,6 +5,9 @@
     $skills = $skills ?? collect();
     $educationLevels = $educationLevels ?? collect();
     $educationFields = $educationFields ?? collect();
+       $educationFieldsGrouped = $educationFields->groupBy(function ($field) {
+        return \Illuminate\Support\Str::before((string) $field->label, ' / ');
+    });
     $countries = $countries ?? collect();
     $regions = $regions ?? collect();
     $cities = $cities ?? collect();
@@ -181,9 +184,13 @@
             <label class="text-xs uppercase tracking-[0.2em]">Education field</label>
             <select name="education_field_id" class="mt-2 w-full pixel-outline px-3 py-2">
                 <option value="">Select</option>
-                @foreach ($educationFields as $field)
-                    <option value="{{ $field->id }}" @selected((string) old('education_field_id', $job?->education_field_id) === (string) $field->id)>{{ $field->label }}</option>
-                @endforeach
+                    @foreach ($educationFieldsGrouped as $category => $fields)
+                        <option disabled class="edu-category">{{ $category }}</option>
+
+                        @foreach ($fields as $field)
+                            <option value="{{ $field->id }}" @selected((string) old('education_field_id', $job?->education_field_id) === (string) $field->id)>{{ trim(\Illuminate\Support\Str::after($field->label, ' / ')) }}</option>
+                        @endforeach
+                    @endforeach
             </select>
         </div>
         <div>
@@ -302,29 +309,35 @@
     const regionSelect = document.getElementById('region-select');
     const citySelect = document.getElementById('city-select');
 
-    function filterRegions() {
-        const countryId = countrySelect.value;
-        Array.from(regionSelect.options).forEach((option) => {
-            if (!option.value) return;
-            option.hidden = option.dataset.country !== countryId;
-        });
-        if (countryId && regionSelect.selectedOptions[0]?.hidden) {
-            regionSelect.value = '';
-        }
-        filterCities();
+function filterRegions() {
+    const countryId = String(countrySelect.value || '');
+
+    Array.from(regionSelect.options).forEach((option) => {
+        if (!option.value) { option.hidden = false; return; } // "Select" immer sichtbar
+        const optCountry = String(option.dataset.country || '');
+        option.hidden = countryId !== '' && optCountry !== countryId;
+    });
+
+    if (countryId && regionSelect.selectedOptions[0]?.hidden) {
+        regionSelect.value = '';
     }
 
-    function filterCities() {
-        const regionId = regionSelect.value;
-        Array.from(citySelect.options).forEach((option) => {
-            if (!option.value) return;
-            option.hidden = option.dataset.region !== regionId;
-        });
-        if (regionId && citySelect.selectedOptions[0]?.hidden) {
-            citySelect.value = '';
-        }
-    }
+    filterCities();
+}
 
+function filterCities() {
+    const regionId = String(regionSelect.value || '');
+
+    Array.from(citySelect.options).forEach((option) => {
+        if (!option.value) { option.hidden = false; return; } // "Select" immer sichtbar
+        const optRegion = String(option.dataset.region || '');
+        option.hidden = regionId !== '' && optRegion !== regionId;
+    });
+
+    if (regionId && citySelect.selectedOptions[0]?.hidden) {
+        citySelect.value = '';
+    }
+}
     countrySelect?.addEventListener('change', filterRegions);
     regionSelect?.addEventListener('change', filterCities);
     filterRegions();

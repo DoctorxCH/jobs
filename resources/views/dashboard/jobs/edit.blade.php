@@ -11,7 +11,7 @@
     <div class="mt-6 flex gap-3">
         <button
             type="submit"
-            class="pixel-outline px-6 py-3 bg-black text-white uppercase text-sm tracking-widest"
+            class="pixel-button px-6 py-3 text-xs uppercase tracking-[0.2em]"
         >
             Save changes
         </button>
