@@ -41,6 +41,18 @@ class InvoiceService
 
     public function markPaid(Invoice $invoice, int $amountMinor, ?string $bankReference, $adminUser = null): Payment
     {
+        if ($invoice->status === 'paid') {
+            throw new \RuntimeException('Invoice is already paid.');
+        }
+
+        if (! in_array($invoice->status, ['issued_unpaid', 'overdue'], true)) {
+            throw new \RuntimeException('Invoice cannot be paid from the current status.');
+        }
+
+        if ($amountMinor !== $invoice->total_gross_minor) {
+            throw new \InvalidArgumentException('Partial payments are not allowed.');
+        }
+
         $payment = Payment::query()->create([
             'invoice_id' => $invoice->id,
             'method' => 'bank_transfer',
