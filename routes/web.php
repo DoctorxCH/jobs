@@ -9,6 +9,10 @@ use App\Http\Controllers\CompanyInvitationController;
 
 use App\Http\Controllers\Frontend\AuthController as FrontendAuthController;
 use App\Http\Controllers\Frontend\DashboardController as FrontendDashboardController;
+use App\Http\Controllers\Frontend\Billing\InvoiceController as FrontendBillingInvoiceController;
+use App\Http\Controllers\Frontend\Billing\OrderController as FrontendBillingOrderController;
+use App\Http\Controllers\Frontend\Billing\PaymentController as FrontendBillingPaymentController;
+use App\Http\Controllers\Frontend\Billing\ProductController as FrontendBillingProductController;
 use App\Http\Controllers\Frontend\ProfileController as FrontendProfileController;
 use App\Http\Controllers\Frontend\SecurityController as FrontendSecurityController;
 use App\Http\Controllers\CookieConsentController;
@@ -71,6 +75,34 @@ Route::middleware('web')->group(function () {
 
         Route::post('/dashboard/security', [FrontendSecurityController::class, 'update'])
             ->name('frontend.security.update');
+
+        Route::prefix('/dashboard/billing')->group(function () {
+            Route::get('/products', [FrontendBillingProductController::class, 'index'])
+                ->name('frontend.billing.products.index');
+            Route::get('/products/{product}', [FrontendBillingProductController::class, 'show'])
+                ->name('frontend.billing.products.show');
+            Route::get('/products/{product}/checkout', [FrontendBillingProductController::class, 'checkout'])
+                ->name('frontend.billing.products.checkout');
+            Route::post('/products/{product}/checkout', [FrontendBillingProductController::class, 'placeOrder'])
+                ->name('frontend.billing.products.checkout.store');
+
+            Route::get('/orders', [FrontendBillingOrderController::class, 'index'])
+                ->name('frontend.billing.orders.index');
+            Route::get('/orders/{order}', [FrontendBillingOrderController::class, 'show'])
+                ->name('frontend.billing.orders.show');
+
+            Route::get('/invoices', [FrontendBillingInvoiceController::class, 'index'])
+                ->name('frontend.billing.invoices.index');
+            Route::get('/invoices/{invoice}', [FrontendBillingInvoiceController::class, 'show'])
+                ->name('frontend.billing.invoices.show');
+            Route::get('/invoices/{invoice}/download', [FrontendBillingInvoiceController::class, 'download'])
+                ->name('frontend.billing.invoices.download');
+
+            Route::get('/payments', [FrontendBillingPaymentController::class, 'index'])
+                ->name('frontend.billing.payments.index');
+            Route::get('/payments/{payment}', [FrontendBillingPaymentController::class, 'show'])
+                ->name('frontend.billing.payments.show');
+        });
     });
 
     // Cookie consent
@@ -158,5 +190,4 @@ Route::middleware('web')->group(function () {
         ->name('company.invite.complete');
         
 });
-
 
