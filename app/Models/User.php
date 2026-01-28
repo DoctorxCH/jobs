@@ -153,12 +153,12 @@ class User extends Authenticatable implements FilamentUser
 
     public function canCompanyManageTeam(): bool
     {
-        return in_array($this->companyRole(), ['owner', 'member'], true);
+        return $this->companyRole() === 'owner';
     }
 
     public function canCompanyBilling(): bool
     {
-        return in_array($this->companyRole(), ['owner', 'member'], true);
+        return $this->companyRole() === 'owner';
     }
 
     public function canCompanyTransferOwnership(): bool

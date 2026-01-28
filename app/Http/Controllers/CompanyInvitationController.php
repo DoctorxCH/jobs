@@ -134,7 +134,11 @@ class CompanyInvitationController extends Controller
         $user->save();
 
         // keep only one company.* role (strict)
-        $user->syncRoles([$spatieRole]);
+        $platformRoles = $user->getRoleNames()
+            ->filter(fn (string $role) => str_starts_with($role, 'platform.'))
+            ->all();
+
+        $user->syncRoles(array_values(array_unique(array_merge($platformRoles, [$spatieRole]))));
 
         $invite->accepted_at = Carbon::now();
         $invite->save();

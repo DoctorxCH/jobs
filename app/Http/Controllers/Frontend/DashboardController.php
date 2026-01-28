@@ -10,7 +10,12 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $company = Company::where('owner_user_id', Auth::id())->first();
+        $user = Auth::user();
+        $companyId = $user && method_exists($user, 'effectiveCompanyId')
+            ? $user->effectiveCompanyId()
+            : null;
+
+        $company = $companyId ? Company::query()->find($companyId) : null;
 
         return view('dashboard.index', [
             'user' => Auth::user(),
