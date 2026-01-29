@@ -1,24 +1,28 @@
+{{-- resources/views/jobs/index.blade.php --}}
+
 <x-layouts.pixel>
     <section class="mx-auto flex w-full max-w-6xl flex-col gap-6">
+        {{-- HEADER --}}
         <div class="pixel-outline p-8">
             <div class="text-s uppercase tracking-[0.2em] text-slate-800 font-bold">
                 Listing of available jobs
             </div>
 
             <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-[1fr_auto] md:items-center">
-                {{-- SEARCH (full width until count) --}}
-                <form method="GET"
-                      action="{{ route('jobs.index') }}"
-                      class="w-full flex flex-col gap-3 md:flex-row md:items-center">
-
+                {{-- SEARCH (job title only) --}}
+                <form
+                    method="GET"
+                    action="{{ route('jobs.index') }}"
+                    class="w-full flex flex-col gap-3 md:flex-row md:items-center"
+                >
                     {{-- keep filters --}}
+                    <input type="hidden" name="country" value="{{ $countryCode ?? 'SK' }}">
                     @if(!empty($selectedRegion))
                         <input type="hidden" name="region" value="{{ (int) $selectedRegion }}">
                     @endif
                     @if(!empty($selectedCity))
                         <input type="hidden" name="city" value="{{ (int) $selectedCity }}">
                     @endif
-                    <input type="hidden" name="country" value="{{ $countryCode ?? 'SK' }}">
 
                     <div class="flex w-full gap-3">
                         <input
@@ -28,8 +32,7 @@
                             placeholder="Search job title…"
                         />
 
-                        <button type="submit"
-                                class="pixel-button px-5 py-3 text-xs shrink-0">
+                        <button type="submit" class="pixel-button px-5 py-3 text-xs shrink-0">
                             Search
                         </button>
                     </div>
@@ -42,18 +45,22 @@
             </div>
         </div>
 
-        {{-- JOB Filter --}}
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-4">
+            {{-- FILTERS --}}
             <aside class="pixel-frame p-6 lg:col-span-1">
                 <form class="space-y-4" method="get" action="{{ route('jobs.index') }}">
-                    <input type="hidden" name="country" value="{{ $countryCode }}">
+                    <input type="hidden" name="country" value="{{ $countryCode ?? 'SK' }}">
+                    {{-- keep search when applying filters --}}
+                    @if(!empty($search))
+                        <input type="hidden" name="q" value="{{ $search }}">
+                    @endif
 
                     <label class="block text-xs uppercase tracking-[0.2em] text-slate-500">
                         Region
                         <select class="pixel-input mt-2 w-full px-4 py-3 text-sm" name="region">
                             <option value="">All regions</option>
                             @foreach ($regions as $region)
-                                <option value="{{ $region->id }}" @selected($selectedRegion === $region->id)>
+                                <option value="{{ $region->id }}" @selected((int) $selectedRegion === (int) $region->id)>
                                     {{ $region->name }}
                                 </option>
                             @endforeach
@@ -65,7 +72,7 @@
                         <select class="pixel-input mt-2 w-full px-4 py-3 text-sm" name="city" @disabled(! $selectedRegion)>
                             <option value="">All cities</option>
                             @foreach ($cities as $city)
-                                <option value="{{ $city->id }}" @selected($selectedCity === $city->id)>
+                                <option value="{{ $city->id }}" @selected((int) $selectedCity === (int) $city->id)>
                                     {{ $city->name }}
                                 </option>
                             @endforeach
@@ -74,12 +81,14 @@
 
                     <div class="border-t border-slate-200 pt-4">
                         <p class="text-xs uppercase tracking-[0.2em] text-slate-400">More filters</p>
+
                         <label class="mt-3 block text-xs uppercase tracking-[0.2em] text-slate-500">
                             Salary from
                             <input
                                 class="pixel-input mt-2 w-full px-4 py-3 text-sm text-slate-900"
                                 placeholder="e.g. 1,800 €"
                                 type="text"
+                                disabled
                             />
                         </label>
                     </div>
@@ -89,14 +98,17 @@
                             Apply filters
                         </button>
 
-                        <a href="{{ route('jobs.index', ['country' => $countryCode ?? 'SK']) }}"
-                           class="pixel-outline px-6 py-3 text-xs uppercase tracking-[0.2em] text-slate-800 whitespace-nowrap flex items-center justify-center">
+                        <a
+                            href="{{ route('jobs.index', ['country' => $countryCode ?? 'SK', 'q' => $search ?: null]) }}"
+                            class="pixel-outline px-6 py-3 text-xs uppercase tracking-[0.2em] text-slate-800 whitespace-nowrap flex items-center justify-center"
+                        >
                             Reset
                         </a>
                     </div>
                 </form>
             </aside>
 
+            {{-- LIST --}}
             <div class="flex flex-col gap-4 lg:col-span-3">
                 @forelse ($jobs as $job)
                     @php
@@ -131,22 +143,22 @@
 
                     {{-- CLICKABLE CARD (no outer <a>) --}}
                     <article
-                        class="job-card pixel-frame bg-white p-6 cursor-pointer"
+                        class="job-card pixel-frame pixel-card bg-white p-6 cursor-pointer"
                         data-job-url="{{ $jobUrl }}"
                         role="link"
                         tabindex="0"
                     >
                         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                             <div class="space-y-2 min-w-0">
-                                {{-- Title can be normal text; card click navigates --}}
                                 <div class="text-lg font-bold text-green-700">
                                     {{ $job->title }}
                                 </div>
 
                                 @if ($company)
-                                    {{-- Company name -> company profile (must NOT trigger card click) --}}
-                                    <a href="{{ $companyUrl }}"
-                                       class="no-card-click text-sm text-slate-600 hover:underline inline-block">
+                                    <a
+                                        href="{{ $companyUrl }}"
+                                        class="no-card-click text-sm text-slate-600 hover:underline inline-block"
+                                    >
                                         {{ $company->legal_name }}
                                     </a>
                                 @endif
@@ -228,16 +240,13 @@
         document.addEventListener('click', function (e) {
             const card = e.target.closest('.job-card[data-job-url]');
             if (!card) return;
-
             if (shouldIgnoreCardClick(e.target)) return;
-
             openUrl(card.getAttribute('data-job-url'));
         });
 
         document.addEventListener('keydown', function (e) {
             const card = e.target.closest && e.target.closest('.job-card[data-job-url]');
             if (!card) return;
-
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 openUrl(card.getAttribute('data-job-url'));
@@ -303,6 +312,7 @@
         });
 
         document.addEventListener('DOMContentLoaded', renderFavButtons);
+        renderFavButtons();
     })();
     </script>
 </x-layouts.pixel>
