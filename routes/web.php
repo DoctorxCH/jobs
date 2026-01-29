@@ -132,6 +132,8 @@ Route::middleware('web')->group(function () {
     | Jobs demo pages (placeholder)
     |--------------------------------------------------------------------------
     */
+    Route::get('/jobs', [FrontendJobController::class, 'publicIndex'])
+        ->name('jobs.index');
     Route::get('/jobs', function () {
         $jobs = [
             [

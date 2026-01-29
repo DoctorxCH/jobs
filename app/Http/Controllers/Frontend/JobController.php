@@ -8,6 +8,9 @@ use App\Http\Requests\JobStoreRequest;
 use App\Http\Requests\JobUpdateRequest;
 use App\Models\Company;
 use App\Models\CompanyUser;
+use App\Models\Country;
+use App\Models\Region;
+use App\Models\City;
 use App\Models\Job;
 use App\Services\Billing\CreditService;
 use Illuminate\Http\RedirectResponse;
@@ -118,6 +121,69 @@ class JobController extends Controller
             'languageLevels',
             'skillLevels',
         );
+    }
+
+    public function publicIndex(Request $request): View
+    {
+        $search = trim((string) $request->get('q', ''));
+        $regionId = $request->integer('region') ?: null;
+        $cityId = $request->integer('city') ?: null;
+        $countryCode = strtoupper((string) $request->get('country', 'SK'));
+
+        $countryId = Country::query()
+            ->where('code', $countryCode)
+            ->value('id');
+
+        $jobsQuery = Job::query()
+            ->with(['company', 'region', 'city'])
+            ->where('status', 'published')
+            ->where(function ($query) {
+                $query->whereNull('published_at')
+                    ->orWhere('published_at', '<=', now());
+            })
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>=', now());
+            });
+
+        if ($countryId) {
+            $jobsQuery->where('country_id', $countryId);
+        }
+
+        if ($search !== '') {
+            $jobsQuery->where('title', 'like', '%' . $search . '%');
+        }
+
+        if ($regionId) {
+            $jobsQuery->where('region_id', $regionId);
+        }
+
+        if ($cityId) {
+            $jobsQuery->where('city_id', $cityId);
+        }
+
+        $jobs = $jobsQuery
+            ->orderByDesc('published_at')
+            ->paginate(15)
+            ->withQueryString();
+
+        $regions = $countryId
+            ? Region::query()->where('country_id', $countryId)->orderBy('name')->get()
+            : collect();
+
+        $cities = $regionId
+            ? City::query()->where('region_id', $regionId)->orderBy('name')->get()
+            : collect();
+
+        return view('jobs.index', [
+            'jobs' => $jobs,
+            'search' => $search,
+            'countryCode' => $countryCode,
+            'regions' => $regions,
+            'cities' => $cities,
+            'selectedRegion' => $regionId,
+            'selectedCity' => $cityId,
+        ]);
     }
 
     public function show(Job $job): View
