@@ -1,3 +1,5 @@
+{{-- resources/views/jobs/show.blade.php --}}
+
 <x-layouts.pixel :title="$job->title">
     @push('head')
         <link
@@ -9,30 +11,36 @@
     @endpush
 
     <section class="mx-auto flex w-full max-w-6xl flex-col gap-6">
+        {{-- HEADER --}}
         <div class="pixel-frame p-8">
             @php
                 $companyLogoPath = $company?->logo_path ?: $company?->top_partner_logo_path;
                 $companyLogoUrl = $companyLogoPath ? asset('storage/' . ltrim($companyLogoPath, '/')) : null;
+                $companyUrl = $company ? url('/company/' . $company->id) : null;
             @endphp
+
             <h1 class="text-3xl font-bold text-slate-900">{{ $job->title }}</h1>
+
             @if ($company)
                 <div class="mt-3 flex items-center gap-3">
-                    <a class="flex h-12 w-12 items-center justify-center" href="{{ route('company.show', $company) }}">
+                    <a class="flex h-12 w-12 items-center justify-center" href="{{ $companyUrl }}">
                         @if ($companyLogoUrl)
                             <img class="max-h-12 w-auto" src="{{ $companyLogoUrl }}" alt="{{ $company->legal_name }}" />
                         @else
                             <div class="h-12 w-12 opacity-0"></div>
                         @endif
                     </a>
-                    <a class="text-sm font-semibold text-slate-700 hover:underline" href="{{ route('company.show', $company) }}">
+
+                    <a class="text-sm font-semibold text-slate-700 hover:underline" href="{{ $companyUrl }}">
                         {{ $company->legal_name }}
                     </a>
                 </div>
             @endif
+
             @if ($periodStart || $periodEnd)
                 <p class="mt-2 text-sm text-slate-600">
                     @if ($periodStart && $periodEnd)
-                        Online: {{ $periodStart->format('d.m.Y') }} – {{ $periodEnd->format('d.m.Y') }}
+                        Online von {{ $periodStart->format('d.m.Y') }} bis {{ $periodEnd->format('d.m.Y') }}
                     @elseif ($periodStart)
                         Online seit {{ $periodStart->format('d.m.Y') }}
                     @else
@@ -57,6 +65,7 @@
                         @if ($contact['name'])
                             <p class="font-semibold text-slate-900">{{ $contact['name'] }}</p>
                         @endif
+
                         @if ($contact['email'])
                             <p>
                                 <a class="pixel-outline px-2 py-1 text-xs" href="mailto:{{ $contact['email'] }}">
@@ -64,6 +73,7 @@
                                 </a>
                             </p>
                         @endif
+
                         @if ($contact['phone'])
                             <p>
                                 <a class="pixel-outline px-2 py-1 text-xs" href="tel:{{ $contact['phone'] }}">
@@ -71,6 +81,7 @@
                                 </a>
                             </p>
                         @endif
+
                         @if (! $contact['name'] && ! $contact['email'] && ! $contact['phone'])
                             <p>Kontaktangaben folgen.</p>
                         @endif
@@ -81,11 +92,13 @@
             <aside class="flex flex-col gap-6 lg:col-span-1">
                 <div class="pixel-frame space-y-4 p-6">
                     <h3 class="text-xs uppercase tracking-[0.2em] text-slate-500">Job Infos</h3>
+
                     <dl class="space-y-4 text-sm">
                         @if ($location['line'])
                             <div>
                                 <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">Arbeitsort</dt>
                                 <dd class="mt-1 font-semibold text-slate-900">{{ $location['line'] }}</dd>
+
                                 @if ($location['street'] || $location['postal'])
                                     <dd class="mt-1 text-xs text-slate-500">
                                         {{ $location['street'] }}
@@ -194,6 +207,7 @@
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
             crossorigin=""
         ></script>
+
         @if ($map['hasCoordinates'])
             <script>
                 document.addEventListener('DOMContentLoaded', () => {

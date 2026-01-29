@@ -1,8 +1,9 @@
 <?php
 
+// routes/web.php
+
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
-
 
 use App\Http\Controllers\AdminGateController;
 use App\Http\Controllers\CompanyInvitationController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Frontend\Billing\ProductController as FrontendBillingPr
 use App\Http\Controllers\Frontend\ProfileController as FrontendProfileController;
 use App\Http\Controllers\Frontend\JobController as FrontendJobController;
 use App\Http\Controllers\Frontend\SecurityController as FrontendSecurityController;
+use App\Http\Controllers\Frontend\CompanyController as FrontendCompanyController;
 use App\Http\Controllers\CookieConsentController;
 
 use App\Http\Middleware\FrontendAuthenticate;
@@ -125,37 +127,41 @@ Route::middleware('web')->group(function () {
 
     // Cookie consent
     Route::post('/cookies/consent', [CookieConsentController::class, 'store'])
-    ->name('cookies.consent');
+        ->name('cookies.consent');
 
     /*
     |--------------------------------------------------------------------------
-    | Jobs demo pages (placeholder)
+    | Public pages
     |--------------------------------------------------------------------------
     */
+
+    // Jobs
     Route::get('/jobs', [FrontendJobController::class, 'publicIndex'])
         ->name('jobs.index');
 
     Route::get('/jobs/{job}', [FrontendJobController::class, 'show'])
         ->name('jobs.show');
 
-    Route::get('/company/{company}', [\App\Http\Controllers\Frontend\CompanyController::class, 'show'])
+    // Company public profile (id-binding)
+    Route::get('/company/{company}', [FrontendCompanyController::class, 'show'])
         ->name('company.show');
 
+    // Team page (temporary closure)
     Route::get('/dashboard/team/invite', function () {
-    $user = auth()->user();
+        $user = auth()->user();
 
-    abort_unless($user && method_exists($user, 'canCompanyManageTeam') && $user->canCompanyManageTeam(), 403);
+        abort_unless($user && method_exists($user, 'canCompanyManageTeam') && $user->canCompanyManageTeam(), 403);
 
-    $companyId = method_exists($user, 'effectiveCompanyId') ? $user->effectiveCompanyId() : null;
+        $companyId = method_exists($user, 'effectiveCompanyId') ? $user->effectiveCompanyId() : null;
 
-    $company = $companyId ? \App\Models\Company::find($companyId) : null;
+        $company = $companyId ? \App\Models\Company::find($companyId) : null;
 
-    $invitations = $company
-        ? \App\Models\CompanyInvitation::where('company_id', $company->id)->latest()->get()
-        : collect();
+        $invitations = $company
+            ? \App\Models\CompanyInvitation::where('company_id', $company->id)->latest()->get()
+            : collect();
 
-    return view('dashboard.team', compact('company', 'invitations'));
-})->middleware(\App\Http\Middleware\FrontendAuthenticate::class)->name('frontend.team');
+        return view('dashboard.team', compact('company', 'invitations'));
+    })->middleware(\App\Http\Middleware\FrontendAuthenticate::class)->name('frontend.team');
 
     Route::post('/dashboard/team/invite', [CompanyInvitationController::class, 'send'])
         ->middleware(\App\Http\Middleware\FrontendAuthenticate::class)
@@ -171,5 +177,4 @@ Route::middleware('web')->group(function () {
 
     Route::post('/company-invite/{token}', [CompanyInvitationController::class, 'complete'])
         ->name('company.invite.complete');
-        
 });
