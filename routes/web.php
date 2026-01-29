@@ -132,49 +132,14 @@ Route::middleware('web')->group(function () {
     | Jobs demo pages (placeholder)
     |--------------------------------------------------------------------------
     */
-    Route::get('/jobs', function () {
-        $jobs = [
-            [
-                'slug' => 'product-designer-pixel',
-                'company' => 'Nebula Labs',
-                'title' => 'Product Designer (Pixel UI)',
-                'summary' => 'Design crisp interfaces for modern job experiences in a minimal look.',
-                'location' => 'Remote · CH',
-                'type' => 'Full-time',
-            ],
-            [
-                'slug' => 'backend-laravel-engineer',
-                'company' => 'Nordic Stack',
-                'title' => 'Backend Engineer (Laravel)',
-                'summary' => 'Build robust services for matching, search logic and scalable APIs.',
-                'location' => 'Zurich',
-                'type' => 'Hybrid',
-            ],
-            [
-                'slug' => 'growth-ops-lead',
-                'company' => 'Cloudform',
-                'title' => 'Growth Ops Lead',
-                'summary' => 'Optimize funnels and employer branding with data-driven clarity.',
-                'location' => 'Berlin · Remote',
-                'type' => 'Part-time',
-            ],
-        ];
+    Route::get('/jobs', [FrontendJobController::class, 'publicIndex'])
+        ->name('jobs.index');
 
-        return view('jobs.index', ['jobs' => $jobs]);
-    })->name('jobs.index');
+    Route::get('/jobs/{job}', [FrontendJobController::class, 'show'])
+        ->name('jobs.show');
 
-    Route::get('/jobs/{slug}', function (string $slug) {
-        $job = [
-            'slug' => $slug,
-            'company' => 'Nebula Labs',
-            'title' => 'Product Designer (Pixel UI)',
-            'summary' => 'Design for crisp job interfaces that feel minimal and welcoming.',
-            'location' => 'Remote · CH',
-            'type' => 'Full-time',
-        ];
-
-        return view('jobs.show', ['job' => $job]);
-    })->name('jobs.show');
+    Route::get('/company/{company}', [\App\Http\Controllers\Frontend\CompanyController::class, 'show'])
+        ->name('company.show');
 
     Route::get('/dashboard/team/invite', function () {
     $user = auth()->user();
