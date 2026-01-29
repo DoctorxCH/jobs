@@ -134,6 +134,36 @@ Route::middleware('web')->group(function () {
     */
     Route::get('/jobs', [FrontendJobController::class, 'publicIndex'])
         ->name('jobs.index');
+    Route::get('/jobs', function () {
+        $jobs = [
+            [
+                'slug' => 'product-designer-pixel',
+                'company' => 'Nebula Labs',
+                'title' => 'Product Designer (Pixel UI)',
+                'summary' => 'Design crisp interfaces for modern job experiences in a minimal look.',
+                'location' => 'Remote · CH',
+                'type' => 'Full-time',
+            ],
+            [
+                'slug' => 'backend-laravel-engineer',
+                'company' => 'Nordic Stack',
+                'title' => 'Backend Engineer (Laravel)',
+                'summary' => 'Build robust services for matching, search logic and scalable APIs.',
+                'location' => 'Zurich',
+                'type' => 'Hybrid',
+            ],
+            [
+                'slug' => 'growth-ops-lead',
+                'company' => 'Cloudform',
+                'title' => 'Growth Ops Lead',
+                'summary' => 'Optimize funnels and employer branding with data-driven clarity.',
+                'location' => 'Berlin · Remote',
+                'type' => 'Part-time',
+            ],
+        ];
+
+        return view('jobs.index', ['jobs' => $jobs]);
+    })->name('jobs.index');
 
     Route::get('/jobs/{job}', [FrontendJobController::class, 'show'])
         ->name('jobs.show');

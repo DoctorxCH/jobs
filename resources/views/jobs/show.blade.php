@@ -24,6 +24,23 @@
             @endif
         </div>
 
+
+    <section class="mx-auto flex w-full max-w-6xl flex-col gap-6">
+        <div class="pixel-frame p-8">
+            <h1 class="text-3xl font-bold text-slate-900">{{ $job->title }}</h1>
+            <p class="mt-2 text-sm text-slate-600">
+                @if ($periodStart && $periodEnd)
+                    Online von {{ $periodStart->format('d.m.Y') }} bis {{ $periodEnd->format('d.m.Y') }}
+                @elseif ($periodStart)
+                    Online seit {{ $periodStart->format('d.m.Y') }}
+                @elseif ($periodEnd)
+                    Online bis {{ $periodEnd->format('d.m.Y') }}
+                @else
+                    Online bis unbefristet
+                @endif
+            </p>
+        </div>
+
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-4">
             <div class="flex flex-col gap-6 lg:col-span-3">
                 <div class="pixel-frame p-6">
