@@ -163,7 +163,7 @@ Route::middleware('web')->group(function () {
         return view('jobs.index', ['jobs' => $jobs]);
     })->name('jobs.index');
 
-    Route::get('/jobs/{job}', [FrontendJobController::class, 'show'])
+    Route::get('/jobs/{job:slug}', [FrontendJobController::class, 'show'])
         ->name('jobs.show');
 
     Route::get('/dashboard/team/invite', function () {
