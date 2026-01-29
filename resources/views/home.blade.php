@@ -18,19 +18,22 @@
                     {{ content('home.hero.lead') }}
                 </p>
 
-                <div class="flex flex-col gap-4 md:flex-row">
+                <form class="flex flex-col gap-4 md:flex-row" method="get" action="{{ route('jobs.index') }}">
+                    <input type="hidden" name="country" value="SK">
                     <label class="flex-1 text-xs uppercase tracking-[0.2em] text-slate-500">
                         {{ content('home.search.label') }}
                         <div class="mt-2 flex flex-col gap-3 sm:flex-row">
                             <input
                                 class="pixel-input w-full px-4 py-3 text-sm text-slate-900 outline-none"
-                                placeholder="{{ content('home.search.placeholder') }}"
+                                placeholder="Pozícia / odvetvie / firma"
                                 type="text"
+                                name="q"
+                                value="{{ request('q') }}"
                             />
-                            <button class="pixel-button px-6 py-3 text-xs">{{ content('home.search.button') }}</button>
+                            <button class="pixel-button px-6 py-3 text-xs" type="submit">{{ content('home.search.button') }}</button>
                         </div>
                     </label>
-                </div>
+                </form>
             </div>
         </div>
 
