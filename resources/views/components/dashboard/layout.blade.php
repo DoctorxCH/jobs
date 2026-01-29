@@ -30,7 +30,7 @@
 @endphp
 
 <x-layouts.pixel :title="$title">
-    <section class="mx-auto w-full max-w-6xl">
+    <section class="mx-auto w-full max-w-7xl">
         <div class="grid gap-8 md:grid-cols-[220px_1fr]">
             <aside class="pixel-frame p-4">
                 <x-dashboard.menu />
@@ -38,17 +38,7 @@
 
             <main class="pixel-frame p-8">
                 {{-- Header row --}}
-                <div class="mb-6 flex items-center justify-between gap-4">
-                    <div class="text-[10px] uppercase tracking-[0.28em] text-slate-500">
-                        {{ $title }}
-                    </div>
-
-                    @if ($creditsAvailable !== null)
-                        <div class="pixel-outline px-4 py-2 text-xs uppercase tracking-[0.2em]">
-                            Credits: <span class="font-bold tabular-nums">{{ $creditsAvailable }}</span>
-                        </div>
-                    @endif
-                </div>
+                
 
                 {{-- Alerts --}}
                 @if (session('status') || session('success'))

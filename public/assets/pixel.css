@@ -117,7 +117,14 @@ body{
 }
 
 a{ color: inherit; }
-a:hover{ color: var(--accent); }
+a:hover {
+    color: var(--accent);
+    font-weight: 600;
+}
+a.px-3.py-2.text-xs.uppercase.tracking-\[0\.2em\].pixel-button {
+    color: white;
+}
+
 
 h1, h2, h3{ letter-spacing: -0.02em; }
 p{ color: var(--muted); }

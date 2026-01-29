@@ -8,7 +8,7 @@
         };
     @endphp
 
-    <form method="POST" action="{{ route('frontend.profile.update') }}" class="flex flex-col gap-8">
+    <form method="POST" action="{{ route('frontend.profile.update') }}" enctype="multipart/form-data" class="flex flex-col gap-8">
         @csrf
 
         {{-- Header --}}
@@ -79,6 +79,7 @@
                         <div class="mt-2 text-xs text-red-700">{{ $message }}</div>
                     @enderror
                 </div>
+                
 
 
                 <div>
@@ -297,6 +298,37 @@
                     @error('website_url') <div class="mt-2 text-xs text-red-700">{{ $message }}</div> @enderror
                 </div>
 
+                <div class="md:col-span-2">
+                    <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Company logo</label>
+
+                    <div class="mt-2 flex items-start gap-4">
+                        <div class="flex-shrink-0">
+                            @if($c?->logo_path)
+                                <img
+                                    src="{{ asset('storage/'.$c->logo_path) }}"
+                                    alt="Company logo"
+                                    class="h-16 w-40 object-contain bg-white"
+                                    loading="lazy"
+                                />
+                            @endif
+                        </div>
+
+                        <div class="flex-1">
+                            <input
+                                type="file"
+                                name="logo"
+                                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                                class="pixel-input w-full px-4 py-3 text-sm text-slate-900 outline-none"
+                            />
+
+                            <div class="mt-2 text-[11px] text-slate-500">PNG/JPG/WebP/SVG, max 2MB.</div>
+
+                            @error('logo')
+                                <div class="mt-2 text-xs text-red-700">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
                 <div class="md:col-span-2">
                     <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Short description</label>
                     <input name="description_short" class="mt-2 pixel-input w-full px-4 py-3 text-sm text-slate-900 outline-none" value="{{ $val('description_short') }}" maxlength="280" />

@@ -105,9 +105,14 @@ class Company extends Model
     public function hasFreeSeats(): bool
     {
         $purchased = (int) ($this->seats_purchased ?? 1);
-        $locked = (int) ($this->seats_locked ?? 0);
+        $reserved  = (int) ($this->seats_locked ?? 0);
 
-        return $this->members()->count() < max($purchased - $locked, 0);
+        $used = (int) \DB::table('company_user')
+            ->where('company_id', $this->id)
+            ->whereIn('status', ['pending','active']) // optional: ['active']
+            ->count();
+
+        return ($purchased - $reserved - $used) > 0;
     }
 
         public function scopeActiveTopPartners($query)

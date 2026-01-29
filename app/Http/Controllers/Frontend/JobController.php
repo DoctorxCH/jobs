@@ -18,12 +18,24 @@ use Illuminate\View\View;
 
 class JobController extends Controller
 {
-    protected function companyForUser(): ?Company
+    protected function companyForUser(bool $requireManageJobs = true): ?Company
     {
         $user = Auth::user();
+        if (! $user) {
+            return null;
+        }
+
+        if ($requireManageJobs && ! $user->canCompanyManageJobs()) {
+            abort(403);
+        }
+
+        $companyId = $user->effectiveCompanyId();
+        if (! $companyId) {
+            return null;
+        }
 
         return Company::query()
-            ->where('owner_user_id', $user->id)
+            ->where('id', $companyId)
             ->whereNull('deleted_at')
             ->first();
     }

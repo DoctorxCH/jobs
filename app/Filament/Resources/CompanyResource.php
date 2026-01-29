@@ -98,21 +98,23 @@ class CompanyResource extends Resource
                                         ->nullable()
                                         ->helperText('Optional. Used for grouping/filters.'),
 
-                                    Forms\Components\Select::make('owner_user_id')
-                                        ->label('Owner user')
-                                        ->relationship('owner', 'email')
-                                        ->searchable()
-                                        ->preload()
-                                        ->required()
-                                        ->getOptionLabelFromRecordUsing(function (User $record): string {
-                                            $name = trim((string) ($record->name ?? ''));
-                                            return $name !== '' ? "{$name} ({$record->email})" : $record->email;
-                                        })
-                                        ->disabled(fn () => ! static::isPlatformAdmin())
-                                        ->helperText('Only platform admins can change the owner.')
-                                        ->validationMessages([
-                                            'required' => 'Owner user is required.',
-                                        ]),
+                                    (static::isPlatformAdmin()
+                                        ? Forms\Components\Select::make('owner_user_id')
+                                            ->label('Owner user')
+                                            ->relationship('owner', 'email')
+                                            ->searchable()
+                                            ->preload()
+                                            ->required()
+                                            ->getOptionLabelFromRecordUsing(function (User $record): string {
+                                                $name = trim((string) ($record->name ?? ''));
+                                                return $name !== '' ? "{$name} ({$record->email})" : $record->email;
+                                            })
+                                            ->helperText('Only platform admins can change the owner.')
+                                        : Forms\Components\Hidden::make('owner_user_id')
+                                            ->default(fn () => auth()->id())
+                                            ->dehydrated(true)
+                                            ->required()
+                                    ),
 
                                     Forms\Components\Grid::make(3)
                                         ->schema([
@@ -221,10 +223,11 @@ class CompanyResource extends Resource
                                         ->label('Website')
                                         ->nullable()
                                         ->maxLength(255)
-                                        ->url()
+                                        ->rules(['nullable', 'url'])
                                         ->validationMessages([
                                             'url' => 'Website must be a valid URL.',
                                         ]),
+
 
                                     Forms\Components\TextInput::make('general_email')
                                         ->label('General email')
@@ -240,11 +243,16 @@ class CompanyResource extends Resource
                                         ->nullable()
                                         ->maxLength(50),
 
-                                    Forms\Components\TextInput::make('logo_path')
-                                        ->label('Logo path')
+                                    Forms\Components\FileUpload::make('logo_path')
+                                        ->label('Logo')
+                                        ->disk('public')
+                                        ->directory('company-logos')
+                                        ->image()
+                                        ->imageEditor()
+                                        ->imagePreviewHeight(120)
+                                        ->maxSize(2048)
                                         ->nullable()
-                                        ->maxLength(255)
-                                        ->helperText('If you later switch to FileUpload, keep this as storage path.'),
+                                        ->helperText('PNG/JPG/WebP, max 2MB.'),
 
                                     Forms\Components\Textarea::make('description_short')
                                         ->label('Short description')
@@ -384,6 +392,8 @@ class CompanyResource extends Resource
                 return $query;
             })
             ->columns([
+                
+                    
                 Tables\Columns\TextColumn::make('legal_name')
                     ->label('Company')
                     ->searchable()

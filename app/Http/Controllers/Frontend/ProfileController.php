@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
@@ -16,7 +17,7 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         $company = null;
-        $effectiveCompanyId = method_exists($user, 'effectiveCompanyId') ? $user->effectiveCompanyId() : null;
+        $effectiveCompanyId = $user?->effectiveCompanyId();
 
         if ($effectiveCompanyId) {
             $company = Company::query()->find($effectiveCompanyId);
@@ -33,15 +34,15 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         $company = null;
-        $effectiveCompanyId = method_exists($user, 'effectiveCompanyId') ? $user->effectiveCompanyId() : null;
+        $effectiveCompanyId = $user?->effectiveCompanyId();
         if ($effectiveCompanyId) {
             $company = Company::query()->find($effectiveCompanyId);
         }
 
-        $isOwner = ($company && (int) $company->owner_user_id === (int) $user->id);
+        $isOwner = $user->companyRole() === 'owner';
 
         // If user is member of a company but not owner: do NOT allow creating a new company here.
-        if (! $company && method_exists($user, 'companyMembership') && $user->companyMembership()) {
+        if (! $company && $user->companyMembership()) {
             abort(403, 'You are already a member of a company. Company creation is not allowed here.');
         }
 
@@ -84,6 +85,7 @@ class ProfileController extends Controller
             'phone' => ['nullable', 'string', 'max:255'],
 
             // Branding
+            'logo' => ['nullable', 'file', 'max:2048', 'mimetypes:image/png,image/jpeg,image/webp,image/svg+xml'],
             'logo_path' => ['nullable', 'string', 'max:255'],
             'description_short' => ['nullable', 'string', 'max:280'],
             'bio' => ['nullable', 'string', 'max:5000'],
@@ -141,6 +143,18 @@ class ProfileController extends Controller
         if (empty($company->slug)) {
             $company->slug = $this->makeUniqueCompanySlug($data['legal_name'], $company->id);
         }
+        // Handle logo upload
+        if ($request->hasFile('logo')) {
+            $file = $request->file('logo');
+
+            // optional: delete old logo
+            if (!empty($company->logo_path)) {
+                Storage::disk('public')->delete($company->logo_path);
+            }
+
+            $path = $file->store('company-logos', 'public'); // storage/app/public/company-logos/...
+            $company->logo_path = $path;
+        }
 
         // Only owner can set identity fields
         if (! $isExistingCompany || $isOwner) {
@@ -156,7 +170,6 @@ class ProfileController extends Controller
         $company->general_email = $data['general_email'] ?? null;
         $company->phone = $data['phone'] ?? null;
 
-        $company->logo_path = $data['logo_path'] ?? null;
         $company->description_short = $data['description_short'] ?? null;
         $company->bio = $data['bio'] ?? null;
 

@@ -13,7 +13,7 @@ class CreateCompany extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['owner_user_id'] = auth()->id();
-        $data['status'] = 'pending';
+        $data['status'] = $data['status'] ?? 'pending';
 
         return $data;
     }
@@ -21,6 +21,10 @@ class CreateCompany extends CreateRecord
     protected function afterCreate(): void
     {
         $user = auth()->user();
+
+        if (! $user) {
+            return;
+        }
 
         CompanyUser::firstOrCreate(
             [
@@ -40,4 +44,3 @@ class CreateCompany extends CreateRecord
         ]);
     }
 }
-

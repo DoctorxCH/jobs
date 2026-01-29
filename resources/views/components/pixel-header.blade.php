@@ -19,7 +19,7 @@
 @endphp
 
 <header class="px-6 pt-6">
-    <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-6">
+    <div class="mx-auto flex w-full max-w-7xl items-center justify-between gap-6">
         {{-- Logo --}}
         <a href="{{ url('/') }}" class="brand365 group" id="brand365">
 <!-- Pixel-Kalender (2-layer flip: current klappt bis 90°, next liegt darunter) -->
@@ -109,8 +109,8 @@
                         </a>
 
                         <a class="block px-3 py-2 text-xs uppercase tracking-[0.2em] hover:text-slate-900"
-                           href="{{ route('frontend.profile') }}">
-                            Profile
+                           href="{{ route('frontend.jobs.index') }}">
+                            Post a Job
                         </a>
 
                         <div class="my-2 border-t border-slate-200"></div>

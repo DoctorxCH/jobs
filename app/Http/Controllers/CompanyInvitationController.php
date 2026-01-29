@@ -40,11 +40,13 @@ class CompanyInvitationController extends Controller
     public function send(Request $request)
     {
         $user = Auth::user();
+        $request->session()->regenerate();
+
         if (! $user) {
             abort(401);
         }
 
-        if (! method_exists($user, 'canCompanyManageTeam') || ! $user->canCompanyManageTeam()) {
+        if (! $user->canCompanyManageTeam()) {
             abort(403, 'Not allowed to invite.');
         }
 
