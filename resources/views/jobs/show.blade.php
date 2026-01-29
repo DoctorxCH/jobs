@@ -8,24 +8,7 @@
         />
     @endpush
 
-    <section class="mx-auto flex w-full max-w-6xl flex-col gap-6">
-        <div class="pixel-frame p-8">
-            <h1 class="text-3xl font-bold text-slate-900">{{ $job->title }}</h1>
-            @if ($periodStart || $periodEnd)
-                <p class="mt-2 text-sm text-slate-600">
-                    @if ($periodStart && $periodEnd)
-                        Online: {{ $periodStart->format('d.m.Y') }} – {{ $periodEnd->format('d.m.Y') }}
-                    @elseif ($periodStart)
-                        Online seit {{ $periodStart->format('d.m.Y') }}
-                    @else
-                        Online bis {{ $periodEnd->format('d.m.Y') }}
-                    @endif
-                </p>
-            @endif
-        </div>
-
-
-    <section class="mx-auto flex w-full max-w-6xl flex-col gap-6">
+    <section class="mx-auto flex w-full max-w-7xl flex-col gap-6">
         <div class="pixel-frame p-8">
             <h1 class="text-3xl font-bold text-slate-900">{{ $job->title }}</h1>
             <p class="mt-2 text-sm text-slate-600">
