@@ -163,18 +163,8 @@ Route::middleware('web')->group(function () {
         return view('jobs.index', ['jobs' => $jobs]);
     })->name('jobs.index');
 
-    Route::get('/jobs/{slug}', function (string $slug) {
-        $job = [
-            'slug' => $slug,
-            'company' => 'Nebula Labs',
-            'title' => 'Product Designer (Pixel UI)',
-            'summary' => 'Design for crisp job interfaces that feel minimal and welcoming.',
-            'location' => 'Remote · CH',
-            'type' => 'Full-time',
-        ];
-
-        return view('jobs.show', ['job' => $job]);
-    })->name('jobs.show');
+    Route::get('/jobs/{job:slug}', [FrontendJobController::class, 'show'])
+        ->name('jobs.show');
 
     Route::get('/dashboard/team/invite', function () {
     $user = auth()->user();

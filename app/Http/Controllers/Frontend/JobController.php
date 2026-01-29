@@ -120,6 +120,134 @@ class JobController extends Controller
         );
     }
 
+    public function show(Job $job): View
+    {
+        $job->load([
+            'company',
+            'country',
+            'region',
+            'city',
+            'sknicePosition',
+            'educationLevel',
+            'educationField',
+            'benefits',
+            'jobLanguages',
+            'jobSkills.skill',
+            'hrTeamMember.user',
+        ]);
+
+        $now = now();
+        $isVisible = $job->status === 'published'
+            && (is_null($job->published_at) || $job->published_at->lte($now))
+            && (is_null($job->expires_at) || $job->expires_at->gte($now));
+
+        abort_unless($isVisible, 404);
+
+        $company = $job->company;
+
+        $periodStart = $job->published_at;
+        $periodEnd = $job->expires_at;
+
+        $companyContactName = $company
+            ? trim(sprintf('%s %s', (string) $company->contact_first_name, (string) $company->contact_last_name))
+            : '';
+        $companyContactName = $companyContactName !== '' ? $companyContactName : null;
+
+        $hrMemberName = $job->hrTeamMember?->user?->name;
+        $contactName = $hrMemberName ?: $companyContactName;
+        $contactEmail = $job->hr_email
+            ?: $job->hrTeamMember?->user?->email
+            ?: $company?->contact_email
+            ?: $company?->general_email;
+        $contactPhone = $job->hr_phone
+            ?: $company?->contact_phone
+            ?: $company?->phone;
+
+        $employmentTypeLabels = [
+            'full_time' => 'Full-time',
+            'part_time' => 'Part-time',
+            'contract' => 'Contract',
+            'freelance' => 'Freelance',
+            'internship' => 'Internship',
+        ];
+
+        $workload = null;
+        if (! is_null($job->workload_min) && ! is_null($job->workload_max)) {
+            $workload = sprintf('%s–%s%%', $job->workload_min, $job->workload_max);
+        } elseif (! is_null($job->workload_min)) {
+            $workload = sprintf('ab %s%%', $job->workload_min);
+        } elseif (! is_null($job->workload_max)) {
+            $workload = sprintf('bis %s%%', $job->workload_max);
+        }
+
+        $salary = null;
+        if (! is_null($job->salary_min_gross_month) || ! is_null($job->salary_max_gross_month)) {
+            $min = $job->salary_min_gross_month ? number_format((float) $job->salary_min_gross_month, 0, ',', ' ') : null;
+            $max = $job->salary_max_gross_month ? number_format((float) $job->salary_max_gross_month, 0, ',', ' ') : null;
+            $currency = $job->salary_currency ? strtoupper($job->salary_currency) : null;
+
+            if ($min && $max) {
+                $salary = trim(sprintf('%s–%s %s', $min, $max, $currency));
+            } elseif ($min) {
+                $salary = trim(sprintf('ab %s %s', $min, $currency));
+            } elseif ($max) {
+                $salary = trim(sprintf('bis %s %s', $max, $currency));
+            }
+        }
+
+        if ($salary && $job->salary_note) {
+            $salary = sprintf('%s (%s)', $salary, $job->salary_note);
+        } elseif (! $salary && $job->salary_note) {
+            $salary = $job->salary_note;
+        }
+
+        $locationCity = $job->city?->name ?: $company?->city;
+        $locationRegion = $job->region?->name ?: $company?->region;
+        $locationCountry = $job->country?->name ?: $company?->country_code;
+
+        $locationLine = collect([$locationCity, $locationRegion, $locationCountry])
+            ->filter()
+            ->implode(', ');
+
+        $postalLine = trim(collect([$company?->postal_code, $locationCity])->filter()->implode(' '));
+
+        $lat = $job->getAttribute('lat')
+            ?? $job->getAttribute('latitude')
+            ?? $company?->getAttribute('lat')
+            ?? $company?->getAttribute('latitude');
+        $lng = $job->getAttribute('lng')
+            ?? $job->getAttribute('longitude')
+            ?? $company?->getAttribute('lng')
+            ?? $company?->getAttribute('longitude');
+
+        $hasCoordinates = is_numeric($lat) && is_numeric($lng);
+
+        return view('jobs.show', [
+            'job' => $job,
+            'company' => $company,
+            'periodStart' => $periodStart,
+            'periodEnd' => $periodEnd,
+            'contact' => [
+                'name' => $contactName,
+                'email' => $contactEmail,
+                'phone' => $contactPhone,
+            ],
+            'employmentType' => $employmentTypeLabels[$job->employment_type] ?? $job->employment_type,
+            'workload' => $workload,
+            'salary' => $salary,
+            'location' => [
+                'line' => $locationLine,
+                'street' => $company?->street,
+                'postal' => $postalLine,
+            ],
+            'map' => [
+                'hasCoordinates' => $hasCoordinates,
+                'lat' => $hasCoordinates ? (float) $lat : null,
+                'lng' => $hasCoordinates ? (float) $lng : null,
+            ],
+        ]);
+    }
+
     public function index(Request $request): View
     {
         $company = $this->companyForUser();
