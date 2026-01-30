@@ -58,7 +58,22 @@ Route::middleware('web')->group(function () {
     Route::post('/login', [FrontendAuthController::class, 'login'])->name('frontend.login.submit');
 
     Route::get('/register', [FrontendAuthController::class, 'showRegister'])->name('frontend.register');
-    Route::post('/register', [FrontendAuthController::class, 'register'])->name('frontend.register.submit');
+    
+    // Registration (multi-step)
+    Route::get('/register', [FrontendAuthController::class, 'showRegister'])->name('frontend.register'); // redirects to step1
+
+    Route::get('/register/step-1', [FrontendAuthController::class, 'showRegisterStep1'])->name('frontend.register.step1');
+    Route::post('/register/step-1', [FrontendAuthController::class, 'postRegisterStep1'])->name('frontend.register.step1.post');
+
+    Route::get('/register/step-2', [FrontendAuthController::class, 'showRegisterStep2'])->name('frontend.register.step2');
+    Route::post('/register/step-2', [FrontendAuthController::class, 'postRegisterStep2'])->name('frontend.register.step2.post');
+
+    Route::get('/register/step-3', [FrontendAuthController::class, 'showRegisterStep3'])->name('frontend.register.step3');
+    Route::post('/register/step-3', [FrontendAuthController::class, 'postRegisterStep3'])->name('frontend.register.step3.post');
+
+    
+    
+    // bckp Route::post('/register', [FrontendAuthController::class, 'register'])->name('frontend.register.submit');
 
     Route::post('/logout', [FrontendAuthController::class, 'logout'])->name('frontend.logout');
 
