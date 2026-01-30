@@ -337,7 +337,21 @@
 
                 <div class="md:col-span-2">
                     <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Bio</label>
-                    <textarea name="bio" rows="6" class="mt-2 pixel-input w-full px-4 py-3 text-sm text-slate-900 outline-none">{{ old('bio', $c?->bio ?? '') }}</textarea>
+                    <div class="mt-2 space-y-2" data-wysiwyg>
+                        <input type="hidden" name="bio" value="{{ old('bio', $c?->bio ?? '') }}" data-wysiwyg-input>
+                        <div class="flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.2em] text-slate-500">
+                            <button type="button" class="pixel-outline px-2 py-1" data-wysiwyg-command="bold">Bold</button>
+                            <button type="button" class="pixel-outline px-2 py-1" data-wysiwyg-command="italic">Italic</button>
+                            <button type="button" class="pixel-outline px-2 py-1" data-wysiwyg-command="insertUnorderedList">Bullets</button>
+                            <button type="button" class="pixel-outline px-2 py-1" data-wysiwyg-command="insertOrderedList">Numbered</button>
+                            <button type="button" class="pixel-outline px-2 py-1" data-wysiwyg-command="createLink">Link</button>
+                        </div>
+                        <div
+                            class="min-h-[140px] w-full border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none"
+                            contenteditable="true"
+                            data-wysiwyg-editor
+                        >{!! old('bio', $c?->bio ?? '') !!}</div>
+                    </div>
                     @error('bio') <div class="mt-2 text-xs text-red-700">{{ $message }}</div> @enderror
                 </div>
 
@@ -387,4 +401,47 @@
             @endif
         </div>
     </form>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('[data-wysiwyg]').forEach((wrapper) => {
+                    const input = wrapper.querySelector('[data-wysiwyg-input]');
+                    const editor = wrapper.querySelector('[data-wysiwyg-editor]');
+
+                    if (!input || !editor) {
+                        return;
+                    }
+
+                    const sync = () => {
+                        input.value = editor.innerHTML.trim();
+                    };
+
+                    wrapper.querySelectorAll('[data-wysiwyg-command]').forEach((button) => {
+                        button.addEventListener('click', () => {
+                            const command = button.dataset.wysiwygCommand;
+                            if (command === 'createLink') {
+                                const url = prompt('Enter a URL');
+                                if (url) {
+                                    document.execCommand(command, false, url);
+                                }
+                            } else {
+                                document.execCommand(command, false, null);
+                            }
+                            editor.focus();
+                            sync();
+                        });
+                    });
+
+                    editor.addEventListener('input', sync);
+                    editor.addEventListener('blur', sync);
+
+                    const form = wrapper.closest('form');
+                    if (form) {
+                        form.addEventListener('submit', sync);
+                    }
+                });
+            });
+        </script>
+    @endpush
 </x-dashboard.layout>

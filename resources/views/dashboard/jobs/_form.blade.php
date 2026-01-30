@@ -83,7 +83,21 @@
 
         <div>
             <label class="{{ $sectionTitleClass }}">Description</label>
-            <textarea name="description" rows="7" class="mt-2 w-full pixel-outline px-3 py-2" required>{{ old('description', $job?->description) }}</textarea>
+            <div class="mt-2 space-y-2" data-wysiwyg>
+                <input type="hidden" name="description" value="{{ old('description', $job?->description) }}" data-wysiwyg-input>
+                <div class="flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.2em] text-[var(--muted)]">
+                    <button type="button" class="pixel-outline px-2 py-1" data-wysiwyg-command="bold">Bold</button>
+                    <button type="button" class="pixel-outline px-2 py-1" data-wysiwyg-command="italic">Italic</button>
+                    <button type="button" class="pixel-outline px-2 py-1" data-wysiwyg-command="insertUnorderedList">Bullets</button>
+                    <button type="button" class="pixel-outline px-2 py-1" data-wysiwyg-command="insertOrderedList">Numbered</button>
+                    <button type="button" class="pixel-outline px-2 py-1" data-wysiwyg-command="createLink">Link</button>
+                </div>
+                <div
+                    class="min-h-[180px] w-full border border-[var(--ink)]/20 bg-white px-3 py-2 text-sm outline-none"
+                    contenteditable="true"
+                    data-wysiwyg-editor
+                >{!! old('description', $job?->description) !!}</div>
+            </div>
         </div>
     </div>
 
@@ -443,6 +457,51 @@
     </div>
 
 </div>
+
+@once
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('[data-wysiwyg]').forEach((wrapper) => {
+                    const input = wrapper.querySelector('[data-wysiwyg-input]');
+                    const editor = wrapper.querySelector('[data-wysiwyg-editor]');
+
+                    if (!input || !editor) {
+                        return;
+                    }
+
+                    const sync = () => {
+                        input.value = editor.innerHTML.trim();
+                    };
+
+                    wrapper.querySelectorAll('[data-wysiwyg-command]').forEach((button) => {
+                        button.addEventListener('click', () => {
+                            const command = button.dataset.wysiwygCommand;
+                            if (command === 'createLink') {
+                                const url = prompt('Enter a URL');
+                                if (url) {
+                                    document.execCommand(command, false, url);
+                                }
+                            } else {
+                                document.execCommand(command, false, null);
+                            }
+                            editor.focus();
+                            sync();
+                        });
+                    });
+
+                    editor.addEventListener('input', sync);
+                    editor.addEventListener('blur', sync);
+
+                    const form = wrapper.closest('form');
+                    if (form) {
+                        form.addEventListener('submit', sync);
+                    }
+                });
+            });
+        </script>
+    @endpush
+@endonce
 
 <script>
     const countrySelect = document.getElementById('country-select');
