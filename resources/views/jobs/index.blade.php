@@ -150,7 +150,7 @@
                     >
                         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                             <div class="space-y-2 min-w-0">
-                                <div class="text-lg font-bold text-green-700">
+                                <div class="text-lg font-bold text-blue-700">
                                     {{ $job->title }}
                                 </div>
 
@@ -169,18 +169,38 @@
 
                                 <div class="flex flex-wrap gap-2 text-xs uppercase tracking-[0.2em] text-slate-500">
                                     @if ($company?->is_top_partner)
-                                        <span class="pixel-chip px-2 py-1">TOP</span>
+                                        <span class="px-2 py-1 flex items-center">
+                                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M5 16L3 5l5.5 4L12 4l3.5 5L21 5l-2 11H5z"/>
+                                                <path d="M19 6l-2 4m-6-4l2 4m-6-4l2 4"/>
+                                            </svg>
+                                        </span>
                                     @endif
                                     @if ($salary)
-                                        <span class="pixel-chip px-2 py-1">{{ $salary }}</span>
+                                        <span class="px-2 py-1">{{ $salary }}</span>
                                     @endif
                                     @if ($jobDate)
-                                        <span class="pixel-chip px-2 py-1">{{ $jobDate->format('d.m.Y') }}</span>
+                                        <span class="px-2 py-1">{{ $jobDate->diffForHumans() }}</span>
                                     @endif
                                 </div>
                             </div>
 
-                            <div class="flex items-center gap-4 md:justify-end shrink-0">
+                            <div class="flex flex-col items-center gap-2 md:justify-end shrink-0">
+                                {{-- Logo -> company profile; placeholder keeps layout but invisible --}}
+                                <div class="flex h-20 w-20 items-center justify-center">
+                                    @if ($company && $companyUrl)
+                                        <a href="{{ $companyUrl }}" class="no-card-click block h-20 w-20">
+                                            @if ($logoUrl)
+                                                <img class="max-h-20 w-auto" src="{{ $logoUrl }}" alt="{{ $company?->legal_name }}" />
+                                            @else
+                                                <div class="h-20 w-20 opacity-0"></div>
+                                            @endif
+                                        </a>
+                                    @else
+                                        <div class="h-20 w-20 opacity-0"></div>
+                                    @endif
+                                </div>
+
                                 {{-- Favorite (cookie 6 months) --}}
                                 <button
                                     class="no-card-click pixel-outline grid h-10 w-10 place-items-center"
@@ -194,21 +214,6 @@
                                         <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
                                     </svg>
                                 </button>
-
-                                {{-- Logo -> company profile; placeholder keeps layout but invisible --}}
-                                <div class="flex h-16 w-16 items-center justify-center">
-                                    @if ($company && $companyUrl)
-                                        <a href="{{ $companyUrl }}" class="no-card-click block h-16 w-16">
-                                            @if ($logoUrl)
-                                                <img class="max-h-16 w-auto" src="{{ $logoUrl }}" alt="{{ $company?->legal_name }}" />
-                                            @else
-                                                <div class="h-16 w-16 opacity-0"></div>
-                                            @endif
-                                        </a>
-                                    @else
-                                        <div class="h-16 w-16 opacity-0"></div>
-                                    @endif
-                                </div>
                             </div>
                         </div>
                     </article>
