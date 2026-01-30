@@ -35,7 +35,7 @@
                     <div class="pixel-frame p-6">
                         <h2 class="text-lg font-bold text-slate-900">Über uns</h2>
                         <div class="prose prose-sm mt-4 max-w-none text-slate-600">
-                            {!! nl2br(e($company->bio)) !!}
+                            {!! $company->bio !!}
                         </div>
                     </div>
                 @endif

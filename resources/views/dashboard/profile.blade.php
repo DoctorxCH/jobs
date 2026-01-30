@@ -337,7 +337,19 @@
 
                 <div class="md:col-span-2">
                     <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Bio</label>
-                    <textarea name="bio" rows="6" class="mt-2 pixel-input w-full px-4 py-3 text-sm text-slate-900 outline-none">{{ old('bio', $c?->bio ?? '') }}</textarea>
+                    <div class="mt-2 space-y-2" data-quill-wrapper>
+                        <input type="hidden" name="bio" value="{{ old('bio', $c?->bio ?? '') }}" data-quill-input>
+                        <div class="flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.2em] text-slate-500" data-quill-toolbar>
+                            <button type="button" class="pixel-outline px-2 py-1" data-quill-action="bold"><strong>B</strong></button>
+                            <button type="button" class="pixel-outline px-2 py-1" data-quill-action="italic"><em>I</em></button>
+                            <button type="button" class="pixel-outline px-2 py-1" data-quill-action="underline"><span class="underline">U</span></button>
+                            <button type="button" class="pixel-outline px-2 py-1" data-quill-action="ordered">1.</button>
+                            <button type="button" class="pixel-outline px-2 py-1" data-quill-action="bullet">•</button>
+                            <button type="button" class="pixel-outline px-2 py-1" data-quill-action="link">Link</button>
+                            <button type="button" class="pixel-outline px-2 py-1" data-quill-action="clean">Clear</button>
+                        </div>
+                        <div class="min-h-[160px] w-full border border-slate-300 bg-white text-sm text-slate-900" data-quill-editor></div>
+                    </div>
                     @error('bio') <div class="mt-2 text-xs text-red-700">{{ $message }}</div> @enderror
                 </div>
 
@@ -387,4 +399,70 @@
             @endif
         </div>
     </form>
+
+    @push('head')
+        <link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
+    @endpush
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('[data-quill-wrapper]').forEach((wrapper) => {
+                    const input = wrapper.querySelector('[data-quill-input]');
+                    const editor = wrapper.querySelector('[data-quill-editor]');
+                    const toolbar = wrapper.querySelector('[data-quill-toolbar]');
+
+                    if (!input || !editor || !toolbar) {
+                        return;
+                    }
+
+                    const quill = new Quill(editor, {
+                        theme: 'snow',
+                        modules: {
+                            toolbar: false,
+                        },
+                    });
+
+                    if (input.value) {
+                        quill.clipboard.dangerouslyPasteHTML(input.value);
+                    }
+
+                    const sync = () => {
+                        input.value = quill.root.innerHTML.trim();
+                    };
+
+                    quill.on('text-change', sync);
+
+                    const form = wrapper.closest('form');
+                    if (form) {
+                        form.addEventListener('submit', sync);
+                    }
+
+                    toolbar.querySelectorAll('[data-quill-action]').forEach((button) => {
+                        button.addEventListener('click', () => {
+                            const action = button.dataset.quillAction;
+                            if (action === 'ordered') {
+                                quill.format('list', 'ordered');
+                            } else if (action === 'bullet') {
+                                quill.format('list', 'bullet');
+                            } else if (action === 'link') {
+                                const url = prompt('URL');
+                                if (url) {
+                                    const range = quill.getSelection(true);
+                                    quill.format('link', url);
+                                    if (range) {
+                                        quill.setSelection(range.index + range.length, 0);
+                                    }
+                                }
+                            } else if (action === 'clean') {
+                                quill.removeFormat(0, quill.getLength());
+                            } else {
+                                quill.format(action, !quill.getFormat()[action]);
+                            }
+                        });
+                    });
+                });
+            });
+        </script>
+    @endpush
 </x-dashboard.layout>
