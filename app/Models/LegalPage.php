@@ -10,10 +10,12 @@ class LegalPage extends Model
         'slug',
         'title',
         'content',
+        'effective_from',
         'is_active',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'effective_from' => 'date',
     ];
 }

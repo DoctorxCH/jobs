@@ -197,7 +197,7 @@ class ProfileController extends Controller
             $user->save();
         }
 
-        return back()->with('status', 'Profile updated successfully.');
+        return back()->with('status', __('main.profile_updated'));
     }
 
     private function makeUniqueCompanySlug(string $legalName, ?int $ignoreCompanyId = null): string

@@ -88,6 +88,6 @@ class SecurityController extends Controller
         $user->password = Hash::make($validated['password']);
         $user->save();
 
-        return back()->with('status', 'Password updated successfully.');
+        return back()->with('status', __('main.password_updated'));
     }
 }

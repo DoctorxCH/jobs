@@ -28,6 +28,9 @@ class LegalPageResource extends Resource
                 Forms\Components\TextInput::make('title')
                     ->required()
                     ->maxLength(255),
+                Forms\Components\DatePicker::make('effective_from')
+                    ->label('Effective from')
+                    ->native(false),
                 Forms\Components\Toggle::make('is_active')
                     ->label('Active')
                     ->default(true),
@@ -43,6 +46,7 @@ class LegalPageResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('slug')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('title')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('effective_from')->date()->sortable(),
                 Tables\Columns\IconColumn::make('is_active')->boolean(),
                 Tables\Columns\TextColumn::make('updated_at')->dateTime()->sortable(),
             ])
@@ -53,10 +57,15 @@ class LegalPageResource extends Resource
 
     public static function getPages(): array
     {
-        return [
+        $pages = [
             'index' => Pages\ListLegalPages::route('/'),
             'edit' => Pages\EditLegalPage::route('/{record}/edit'),
-            'create' => Pages\CreateLegalPage::route('/create'),
         ];
+
+        if (class_exists(Pages\CreateLegalPage::class)) {
+            $pages['create'] = Pages\CreateLegalPage::route('/create');
+        }
+
+        return $pages;
     }
 }

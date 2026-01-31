@@ -384,7 +384,7 @@ class JobController extends Controller
 
         return redirect()
             ->route('frontend.jobs.edit', $job)
-            ->with('success', 'Job created.');
+            ->with('success', __('main.job_created'));
     }
 
     public function edit(Job $job): View
@@ -454,7 +454,7 @@ class JobController extends Controller
 
         return redirect()
             ->route('frontend.jobs.edit', $job)
-            ->with('success', 'Job updated.');
+            ->with('success', __('main.job_updated'));
     }
 
     public function archive(Request $request, Job $job): RedirectResponse
@@ -468,7 +468,7 @@ class JobController extends Controller
 
         return redirect()
             ->route('frontend.jobs.index')
-            ->with('success', 'Job archived.');
+            ->with('success', __('main.job_archived'));
     }
 
     public function unarchive(Request $request, Job $job): RedirectResponse
@@ -484,7 +484,7 @@ class JobController extends Controller
         if ($isExpired) {
             return redirect()
                 ->route('frontend.jobs.edit', $job)
-                ->with('error', 'Job expired. Please publish again to unarchive.');
+                ->with('error', __('main.job_expired_unarchive'));
         }
 
         $job->forceFill([
@@ -494,7 +494,7 @@ class JobController extends Controller
 
         return redirect()
             ->route('frontend.jobs.edit', $job)
-            ->with('success', 'Job unarchived.');
+            ->with('success', __('main.job_unarchived'));
     }
 
     public function post(Request $request, Job $job): RedirectResponse
@@ -506,7 +506,7 @@ class JobController extends Controller
         if (($company->status ?? null) !== 'active') {
             return redirect()
                 ->route('frontend.jobs.edit', $job)
-                ->with('error', 'Your must be activated by our team before you can publish jobs. This should happen within 1-2 hours during business days. Please contact us if it takes too long.');
+                ->with('error', __('main.company_must_be_active_to_publish'));
         }
 
         $data = $request->validate([
@@ -535,7 +535,7 @@ class JobController extends Controller
             if ($available < $requiredCredits) {
                 return redirect()
                     ->route('frontend.jobs.edit', $job)
-                    ->withErrors(['days' => 'Not enough credits available.'])
+                    ->withErrors(['days' => __('main.not_enough_credits')])
                     ->withInput();
             }
 
@@ -561,7 +561,7 @@ class JobController extends Controller
 
             return redirect()
                 ->route('frontend.jobs.edit', $job)
-                ->with('success', 'Job published.');
+                ->with('success', __('main.job_published'));
         }
 
         // Already published: only delta counts
@@ -573,7 +573,7 @@ class JobController extends Controller
             if ($available < $requiredCredits) {
                 return redirect()
                     ->route('frontend.jobs.edit', $job)
-                    ->withErrors(['days' => 'Not enough credits available for this extension.'])
+                    ->withErrors(['days' => __('main.not_enough_credits_extension')])
                     ->withInput();
             }
 
@@ -597,7 +597,7 @@ class JobController extends Controller
 
             return redirect()
                 ->route('frontend.jobs.edit', $job)
-                ->with('success', 'Duration extended.');
+                ->with('success', __('main.duration_extended'));
         }
 
         if ($deltaDays < 0) {
@@ -624,12 +624,12 @@ class JobController extends Controller
 
             return redirect()
                 ->route('frontend.jobs.edit', $job)
-                ->with('success', 'Duration reduced.');
+                ->with('success', __('main.duration_reduced'));
         }
 
         // deltaDays === 0 → nothing to do, but UX ok
         return redirect()
             ->route('frontend.jobs.edit', $job)
-            ->with('success', 'No change.');
+            ->with('success', __('main.no_change'));
     }
 }

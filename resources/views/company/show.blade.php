@@ -26,23 +26,23 @@
             <div class="flex flex-col gap-6 lg:col-span-3">
                 @if ($company->description_short)
                     <div class="pixel-frame p-6">
-                        <h2 class="text-lg font-bold text-slate-900">Kurzbeschreibung</h2>
+                        <h2 class="text-lg font-bold text-slate-900">{{ __('main.company_short_description') }}</h2>
                         <p class="mt-3 text-sm text-slate-600">{{ $company->description_short }}</p>
                     </div>
                 @endif
 
                 @if ($company->bio)
                     <div class="pixel-frame p-6">
-                        <h2 class="text-lg font-bold text-slate-900">Über uns</h2>
+                        <h2 class="text-lg font-bold text-slate-900">{{ __('main.about_us') }}</h2>
                         <div class="prose prose-sm mt-4 max-w-none text-slate-600">
-                            {!! $company->bio !!}
+                            {!! nl2br(e($company->bio)) !!}
                         </div>
                     </div>
                 @endif
 
                 @if (count($socialLinks) > 0)
                     <div class="pixel-frame p-6">
-                        <h2 class="text-lg font-bold text-slate-900">Social Links</h2>
+                        <h2 class="text-lg font-bold text-slate-900">{{ __('main.social_links') }}</h2>
                         <div class="mt-4 flex flex-wrap gap-3">
                             @foreach ($socialLinks as $label => $url)
                                 <a class="pixel-outline px-3 py-2 text-xs uppercase tracking-[0.2em]" href="{{ $url }}" target="_blank" rel="noopener">
@@ -56,7 +56,7 @@
 
             <aside class="flex flex-col gap-6 lg:col-span-1">
                 <div class="pixel-frame p-6">
-                    <h3 class="text-xs uppercase tracking-[0.2em] text-slate-500">Kontakt</h3>
+                    <h3 class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.contact') }}</h3>
                     <div class="mt-4 space-y-2 text-sm text-slate-600">
                         <p class="font-semibold text-slate-900">
                             {{ trim($company->contact_first_name . ' ' . $company->contact_last_name) }}
@@ -80,23 +80,23 @@
                 </div>
 
                 <div class="pixel-frame p-6">
-                    <h3 class="text-xs uppercase tracking-[0.2em] text-slate-500">Company Facts</h3>
+                    <h3 class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.company_facts') }}</h3>
                     <dl class="mt-4 space-y-3 text-sm">
                         @if ($company->team_size)
                             <div>
-                                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">Teamgröße</dt>
+                                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.team_size_label') }}</dt>
                                 <dd class="mt-1 font-semibold text-slate-900">{{ $company->team_size }}</dd>
                             </div>
                         @endif
                         @if ($company->founded_year)
                             <div>
-                                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">Gründungsjahr</dt>
+                                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.founded_year_label') }}</dt>
                                 <dd class="mt-1 font-semibold text-slate-900">{{ $company->founded_year }}</dd>
                             </div>
                         @endif
                         @if ($company->category)
                             <div>
-                                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">Kategorie</dt>
+                                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.category') }}</dt>
                                 <dd class="mt-1 font-semibold text-slate-900">{{ $company->category->name }}</dd>
                             </div>
                         @endif
@@ -107,7 +107,7 @@
 
         <div class="pixel-frame p-6">
             <div class="flex items-center justify-between">
-                <h2 class="text-lg font-bold text-slate-900">Open Jobs</h2>
+                <h2 class="text-lg font-bold text-slate-900">{{ __('main.open_jobs') }}</h2>
                 <span class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ $openJobsCount }}</span>
             </div>
             <div class="mt-4 grid gap-4">
@@ -121,7 +121,7 @@
                         @endif
                     </div>
                 @empty
-                    <p class="text-sm text-slate-600">No open jobs.</p>
+                    <p class="text-sm text-slate-600">{{ __('main.no_open_jobs') }}</p>
                 @endforelse
             </div>
         </div>

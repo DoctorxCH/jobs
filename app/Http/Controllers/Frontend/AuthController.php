@@ -40,7 +40,7 @@ class AuthController extends Controller
 
         if (! Auth::attempt(['email' => $data['email'], 'password' => $data['password']], $remember)) {
             return back()
-                ->withErrors(['email' => 'Login failed.'])
+                ->withErrors(['email' => __('main.login_failed')])
                 ->onlyInput('email');
         }
 
@@ -81,19 +81,19 @@ class AuthController extends Controller
             'ico' => ['required', 'regex:/^\d{8}$/'],
             'country_code' => ['nullable', 'string', 'size:2'],
         ], [
-            'ico.regex' => 'ICO must be exactly 8 digits.',
+            'ico.regex' => __('main.ico_invalid'),
         ]);
 
         $ico = (string) $data['ico'];
         if (Company::where('ico', $ico)->exists()) {
-            return back()->withErrors(['ico' => 'This company is already registered.'])->withInput();
+            return back()->withErrors(['ico' => __('main.company_already_registered')])->withInput();
         }
 
         $country = strtoupper($data['country_code'] ?? 'SK');
         $prefill = $lookup->lookup($country, $ico);
 
         if (!$prefill) {
-            return back()->withErrors(['ico' => 'Company not found.'])->withInput();
+            return back()->withErrors(['ico' => __('main.company_not_found')])->withInput();
         }
 
         $reg = $request->session()->get(self::REG_KEY, []);
@@ -214,11 +214,11 @@ class AuthController extends Controller
         }
 
         if (!empty($data['dic']) && Company::where('dic', $data['dic'])->exists()) {
-            return back()->withErrors(['dic' => 'DIC is already used.'])->withInput();
+            return back()->withErrors(['dic' => __('main.dic_already_used')])->withInput();
         }
 
         if (!empty($data['ic_dph']) && Company::where('ic_dph', $data['ic_dph'])->exists()) {
-            return back()->withErrors(['ic_dph' => 'IC DPH is already used.'])->withInput();
+            return back()->withErrors(['ic_dph' => __('main.ic_dph_already_used')])->withInput();
         }
 
         $reg['company'] = $data;

@@ -5,7 +5,7 @@
         {{-- HEADER --}}
         <div class="pixel-outline p-8">
             <div class="text-s uppercase tracking-[0.2em] text-slate-800 font-bold">
-                Listing of available jobs
+                {{ __('main.jobs_listing_title') }}
             </div>
 
             <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-[1fr_auto] md:items-center">
@@ -29,18 +29,18 @@
                             name="q"
                             value="{{ $search ?? '' }}"
                             class="pixel-input w-full px-4 py-3 text-sm"
-                            placeholder="Search job title…"
+                            placeholder="{{ __('main.search_job_title_placeholder') }}"
                         />
 
                         <button type="submit" class="pixel-button px-5 py-3 text-xs shrink-0">
-                            Search
+                            {{ __('main.search') }}
                         </button>
                     </div>
                 </form>
 
                 {{-- JOB COUNT --}}
                 <div class="text-l font-bold whitespace-nowrap">
-                    {{ $jobs->total() }} Jobs found
+                    {{ __('main.jobs_found', ['count' => $jobs->total()]) }}
                 </div>
             </div>
         </div>
@@ -56,9 +56,9 @@
                     @endif
 
                     <label class="block text-xs uppercase tracking-[0.2em] text-slate-500">
-                        Region
+                        {{ __('main.region') }}
                         <select class="pixel-input mt-2 w-full px-4 py-3 text-sm" name="region">
-                            <option value="">All regions</option>
+                            <option value="">{{ __('main.all_regions') }}</option>
                             @foreach ($regions as $region)
                                 <option value="{{ $region->id }}" @selected((int) $selectedRegion === (int) $region->id)>
                                     {{ $region->name }}
@@ -68,9 +68,9 @@
                     </label>
 
                     <label class="block text-xs uppercase tracking-[0.2em] text-slate-500">
-                        City
+                        {{ __('main.city') }}
                         <select class="pixel-input mt-2 w-full px-4 py-3 text-sm" name="city" @disabled(! $selectedRegion)>
-                            <option value="">All cities</option>
+                            <option value="">{{ __('main.all_cities') }}</option>
                             @foreach ($cities as $city)
                                 <option value="{{ $city->id }}" @selected((int) $selectedCity === (int) $city->id)>
                                     {{ $city->name }}
@@ -80,13 +80,13 @@
                     </label>
 
                     <div class="border-t border-slate-200 pt-4">
-                        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">More filters</p>
+                        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ __('main.more_filters') }}</p>
 
                         <label class="mt-3 block text-xs uppercase tracking-[0.2em] text-slate-500">
-                            Salary from
+                            {{ __('main.salary_from') }}
                             <input
                                 class="pixel-input mt-2 w-full px-4 py-3 text-sm text-slate-900"
-                                placeholder="e.g. 1,800 €"
+                                placeholder="{{ __('main.salary_placeholder') }}"
                                 type="text"
                                 disabled
                             />
@@ -95,14 +95,14 @@
 
                     <div class="mt-4 flex gap-3">
                         <button type="submit" class="pixel-button w-full px-6 py-3 text-xs">
-                            Apply filters
+                            {{ __('main.apply_filters') }}
                         </button>
 
                         <a
                             href="{{ route('jobs.index', ['country' => $countryCode ?? 'SK', 'q' => $search ?: null]) }}"
                             class="pixel-outline px-6 py-3 text-xs uppercase tracking-[0.2em] text-slate-800 whitespace-nowrap flex items-center justify-center"
                         >
-                            Reset
+                            {{ __('main.reset') }}
                         </a>
                     </div>
                 </form>
@@ -129,11 +129,11 @@
                             $currency = $job->salary_currency ? strtoupper($job->salary_currency) : null;
 
                             if ($min && $max) {
-                                $salary = trim(sprintf('%s–%s %s', $min, $max, $currency));
+                                $salary = __('main.salary_range', ['min' => $min, 'max' => $max, 'currency' => $currency]);
                             } elseif ($min) {
-                                $salary = trim(sprintf('from %s %s', $min, $currency));
+                                $salary = __('main.salary_from_value', ['min' => $min, 'currency' => $currency]);
                             } elseif ($max) {
-                                $salary = trim(sprintf('up to %s %s', $max, $currency));
+                                $salary = __('main.salary_up_to', ['max' => $max, 'currency' => $currency]);
                             }
                         }
 
@@ -205,7 +205,7 @@
                                 <button
                                     class="no-card-click pixel-outline grid h-10 w-10 place-items-center"
                                     type="button"
-                                    aria-label="Favorite"
+                                    aria-label="{{ __('main.favorite') }}"
                                     data-fav-btn
                                     data-job-id="{{ $job->id }}"
                                     aria-pressed="false"
@@ -219,7 +219,7 @@
                     </article>
                 @empty
                     <div class="pixel-frame bg-white p-6">
-                        <p class="text-sm text-slate-600">No jobs found.</p>
+                        <p class="text-sm text-slate-600">{{ __('main.no_jobs_found') }}</p>
                     </div>
                 @endforelse
 

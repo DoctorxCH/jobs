@@ -13,7 +13,15 @@ class LegalPageController extends Controller
         $page = LegalPage::query()
             ->where('slug', 'agb')
             ->where('is_active', true)
+            ->orderByDesc('updated_at')
             ->first();
+
+        if (! $page) {
+            $page = LegalPage::query()
+                ->where('is_active', true)
+                ->orderByDesc('updated_at')
+                ->first();
+        }
 
         return view('legal.agb', [
             'page' => $page,

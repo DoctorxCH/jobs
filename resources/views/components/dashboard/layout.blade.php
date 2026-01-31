@@ -1,5 +1,5 @@
 @props([
-    'title' => 'Dashboard',
+    'title' => __('main.dashboard'),
 ])
 
 @php
@@ -55,7 +55,7 @@
 
                 @if ($errors->any())
                     <div class="mb-6 pixel-outline px-4 py-3 text-sm border-2 border-red-600 bg-red-50 text-red-800">
-                        <div class="font-bold uppercase tracking-[0.2em] text-xs mb-2">Please fix the errors</div>
+                        <div class="font-bold uppercase tracking-[0.2em] text-xs mb-2">{{ __('main.fix_errors') }}</div>
                         <ul class="list-disc pl-5 space-y-1">
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>

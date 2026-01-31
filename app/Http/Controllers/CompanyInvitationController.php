@@ -64,7 +64,7 @@ class CompanyInvitationController extends Controller
 
         // Optional: prevent inviting yourself
         if (strtolower($data['email']) === strtolower($user->email)) {
-            return back()->with('status', 'Cannot invite your own email.');
+            return back()->with('status', __('main.invite_own_email_error'));
         }
 
         // Create invitation
@@ -80,7 +80,7 @@ class CompanyInvitationController extends Controller
         // Send mail
         Mail::to($invite->email)->send(new CompanyInviteMail($invite));
 
-        return back()->with('status', 'Invitation sent.');
+        return back()->with('status', __('main.invitation_sent'));
     }
 
     public function complete(Request $request, string $token)
