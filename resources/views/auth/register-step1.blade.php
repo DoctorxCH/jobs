@@ -13,9 +13,19 @@
                 </div>
             </div>
 
+            @if ($errors->any())
+                <div class="pixel-outline mb-5 p-4">
+                    <div class="text-sm font-bold">Error</div>
+                    <ul class="mt-2 list-disc pl-5 text-sm text-slate-700">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('frontend.register.step1.post') }}">
                 @csrf
-
                 <div class="pixel-outline p-6">
                     <div class="text-xs uppercase tracking-[0.2em] text-slate-500">Company</div>
 

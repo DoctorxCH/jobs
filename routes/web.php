@@ -14,6 +14,8 @@ use App\Http\Controllers\Frontend\Billing\OrderController as FrontendBillingOrde
 use App\Http\Controllers\Frontend\Billing\PaymentController as FrontendBillingPaymentController;
 use App\Http\Controllers\Frontend\Billing\ProductController as FrontendBillingProductController;
 use App\Http\Controllers\Frontend\ProfileController as FrontendProfileController;
+use App\Http\Controllers\Frontend\CompanyController as FrontendCompanyController;
+use App\Http\Controllers\Frontend\LegalPageController as FrontendLegalPageController;
 use App\Http\Controllers\Frontend\JobController as FrontendJobController;
 use App\Http\Controllers\Frontend\SecurityController as FrontendSecurityController;
 use App\Http\Controllers\CookieConsentController;
@@ -55,8 +57,14 @@ Route::middleware('web')->group(function () {
     Route::get('/login', [FrontendAuthController::class, 'showLogin'])->name('frontend.login');
     Route::post('/login', [FrontendAuthController::class, 'login'])->name('frontend.login.submit');
 
+    // Registration (multi-step)
     Route::get('/register', [FrontendAuthController::class, 'showRegister'])->name('frontend.register');
-    Route::post('/register', [FrontendAuthController::class, 'register'])->name('frontend.register.submit');
+    Route::get('/register/step-1', [FrontendAuthController::class, 'showRegisterStep1'])->name('frontend.register.step1');
+    Route::post('/register/step-1', [FrontendAuthController::class, 'postRegisterStep1'])->name('frontend.register.step1.post');
+    Route::get('/register/step-2', [FrontendAuthController::class, 'showRegisterStep2'])->name('frontend.register.step2');
+    Route::post('/register/step-2', [FrontendAuthController::class, 'postRegisterStep2'])->name('frontend.register.step2.post');
+    Route::get('/register/step-3', [FrontendAuthController::class, 'showRegisterStep3'])->name('frontend.register.step3');
+    Route::post('/register/step-3', [FrontendAuthController::class, 'postRegisterStep3'])->name('frontend.register.step3.post');
 
     Route::post('/logout', [FrontendAuthController::class, 'logout'])->name('frontend.logout');
 
@@ -139,6 +147,12 @@ Route::middleware('web')->group(function () {
 
     Route::get('/jobs/{job}', [FrontendJobController::class, 'show'])
         ->name('jobs.show');
+
+    Route::get('/company/{company}', [FrontendCompanyController::class, 'show'])
+        ->name('company.show');
+
+    Route::get('/agb', [FrontendLegalPageController::class, 'agb'])
+        ->name('legal.agb');
         
     Route::get('/jobs', [FrontendJobController::class, 'publicIndex'])
         ->name('jobs.index');

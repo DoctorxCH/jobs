@@ -503,6 +503,12 @@ class JobController extends Controller
         abort_unless($company, 403);
         $this->assertJobBelongsToCompany($job, $company);
 
+        if (($company->status ?? null) !== 'active') {
+            return redirect()
+                ->route('frontend.jobs.edit', $job)
+                ->with('error', 'Your must be activated by our team before you can publish jobs. This should happen within 1-2 hours during business days. Please contact us if it takes too long.');
+        }
+
         $data = $request->validate([
             'days' => ['required', 'integer', 'min:1'],
         ]);

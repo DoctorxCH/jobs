@@ -3,7 +3,6 @@
         $v = $values ?? [];
         $l = $locked ?? [];
     @endphp
-
     <div class="mx-auto max-w-2xl">
         <div class="pixel-frame p-6">
             <div class="mb-6">
@@ -18,10 +17,21 @@
                 </div>
             </div>
 
+            @if ($errors->any())
+                <div class="pixel-outline mb-5 p-4">
+                    <div class="text-sm font-bold">Error</div>
+                    <ul class="mt-2 list-disc pl-5 text-sm text-slate-700">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('frontend.register.step2.post') }}" class="space-y-4">
                 @csrf
 
-                {{-- LOCKED (read-only, from API/session) --}}
+                {{-- Locked (from registry) --}}
                 <div class="pixel-outline p-6">
                     <div class="text-xs uppercase tracking-[0.2em] text-slate-500">Locked (from registry)</div>
 
@@ -58,7 +68,7 @@
                     </div>
                 </div>
 
-                {{-- OPTIONAL IDs --}}
+                {{-- Optional IDs --}}
                 <div class="pixel-outline p-6">
                     <div class="text-xs uppercase tracking-[0.2em] text-slate-500">IDs</div>
 
@@ -76,7 +86,7 @@
                     </div>
                 </div>
 
-                {{-- REQUIRED: Web/Contacts --}}
+                {{-- Required: Web/Contacts --}}
                 <div class="pixel-outline p-6">
                     <div class="text-xs uppercase tracking-[0.2em] text-slate-500">Company contact (required)</div>
 
@@ -105,7 +115,7 @@
                     </div>
                 </div>
 
-                {{-- REQUIRED: Contact person --}}
+                {{-- Required: Contact person --}}
                 <div class="pixel-outline p-6">
                     <div class="text-xs uppercase tracking-[0.2em] text-slate-500">Contact person (required)</div>
 
@@ -136,7 +146,7 @@
                     </div>
                 </div>
 
-                {{-- REQUIRED: Company facts --}}
+                {{-- Required: Company facts --}}
                 <div class="pixel-outline p-6">
                     <div class="text-xs uppercase tracking-[0.2em] text-slate-500">Company facts (required)</div>
 
@@ -151,6 +161,16 @@
                             <input class="mt-2 pixel-input w-full px-4 py-3 text-sm" name="founded_year" type="number" min="1800" max="{{ date('Y') }}" required value="{{ old('founded_year', $v['founded_year'] ?? '') }}">
                             @error('founded_year')<div class="mt-2 text-xs font-semibold text-red-700">{{ $message }}</div>@enderror
                         </div>
+                    </div>
+                </div>
+
+                {{-- Required: Bio --}}
+                <div class="pixel-outline p-6">
+                    <div class="text-xs uppercase tracking-[0.2em] text-slate-500">Company bio (required)</div>
+                    <div class="mt-4">
+                        <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-600">Bio</label>
+                        <textarea class="pixel-input w-full px-4 py-3 text-sm" name="bio" rows="6" required>{{ old('bio', $v['bio'] ?? '') }}</textarea>
+                        @error('bio')<div class="mt-2 text-xs font-semibold text-red-700">{{ $message }}</div>@enderror
                     </div>
                 </div>
 
