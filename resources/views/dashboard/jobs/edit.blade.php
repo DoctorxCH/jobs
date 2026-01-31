@@ -89,6 +89,18 @@
         @endif
     </div>
 
+    <div id="confirm-modal" class="fixed inset-0 z-50 hidden items-center justify-center">
+        <div class="absolute inset-0 bg-slate-900/40"></div>
+        <div class="relative w-full max-w-md pixel-frame bg-white p-6">
+            <div class="text-xs uppercase tracking-[0.2em] text-slate-500">Please confirm</div>
+            <div id="confirm-message" class="mt-3 text-sm text-slate-700"></div>
+            <div class="mt-6 flex gap-3 justify-end">
+                <button type="button" id="confirm-cancel" class="pixel-outline px-4 py-2 text-xs uppercase tracking-[0.2em]">Cancel</button>
+                <button type="button" id="confirm-ok" class="pixel-button px-4 py-2 text-xs uppercase tracking-[0.2em]">Confirm</button>
+            </div>
+        </div>
+    </div>
+
     @push('scripts')
     <script>
     (() => {
@@ -99,6 +111,31 @@
             const archiveBtn = document.getElementById('job-archive-submit');
             const unarchiveForm = document.getElementById('job-unarchive-form');
             const unarchiveBtn = document.getElementById('job-unarchive-submit');
+
+            const modal = document.getElementById('confirm-modal');
+            const modalMsg = document.getElementById('confirm-message');
+            const modalOk = document.getElementById('confirm-ok');
+            const modalCancel = document.getElementById('confirm-cancel');
+
+            const openConfirm = (message, onConfirm) => {
+                if (!modal || !modalMsg || !modalOk || !modalCancel) return;
+                modalMsg.innerHTML = message;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+
+                const close = () => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    modalOk.onclick = null;
+                    modalCancel.onclick = null;
+                };
+
+                modalCancel.onclick = () => close();
+                modalOk.onclick = () => {
+                    close();
+                    onConfirm?.();
+                };
+            };
 
       const box = document.querySelector('[data-remaining-days][data-credits-per-day]');
       if (!box) return;
@@ -198,31 +235,30 @@
 
             if (archiveBtn && archiveForm) {
                 archiveBtn.addEventListener('click', (event) => {
-                    const ok = confirm('Archive this job? No credits will be refunded.');
-                    if (!ok) {
-                        event.preventDefault();
-                    }
+                    event.preventDefault();
+                    openConfirm('Archive this job? No credits will be refunded.', () => {
+                        archiveForm.submit();
+                    });
                 });
             }
 
+            const getDays = () => Math.max(1, parseInt(daysEl?.value || '1', 10));
+
             if (unarchiveBtn && unarchiveForm) {
                 unarchiveBtn.addEventListener('click', (event) => {
-                    if (isArchived && isExpired) {
-                        const ok = confirm('This job has expired. Unarchive requires credits to publish. Continue?');
-                        if (!ok) {
-                            event.preventDefault();
-                            return;
-                        }
+                    event.preventDefault();
 
-                        event.preventDefault();
-                        postForm?.submit();
+                    if (isArchived && isExpired) {
+                        const requiredCredits = getDays() * creditsPerDay;
+                        openConfirm(`This job has expired. Unarchive requires <strong>${requiredCredits}</strong> credits to publish. Continue?`, () => {
+                            postForm?.submit();
+                        });
                         return;
                     }
 
-                    const ok = confirm('Unarchive this job?');
-                    if (!ok) {
-                        event.preventDefault();
-                    }
+                    openConfirm('Unarchive this job?', () => {
+                        unarchiveForm.submit();
+                    });
                 });
             }
     })();
