@@ -471,67 +471,133 @@ class JobController extends Controller
             ->with('success', 'Job archived.');
     }
 
-    public function post(JobPostRequest $request, Job $job): RedirectResponse
+    public function post(Request $request, Job $job): RedirectResponse
     {
         $company = $this->companyForUser();
         abort_unless($company, 403);
-
         $this->assertJobBelongsToCompany($job, $company);
 
-        $days = (int) ($request->validated()['days'] ?? 0);
-        if ($days < 1) {
-            return redirect()
-                ->route('frontend.jobs.edit', $job)
-                ->with('error', 'Invalid days.');
-        }
+        $data = $request->validate([
+            'days' => ['required', 'integer', 'min:1'],
+        ]);
+
+        $days = (int) $data['days'];
+
+        $now = now();
+
+        $isPublished = !empty($job->published_at) && !empty($job->expires_at) && $job->expires_at->gt($now);
+        $remainingDays = $isPublished ? max(0, (int) ceil($now->diffInSeconds($job->expires_at) / 86400)) : 0;
+
+        $desiredExpiresAt = $now->copy()->addDays($days);
+
+        // credits/day - adjust to your system
+        $creditsPerDay = 1;
 
         $creditService = new CreditService();
         $available = $creditService->availableCredits((int) $company->id);
 
-        $now = now()->startOfDay();
-        $currentExpiry = $job->expires_at ? $job->expires_at->copy()->startOfDay() : null;
+        if (!$isPublished) {
+            // Initial publish: full credits
+            $requiredCredits = $days * $creditsPerDay;
 
-        // User input bedeutet: "bis heute + days"
-        $desiredExpiry = $now->copy()->addDays($days);
-
-        // Nie ein bestehendes späteres expires_at verkürzen
-        $finalExpiry = ($currentExpiry && $currentExpiry->greaterThan($desiredExpiry))
-            ? $currentExpiry
-            : $desiredExpiry;
-
-        // Credits nur für Verlängerung über das spätere von (now, currentExpiry)
-        $base = ($currentExpiry && $currentExpiry->greaterThan($now)) ? $currentExpiry : $now;
-        $required = $finalExpiry->greaterThan($base) ? $base->diffInDays($finalExpiry) : 0;
-
-        if ($required > 0 && $available < $required) {
-            return redirect()
-                ->route('frontend.jobs.edit', $job)
-                ->withErrors(['days' => 'Not enough credits available for this extension.'])
-                ->withInput();
-        }
-
-        DB::transaction(function () use ($company, $job, $required, $finalExpiry): void {
-            if ($required > 0) {
-                DB::table('credit_ledger')->insert([
-                    'company_id' => (int) $company->id,
-                    'change' => -1 * (int) $required,
-                    'reason' => 'job_post',
-                    'reference_type' => 'job',
-                    'reference_id' => (int) $job->id,
-                    'created_by_admin_id' => null,
-                    'created_at' => now(),
-                ]);
+            if ($available < $requiredCredits) {
+                return redirect()
+                    ->route('frontend.jobs.edit', $job)
+                    ->withErrors(['days' => 'Not enough credits available.'])
+                    ->withInput();
             }
 
-            $job->update([
-                'status' => 'published',
-                'published_at' => $job->published_at ?? now(),
-                'expires_at' => $finalExpiry->copy()->endOfDay(),
-            ]);
-        });
+            DB::transaction(function () use ($company, $job, $requiredCredits, $now, $desiredExpiresAt): void {
+                if ($requiredCredits > 0) {
+                    DB::table('credit_ledger')->insert([
+                        'company_id' => (int) $company->id,
+                        'change' => -1 * (int) $requiredCredits,
+                        'reason' => 'job_post',
+                        'reference_type' => 'job',
+                        'reference_id' => (int) $job->id,
+                        'created_by_admin_id' => null,
+                        'created_at' => now(),
+                    ]);
+                }
 
+                $job->forceFill([
+                    'status' => 'published',
+                    'published_at' => $now,
+                    'expires_at' => $desiredExpiresAt->copy()->endOfDay(),
+                ])->save();
+            });
+
+            return redirect()
+                ->route('frontend.jobs.edit', $job)
+                ->with('success', 'Job published.');
+        }
+
+        // Already published: only delta counts
+        $deltaDays = $days - $remainingDays;
+
+        if ($deltaDays > 0) {
+            $requiredCredits = $deltaDays * $creditsPerDay;
+
+            if ($available < $requiredCredits) {
+                return redirect()
+                    ->route('frontend.jobs.edit', $job)
+                    ->withErrors(['days' => 'Not enough credits available for this extension.'])
+                    ->withInput();
+            }
+
+            DB::transaction(function () use ($company, $job, $requiredCredits, $desiredExpiresAt): void {
+                if ($requiredCredits > 0) {
+                    DB::table('credit_ledger')->insert([
+                        'company_id' => (int) $company->id,
+                        'change' => -1 * (int) $requiredCredits,
+                        'reason' => 'job_extend',
+                        'reference_type' => 'job',
+                        'reference_id' => (int) $job->id,
+                        'created_by_admin_id' => null,
+                        'created_at' => now(),
+                    ]);
+                }
+
+                $job->forceFill([
+                    'expires_at' => $desiredExpiresAt->copy()->endOfDay(),
+                ])->save();
+            });
+
+            return redirect()
+                ->route('frontend.jobs.edit', $job)
+                ->with('success', 'Duration extended.');
+        }
+
+        if ($deltaDays < 0) {
+            $refundDays = abs($deltaDays);
+            $refundCredits = (int) ceil(($refundDays * $creditsPerDay) * 0.5);
+
+            DB::transaction(function () use ($company, $job, $refundCredits, $desiredExpiresAt): void {
+                if ($refundCredits > 0) {
+                    DB::table('credit_ledger')->insert([
+                        'company_id' => (int) $company->id,
+                        'change' => (int) $refundCredits,
+                        'reason' => 'job_reduce_refund',
+                        'reference_type' => 'job',
+                        'reference_id' => (int) $job->id,
+                        'created_by_admin_id' => null,
+                        'created_at' => now(),
+                    ]);
+                }
+
+                $job->forceFill([
+                    'expires_at' => $desiredExpiresAt->copy()->endOfDay(),
+                ])->save();
+            });
+
+            return redirect()
+                ->route('frontend.jobs.edit', $job)
+                ->with('success', 'Duration reduced.');
+        }
+
+        // deltaDays === 0 → nothing to do, but UX ok
         return redirect()
             ->route('frontend.jobs.edit', $job)
-            ->with('success', $required > 0 ? 'Job published (credits consumed).' : 'Job published (no extra credits needed).');
+            ->with('success', 'No change.');
     }
 }

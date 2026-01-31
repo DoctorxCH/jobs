@@ -14,7 +14,7 @@ class JobPostRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'days' => ['required', 'integer', 'min:1', 'max:365'],
+            'days' => ['required', 'integer', 'min:1'],
         ];
     }
 }

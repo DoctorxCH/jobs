@@ -1,3 +1,5 @@
+{{-- resources/views/dashboard/profile.blade.php --}}
+
 <x-dashboard.layout title="Profile">
     @php
         $u = $user ?? auth()->user();
@@ -50,13 +52,6 @@
             </div>
         </div>
 
-        @php
-    $canManageTeam = auth()->check()
-        && method_exists(auth()->user(), 'canCompanyManageTeam')
-        && auth()->user()->canCompanyManageTeam();
-@endphp
-
-
         {{-- Company Identity --}}
         <div class="pixel-outline p-6">
             <div class="text-s uppercase tracking-[0.2em] text-slate-800 font-bold">Company identity</div>
@@ -79,8 +74,6 @@
                         <div class="mt-2 text-xs text-red-700">{{ $message }}</div>
                     @enderror
                 </div>
-                
-
 
                 <div>
                     <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">IČO (8 digits) <span class="text-red-500">*</span></label>
@@ -105,38 +98,38 @@
                     <select
                         name="country_code"
                         class="mt-2 pixel-input w-full px-4 py-3 text-sm text-slate-900 outline-none"
-                        value="{{ old('country_code', $c?->country_code ?? 'SK') }}"
                         required
                     >
-                        <option value="AT">Austria</option>
-                        <option value="BE">Belgium</option>
-                        <option value="BG">Bulgaria</option>
-                        <option value="HR">Croatia</option>
-                        <option value="CY">Cyprus</option>
-                        <option value="CZ">Czech Republic</option>
-                        <option value="DK">Denmark</option>
-                        <option value="EE">Estonia</option>
-                        <option value="FI">Finland</option>
-                        <option value="FR">France</option>
-                        <option value="DE">Germany</option>
-                        <option value="GB">United Kingdom</option>
-                        <option value="GR">Greece</option>
-                        <option value="HU">Hungary</option>
-                        <option value="IE">Ireland</option>
-                        <option value="IT">Italy</option>
-                        <option value="LV">Latvia</option>
-                        <option value="LT">Lithuania</option>
-                        <option value="LU">Luxembourg</option>
-                        <option value="MT">Malta</option>
-                        <option value="NL">Netherlands</option>
-                        <option value="PL">Poland</option>
-                        <option value="PT">Portugal</option>
-                        <option value="RO">Romania</option>
-                        <option value="SK" selected>Slovakia</option>
-                        <option value="SI">Slovenia</option>
-                        <option value="ES">Spain</option>
-                        <option value="SE">Sweden</option>
-                        <option value="00">Other</option>
+                        @php($cc = old('country_code', $c?->country_code ?? 'SK'))
+                        <option value="AT" @selected($cc==='AT')>Austria</option>
+                        <option value="BE" @selected($cc==='BE')>Belgium</option>
+                        <option value="BG" @selected($cc==='BG')>Bulgaria</option>
+                        <option value="HR" @selected($cc==='HR')>Croatia</option>
+                        <option value="CY" @selected($cc==='CY')>Cyprus</option>
+                        <option value="CZ" @selected($cc==='CZ')>Czech Republic</option>
+                        <option value="DK" @selected($cc==='DK')>Denmark</option>
+                        <option value="EE" @selected($cc==='EE')>Estonia</option>
+                        <option value="FI" @selected($cc==='FI')>Finland</option>
+                        <option value="FR" @selected($cc==='FR')>France</option>
+                        <option value="DE" @selected($cc==='DE')>Germany</option>
+                        <option value="GB" @selected($cc==='GB')>United Kingdom</option>
+                        <option value="GR" @selected($cc==='GR')>Greece</option>
+                        <option value="HU" @selected($cc==='HU')>Hungary</option>
+                        <option value="IE" @selected($cc==='IE')>Ireland</option>
+                        <option value="IT" @selected($cc==='IT')>Italy</option>
+                        <option value="LV" @selected($cc==='LV')>Latvia</option>
+                        <option value="LT" @selected($cc==='LT')>Lithuania</option>
+                        <option value="LU" @selected($cc==='LU')>Luxembourg</option>
+                        <option value="MT" @selected($cc==='MT')>Malta</option>
+                        <option value="NL" @selected($cc==='NL')>Netherlands</option>
+                        <option value="PL" @selected($cc==='PL')>Poland</option>
+                        <option value="PT" @selected($cc==='PT')>Portugal</option>
+                        <option value="RO" @selected($cc==='RO')>Romania</option>
+                        <option value="SK" @selected($cc==='SK')>Slovakia</option>
+                        <option value="SI" @selected($cc==='SI')>Slovenia</option>
+                        <option value="ES" @selected($cc==='ES')>Spain</option>
+                        <option value="SE" @selected($cc==='SE')>Sweden</option>
+                        <option value="00" @selected($cc==='00')>Other</option>
                     </select>
                     @error('country_code')
                         <div class="mt-2 text-xs text-red-700">{{ $message }}</div>
@@ -329,6 +322,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="md:col-span-2">
                     <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Short description</label>
                     <input name="description_short" class="mt-2 pixel-input w-full px-4 py-3 text-sm text-slate-900 outline-none" value="{{ $val('description_short') }}" maxlength="280" />
@@ -337,20 +331,19 @@
 
                 <div class="md:col-span-2">
                     <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Bio</label>
-                    <div class="mt-2 space-y-2" data-quill-wrapper>
+
+                    <div class="mt-2" data-quill-wrapper>
                         <input type="hidden" name="bio" value="{{ old('bio', $c?->bio ?? '') }}" data-quill-input>
-                        <div class="flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.2em] text-slate-500" data-quill-toolbar>
-                            <button type="button" class="pixel-outline px-2 py-1" data-quill-action="bold"><strong>B</strong></button>
-                            <button type="button" class="pixel-outline px-2 py-1" data-quill-action="italic"><em>I</em></button>
-                            <button type="button" class="pixel-outline px-2 py-1" data-quill-action="underline"><span class="underline">U</span></button>
-                            <button type="button" class="pixel-outline px-2 py-1" data-quill-action="ordered">1.</button>
-                            <button type="button" class="pixel-outline px-2 py-1" data-quill-action="bullet">•</button>
-                            <button type="button" class="pixel-outline px-2 py-1" data-quill-action="link">Link</button>
-                            <button type="button" class="pixel-outline px-2 py-1" data-quill-action="clean">Clear</button>
+
+                        <div class="pixel-outline bg-white">
+                            <div data-quill-toolbar></div>
+                            <div class="min-h-[220px] text-sm text-slate-900" data-quill-editor></div>
                         </div>
-                        <div class="min-h-[160px] w-full border border-slate-300 bg-white text-sm text-slate-900" data-quill-editor></div>
                     </div>
-                    @error('bio') <div class="mt-2 text-xs text-red-700">{{ $message }}</div> @enderror
+
+                    @error('bio')
+                        <div class="mt-2 text-xs text-red-700">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="md:col-span-2">
@@ -402,7 +395,21 @@
 
     @push('head')
         <link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
+        <style>
+            /* Keep Quill icons visible even with global button resets */
+            .ql-snow .ql-toolbar button,
+            .ql-snow.ql-toolbar button { background-color: transparent !important; }
+
+            .ql-snow .ql-stroke { stroke: currentColor !important; }
+            .ql-snow .ql-fill   { fill: currentColor !important; }
+
+            /* Fit Pixel frame */
+            .ql-toolbar.ql-snow { border: 0 !important; border-bottom: 1px solid rgba(15,23,42,.15) !important; }
+            .ql-container.ql-snow { border: 0 !important; }
+            .ql-editor { min-height: 220px; }
+        </style>
     @endpush
+
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
         <script>
@@ -412,55 +419,58 @@
                     const editor = wrapper.querySelector('[data-quill-editor]');
                     const toolbar = wrapper.querySelector('[data-quill-toolbar]');
 
-                    if (!input || !editor || !toolbar) {
-                        return;
-                    }
+                    if (!input || !editor || !toolbar) return;
+
+                    const toolbarOptions = [
+                        [{ header: [1, 2, 3, false] }],
+                        [{ font: [] }],
+                    //    [{ size: ['small', false, 'large'] }],
+                        ['bold', 'italic', 'underline'],
+                        [{ color: [] }, { background: [] }],
+                    //    [{ script: 'sub' }, { script: 'super' }],
+                        [{ list: 'ordered' }, { list: 'bullet' }],
+                        [{ indent: '-1' }, { indent: '+1' }],
+                        [{ align: [] }],
+                        ['blockquote', 'code-block'],
+                    //    ['link'],
+                        ['clean'],
+                    ];
 
                     const quill = new Quill(editor, {
                         theme: 'snow',
                         modules: {
-                            toolbar: false,
-                        },
+                            toolbar: {
+                                container: toolbar,
+                                handlers: {},
+                            }
+                        }
+                    });
+
+                    // IMPORTANT: build toolbar DOM BEFORE Quill scans it
+                    // -> easiest: let Quill build it via array config by creating a temp Quill, OR:
+                    // We rebuild correctly by re-initializing after setting toolbar HTML.
+                    // Instead: init directly with array config on this toolbar container:
+                    quill.destroy?.();
+
+                    const quill2 = new Quill(editor, {
+                        theme: 'snow',
+                        modules: {
+                            toolbar: toolbarOptions,
+                        }
                     });
 
                     if (input.value) {
-                        quill.clipboard.dangerouslyPasteHTML(input.value);
+                        quill2.clipboard.dangerouslyPasteHTML(input.value);
                     }
 
                     const sync = () => {
-                        input.value = quill.root.innerHTML.trim();
+                        input.value = quill2.root.innerHTML.trim();
                     };
 
-                    quill.on('text-change', sync);
+                    quill2.on('text-change', sync);
 
                     const form = wrapper.closest('form');
-                    if (form) {
-                        form.addEventListener('submit', sync);
-                    }
-
-                    toolbar.querySelectorAll('[data-quill-action]').forEach((button) => {
-                        button.addEventListener('click', () => {
-                            const action = button.dataset.quillAction;
-                            if (action === 'ordered') {
-                                quill.format('list', 'ordered');
-                            } else if (action === 'bullet') {
-                                quill.format('list', 'bullet');
-                            } else if (action === 'link') {
-                                const url = prompt('URL');
-                                if (url) {
-                                    const range = quill.getSelection(true);
-                                    quill.format('link', url);
-                                    if (range) {
-                                        quill.setSelection(range.index + range.length, 0);
-                                    }
-                                }
-                            } else if (action === 'clean') {
-                                quill.removeFormat(0, quill.getLength());
-                            } else {
-                                quill.format(action, !quill.getFormat()[action]);
-                            }
-                        });
-                    });
+                    if (form) form.addEventListener('submit', sync);
                 });
             });
         </script>

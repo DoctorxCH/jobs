@@ -81,22 +81,21 @@
             </div>
         </div>
 
-        <div>
-            <label class="{{ $sectionTitleClass }}">Description</label>
-            <div class="mt-2 space-y-2" data-quill-wrapper>
-                <input type="hidden" name="description" value="{{ old('description', $job?->description) }}" data-quill-input>
-                <div class="flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.2em] text-[var(--muted)]" data-quill-toolbar>
-                    <button type="button" class="pixel-outline px-2 py-1" data-quill-action="bold"><strong>B</strong></button>
-                    <button type="button" class="pixel-outline px-2 py-1" data-quill-action="italic"><em>I</em></button>
-                    <button type="button" class="pixel-outline px-2 py-1" data-quill-action="underline"><span class="underline">U</span></button>
-                    <button type="button" class="pixel-outline px-2 py-1" data-quill-action="ordered">1.</button>
-                    <button type="button" class="pixel-outline px-2 py-1" data-quill-action="bullet">•</button>
-                    <button type="button" class="pixel-outline px-2 py-1" data-quill-action="link">Link</button>
-                    <button type="button" class="pixel-outline px-2 py-1" data-quill-action="clean">Clear</button>
+        <div class="md:col-span-2">
+                    <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Description</label>
+
+                    <div class="mt-2" data-quill-wrapper>
+                        <input type="hidden" name="description" value="{{ old('description', $job?->description) }}" data-quill-input>
+
+                        <div class="pixel-outline bg-white">
+                            <div class="min-h-[220px] text-sm text-slate-900" data-quill-editor></div>
+                        </div>
+                    </div>
+
+                    @error('description')
+                        <div class="mt-2 text-xs text-red-700">{{ $message }}</div>
+                    @enderror
                 </div>
-                <div class="min-h-[200px] w-full border border-[var(--ink)]/20 bg-white text-sm" data-quill-editor></div>
-            </div>
-        </div>
     </div>
 
     <div class="{{ $dividerClass }}"></div>
@@ -456,10 +455,23 @@
 
 </div>
 
-@once
-    @push('head')
+@push('head')
         <link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
+        <style>
+            /* Keep Quill icons visible even with global button resets */
+            .ql-snow .ql-toolbar button,
+            .ql-snow.ql-toolbar button { background-color: transparent !important; }
+
+            .ql-snow .ql-stroke { stroke: currentColor !important; }
+            .ql-snow .ql-fill   { fill: currentColor !important; }
+
+            /* Fit Pixel frame */
+            .ql-toolbar.ql-snow { border: 0 !important; border-bottom: 1px solid rgba(15,23,42,.15) !important; }
+            .ql-container.ql-snow { border: 0 !important; }
+            .ql-editor { min-height: 220px; }
+        </style>
     @endpush
+
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
         <script>
@@ -467,62 +479,53 @@
                 document.querySelectorAll('[data-quill-wrapper]').forEach((wrapper) => {
                     const input = wrapper.querySelector('[data-quill-input]');
                     const editor = wrapper.querySelector('[data-quill-editor]');
-                    const toolbar = wrapper.querySelector('[data-quill-toolbar]');
 
-                    if (!input || !editor || !toolbar) {
-                        return;
-                    }
+                    if (!input || !editor) return;
+
+                    const toolbarOptions = [
+                        [{ header: [1, 2, 3, false] }],
+                        [{ font: [] }],
+                        ['bold', 'italic', 'underline'],
+                        [{ color: [] }, { background: [] }],
+                        [{ list: 'ordered' }, { list: 'bullet' }],
+                        [{ indent: '-1' }, { indent: '+1' }],
+                        [{ align: [] }],
+                        ['blockquote', 'code-block'],
+                        ['clean'],
+                    ];
 
                     const quill = new Quill(editor, {
                         theme: 'snow',
                         modules: {
-                            toolbar: false,
-                        },
+                            toolbar: toolbarOptions,
+                        }
                     });
 
+                    // Set initial content from hidden input
                     if (input.value) {
                         quill.clipboard.dangerouslyPasteHTML(input.value);
                     }
 
+                    // Sync Quill content to hidden input
                     const sync = () => {
-                        input.value = quill.root.innerHTML.trim();
+                        const html = quill.root.innerHTML.trim();
+                        // Quill outputs <p><br></p> for empty content
+                        input.value = (html === '<p><br></p>') ? '' : html;
                     };
 
                     quill.on('text-change', sync);
 
+                    // Also sync on form submit to ensure latest content is captured
                     const form = wrapper.closest('form');
                     if (form) {
-                        form.addEventListener('submit', sync);
-                    }
-
-                    toolbar.querySelectorAll('[data-quill-action]').forEach((button) => {
-                        button.addEventListener('click', () => {
-                            const action = button.dataset.quillAction;
-                            if (action === 'ordered') {
-                                quill.format('list', 'ordered');
-                            } else if (action === 'bullet') {
-                                quill.format('list', 'bullet');
-                            } else if (action === 'link') {
-                                const url = prompt('URL');
-                                if (url) {
-                                    const range = quill.getSelection(true);
-                                    quill.format('link', url);
-                                    if (range) {
-                                        quill.setSelection(range.index + range.length, 0);
-                                    }
-                                }
-                            } else if (action === 'clean') {
-                                quill.removeFormat(0, quill.getLength());
-                            } else {
-                                quill.format(action, !quill.getFormat()[action]);
-                            }
+                        form.addEventListener('submit', (e) => {
+                            sync();
                         });
-                    });
+                    }
                 });
             });
         </script>
     @endpush
-@endonce
 
 <script>
     const countrySelect = document.getElementById('country-select');
