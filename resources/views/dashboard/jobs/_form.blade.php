@@ -82,22 +82,27 @@
         </div>
 
         <div class="md:col-span-2">
-                    <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Description</label>
+            <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Description</label>
 
-                    <div class="mt-2" data-quill-wrapper>
-                        <input type="hidden" name="description" value="{{ old('description', $job?->description) }}" data-quill-input>
+            <div class="mt-2" data-quill-wrapper>
+                <input
+                    type="hidden"
+                    name="description"
+                    value="{{ old('description', $job?->description ?? '') }}"
+                    data-quill-input
+                >
 
-                        <div class="pixel-outline bg-white">
-                            <div class="min-h-[220px] text-sm text-slate-900" data-quill-editor></div>
-                        </div>
-                    </div>
-
-                    @error('description')
-                        <div class="mt-2 text-xs text-red-700">{{ $message }}</div>
-                    @enderror
+                <div class="pixel-outline bg-white">
+                    <div data-quill-toolbar></div>
+                    <div class="min-h-[220px] text-sm text-slate-900" data-quill-editor></div>
                 </div>
-    </div>
+            </div>
 
+            @error('description')
+                <div class="mt-2 text-xs text-red-700">{{ $message }}</div>
+            @enderror
+        </div>
+    
     <div class="{{ $dividerClass }}"></div>
 
     {{-- 2) Work --}}
@@ -501,12 +506,13 @@
                         }
                     });
 
-                    // Set initial content from hidden input
-                    if (input.value) {
-                        quill.clipboard.dangerouslyPasteHTML(input.value);
+                    // Set initial content from hidden textarea
+                    const initialContent = input.value || input.textContent || '';
+                    if (initialContent.trim()) {
+                        quill.clipboard.dangerouslyPasteHTML(initialContent);
                     }
 
-                    // Sync Quill content to hidden input
+                    // Sync Quill content to hidden textarea
                     const sync = () => {
                         const html = quill.root.innerHTML.trim();
                         // Quill outputs <p><br></p> for empty content

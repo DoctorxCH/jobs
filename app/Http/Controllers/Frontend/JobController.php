@@ -471,6 +471,32 @@ class JobController extends Controller
             ->with('success', 'Job archived.');
     }
 
+    public function unarchive(Request $request, Job $job): RedirectResponse
+    {
+        $company = $this->companyForUser();
+        abort_unless($company, 403);
+
+        $this->assertJobBelongsToCompany($job, $company);
+
+        $now = now();
+        $isExpired = !empty($job->expires_at) && $job->expires_at->lt($now);
+
+        if ($isExpired) {
+            return redirect()
+                ->route('frontend.jobs.edit', $job)
+                ->with('error', 'Job expired. Please publish again to unarchive.');
+        }
+
+        $job->forceFill([
+            'status' => 'published',
+            'published_at' => $job->published_at ?? $now,
+        ])->save();
+
+        return redirect()
+            ->route('frontend.jobs.edit', $job)
+            ->with('success', 'Job unarchived.');
+    }
+
     public function post(Request $request, Job $job): RedirectResponse
     {
         $company = $this->companyForUser();

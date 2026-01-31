@@ -1,9 +1,8 @@
 <?php
 
-// routes/web.php
-
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
+
 
 use App\Http\Controllers\AdminGateController;
 use App\Http\Controllers\CompanyInvitationController;
@@ -17,7 +16,6 @@ use App\Http\Controllers\Frontend\Billing\ProductController as FrontendBillingPr
 use App\Http\Controllers\Frontend\ProfileController as FrontendProfileController;
 use App\Http\Controllers\Frontend\JobController as FrontendJobController;
 use App\Http\Controllers\Frontend\SecurityController as FrontendSecurityController;
-use App\Http\Controllers\Frontend\CompanyController as FrontendCompanyController;
 use App\Http\Controllers\CookieConsentController;
 
 use App\Http\Middleware\FrontendAuthenticate;
@@ -58,22 +56,7 @@ Route::middleware('web')->group(function () {
     Route::post('/login', [FrontendAuthController::class, 'login'])->name('frontend.login.submit');
 
     Route::get('/register', [FrontendAuthController::class, 'showRegister'])->name('frontend.register');
-    
-    // Registration (multi-step)
-    Route::get('/register', [FrontendAuthController::class, 'showRegister'])->name('frontend.register'); // redirects to step1
-
-    Route::get('/register/step-1', [FrontendAuthController::class, 'showRegisterStep1'])->name('frontend.register.step1');
-    Route::post('/register/step-1', [FrontendAuthController::class, 'postRegisterStep1'])->name('frontend.register.step1.post');
-
-    Route::get('/register/step-2', [FrontendAuthController::class, 'showRegisterStep2'])->name('frontend.register.step2');
-    Route::post('/register/step-2', [FrontendAuthController::class, 'postRegisterStep2'])->name('frontend.register.step2.post');
-
-    Route::get('/register/step-3', [FrontendAuthController::class, 'showRegisterStep3'])->name('frontend.register.step3');
-    Route::post('/register/step-3', [FrontendAuthController::class, 'postRegisterStep3'])->name('frontend.register.step3.post');
-
-    
-    
-    // bckp Route::post('/register', [FrontendAuthController::class, 'register'])->name('frontend.register.submit');
+    Route::post('/register', [FrontendAuthController::class, 'register'])->name('frontend.register.submit');
 
     Route::post('/logout', [FrontendAuthController::class, 'logout'])->name('frontend.logout');
 
@@ -109,6 +92,8 @@ Route::middleware('web')->group(function () {
                 ->name('frontend.jobs.post');
             Route::post('/{job}/archive', [FrontendJobController::class, 'archive'])
                 ->name('frontend.jobs.archive');
+            Route::post('/{job}/unarchive', [FrontendJobController::class, 'unarchive'])
+                ->name('frontend.jobs.unarchive');
         });
 
         Route::prefix('/dashboard/billing')->group(function () {
@@ -142,41 +127,37 @@ Route::middleware('web')->group(function () {
 
     // Cookie consent
     Route::post('/cookies/consent', [CookieConsentController::class, 'store'])
-        ->name('cookies.consent');
+    ->name('cookies.consent');
 
     /*
     |--------------------------------------------------------------------------
-    | Public pages
+    | Jobs demo pages (placeholder)
     |--------------------------------------------------------------------------
     */
-
-    // Jobs
     Route::get('/jobs', [FrontendJobController::class, 'publicIndex'])
         ->name('jobs.index');
 
     Route::get('/jobs/{job}', [FrontendJobController::class, 'show'])
         ->name('jobs.show');
+        
+    Route::get('/jobs', [FrontendJobController::class, 'publicIndex'])
+        ->name('jobs.index');
 
-    // Company public profile (id-binding)
-    Route::get('/company/{company}', [FrontendCompanyController::class, 'show'])
-        ->name('company.show');
-
-    // Team page (temporary closure)
     Route::get('/dashboard/team/invite', function () {
-        $user = auth()->user();
+    $user = auth()->user();
 
-        abort_unless($user && method_exists($user, 'canCompanyManageTeam') && $user->canCompanyManageTeam(), 403);
+    abort_unless($user && method_exists($user, 'canCompanyManageTeam') && $user->canCompanyManageTeam(), 403);
 
-        $companyId = method_exists($user, 'effectiveCompanyId') ? $user->effectiveCompanyId() : null;
+    $companyId = method_exists($user, 'effectiveCompanyId') ? $user->effectiveCompanyId() : null;
 
-        $company = $companyId ? \App\Models\Company::find($companyId) : null;
+    $company = $companyId ? \App\Models\Company::find($companyId) : null;
 
-        $invitations = $company
-            ? \App\Models\CompanyInvitation::where('company_id', $company->id)->latest()->get()
-            : collect();
+    $invitations = $company
+        ? \App\Models\CompanyInvitation::where('company_id', $company->id)->latest()->get()
+        : collect();
 
-        return view('dashboard.team', compact('company', 'invitations'));
-    })->middleware(\App\Http\Middleware\FrontendAuthenticate::class)->name('frontend.team');
+    return view('dashboard.team', compact('company', 'invitations'));
+})->middleware(\App\Http\Middleware\FrontendAuthenticate::class)->name('frontend.team');
 
     Route::post('/dashboard/team/invite', [CompanyInvitationController::class, 'send'])
         ->middleware(\App\Http\Middleware\FrontendAuthenticate::class)
@@ -192,4 +173,5 @@ Route::middleware('web')->group(function () {
 
     Route::post('/company-invite/{token}', [CompanyInvitationController::class, 'complete'])
         ->name('company.invite.complete');
+        
 });

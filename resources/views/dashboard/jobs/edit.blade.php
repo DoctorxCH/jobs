@@ -2,24 +2,19 @@
     <form
     method="POST"
     action="{{ route('frontend.jobs.update', $job) }}"
+    id="job-edit-form"
 >
     @csrf
     @method('PUT')
 
     @include('dashboard.jobs._form', ['job' => $job])
 
-    <div class="mt-6 flex gap-3">
-        <button
-            type="submit"
-            class="pixel-button px-6 py-3 text-xs uppercase tracking-[0.2em]"
-        >
-            Save changes
-        </button>
-    </div>
-</form>
+    </form>
     @php
         $now = now();
         $isPublished = !empty($job->published_at) && !empty($job->expires_at) && $job->expires_at->gt($now);
+        $isArchived = ($job->status ?? null) === 'archived';
+        $isExpired = !empty($job->expires_at) && $job->expires_at->lt($now);
 
         // remaining days (min 0)
         $remainingDays = $isPublished ? max(0, (int) ceil($now->diffInSeconds($job->expires_at) / 86400)) : 0;
@@ -28,10 +23,12 @@
         $creditsPerDay = (int) ($creditsPerDay ?? 1);
     @endphp
 
-    <div class="mt-10 pixel-outline p-4"
+        <div class="mt-10 pixel-outline p-4"
          data-remaining-days="{{ $remainingDays }}"
          data-credits-per-day="{{ $creditsPerDay }}"
-         data-is-published="{{ $isPublished ? 1 : 0 }}">
+            data-is-published="{{ $isPublished ? 1 : 0 }}"
+            data-is-archived="{{ $isArchived ? 1 : 0 }}"
+            data-is-expired="{{ $isExpired ? 1 : 0 }}">
         <div class="text-xs uppercase tracking-[0.2em] text-slate-500">
             {{ $isPublished ? 'Change duration' : 'Publish job' }}
         </div>
@@ -43,7 +40,8 @@
             @endif
         </div>
 
-        <form method="POST" action="{{ route('frontend.jobs.post', $job) }}"
+          <form method="POST" action="{{ route('frontend.jobs.post', $job) }}"
+              id="job-post-form"
               class="mt-4 grid gap-3 md:grid-cols-[200px_1fr_auto] items-end">
             @csrf
 
@@ -73,26 +71,43 @@
                 </div>
             </div>
 
-            <button type="submit" class="pixel-outline px-6 py-2 text-xs uppercase tracking-[0.2em]">
+            <button type="submit" id="job-post-submit" class="pixel-button px-6 py-3 text-xs uppercase tracking-[0.2em]">
                 {{ $isPublished ? 'Update duration' : 'Publish' }}
             </button>
         </form>
 
-        <form method="POST" action="{{ route('frontend.jobs.archive', $job) }}" class="mt-4">
-            @csrf
-            <button type="submit" class="pixel-outline px-4 py-2 text-xs uppercase tracking-[0.2em]">Archive</button>
-        </form>
+        @if ($isArchived)
+            <form method="POST" action="{{ route('frontend.jobs.unarchive', $job) }}" class="mt-4" id="job-unarchive-form">
+                @csrf
+                <button type="submit" id="job-unarchive-submit" class="pixel-outline px-4 py-2 text-xs uppercase tracking-[0.2em]">Unarchive</button>
+            </form>
+        @else
+            <form method="POST" action="{{ route('frontend.jobs.archive', $job) }}" class="mt-4" id="job-archive-form">
+                @csrf
+                <button type="submit" id="job-archive-submit" class="pixel-outline px-4 py-2 text-xs uppercase tracking-[0.2em]">Archive</button>
+            </form>
+        @endif
     </div>
 
     @push('scripts')
     <script>
     (() => {
+            const editForm = document.getElementById('job-edit-form');
+            const postForm = document.getElementById('job-post-form');
+            const postBtn = document.getElementById('job-post-submit');
+            const archiveForm = document.getElementById('job-archive-form');
+            const archiveBtn = document.getElementById('job-archive-submit');
+            const unarchiveForm = document.getElementById('job-unarchive-form');
+            const unarchiveBtn = document.getElementById('job-unarchive-submit');
+
       const box = document.querySelector('[data-remaining-days][data-credits-per-day]');
       if (!box) return;
 
-      const remainingDays = parseInt(box.dataset.remainingDays || '0', 10);
-      const creditsPerDay = parseInt(box.dataset.creditsPerDay || '1', 10);
-      const isPublished   = box.dataset.isPublished === '1';
+    const remainingDays = parseInt(box.dataset.remainingDays || '0', 10);
+    const creditsPerDay = parseInt(box.dataset.creditsPerDay || '1', 10);
+    const isPublished   = box.dataset.isPublished === '1';
+    const isArchived    = box.dataset.isArchived === '1';
+    const isExpired     = box.dataset.isExpired === '1';
 
       const daysEl = document.getElementById('post-days');
       const expiryEl = document.getElementById('post-expiry');
@@ -149,6 +164,67 @@
 
       daysEl.addEventListener('input', calc);
       calc();
+
+            if (postBtn && editForm && postForm) {
+                postBtn.addEventListener('click', async (event) => {
+                    // Save main form first, then submit duration/publish
+                    event.preventDefault();
+
+                    if (!editForm.checkValidity()) {
+                        editForm.requestSubmit();
+                        return;
+                    }
+
+                    try {
+                        const formData = new FormData(editForm);
+                        const response = await fetch(editForm.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                        });
+
+                        if (response.ok) {
+                            postForm.submit();
+                        } else {
+                            editForm.submit();
+                        }
+                    } catch (e) {
+                        editForm.submit();
+                    }
+                });
+            }
+
+            if (archiveBtn && archiveForm) {
+                archiveBtn.addEventListener('click', (event) => {
+                    const ok = confirm('Archive this job? No credits will be refunded.');
+                    if (!ok) {
+                        event.preventDefault();
+                    }
+                });
+            }
+
+            if (unarchiveBtn && unarchiveForm) {
+                unarchiveBtn.addEventListener('click', (event) => {
+                    if (isArchived && isExpired) {
+                        const ok = confirm('This job has expired. Unarchive requires credits to publish. Continue?');
+                        if (!ok) {
+                            event.preventDefault();
+                            return;
+                        }
+
+                        event.preventDefault();
+                        postForm?.submit();
+                        return;
+                    }
+
+                    const ok = confirm('Unarchive this job?');
+                    if (!ok) {
+                        event.preventDefault();
+                    }
+                });
+            }
     })();
     </script>
     @endpush
