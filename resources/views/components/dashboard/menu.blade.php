@@ -3,8 +3,9 @@
         ['label' => 'Dashboard', 'route' => 'frontend.dashboard'],
         ['label' => 'Profile',   'route' => 'frontend.profile'],
         ['label' => 'Security',  'route' => 'frontend.security'],
-        ['label' => 'Jobs',      'route' => 'frontend.jobs.index'],
-        ['label' => 'Team',      'route' => 'frontend.team'],
+        ['label' => 'Jobs',  'route' => 'frontend.jobs.index'],
+        ['label' => 'Team Invitations', 'route' => 'frontend.team'],
+        ['label' => __('main.contact'), 'route' => 'frontend.contact'],
     ];
 
     $user = auth()->user();
@@ -14,40 +15,47 @@
 
     $billingItems = [
         ['label' => 'Products', 'route' => 'frontend.billing.products.index'],
-        ['label' => 'Orders',   'route' => 'frontend.billing.orders.index'],
+        ['label' => 'Orders', 'route' => 'frontend.billing.orders.index'],
         ['label' => 'Invoices', 'route' => 'frontend.billing.invoices.index'],
         ['label' => 'Payments', 'route' => 'frontend.billing.payments.index'],
     ];
 @endphp
 
-<nav class="pixel-outline px-3 py-2 bg-white">
-    <div class="flex flex-col gap-2">
+<nav class="pixel-outline px-4 py-3">
+    <div class="flex flex-col gap-4">
+        <div class="flex flex-wrap items-center gap-2">
+            @foreach ($items as $item)
+                @php
+                    $active = request()->routeIs($item['route']);
+                @endphp
 
-        {{-- main --}}
-        @foreach ($items as $item)
-            @php($active = request()->routeIs($item['route']))
-            <a href="{{ route($item['route']) }}"
-               class="px-3 py-2 text-xs uppercase tracking-[0.2em]
-                      {{ $active ? 'accent font-bold' : 'text-slate-600 hover:text-slate-900' }}">
-                {{ $item['label'] }}
-            </a>
-        @endforeach
-
-        {{-- divider --}}
-        @if ($companyId)
-            <span class="my-2 h-px w-full bg-slate-200"></span>
-
-
-            {{-- billing --}}
-            @foreach ($billingItems as $item)
-                @php($active = request()->routeIs($item['route']))
-                <a href="{{ route($item['route']) }}"
-                   class="px-3 py-2 text-xs uppercase tracking-[0.2em]
-                          {{ $active ? 'accent font-bold' : 'text-slate-600 hover:text-slate-900' }}">
+                <a
+                    href="{{ route($item['route']) }}"
+                    class="px-3 py-2 text-xs uppercase tracking-[0.2em]
+                           {{ $active ? 'accent font-bold' : 'text-slate-600 hover:text-slate-900' }}"
+                >
                     {{ $item['label'] }}
                 </a>
             @endforeach
-        @endif
+        </div>
 
+        @if ($companyId)
+            <div class="flex flex-wrap items-center gap-2">
+                <span class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Billing</span>
+                @foreach ($billingItems as $item)
+                    @php
+                        $active = request()->routeIs($item['route']);
+                    @endphp
+
+                    <a
+                        href="{{ route($item['route']) }}"
+                        class="px-3 py-2 text-xs uppercase tracking-[0.2em]
+                               {{ $active ? 'accent font-bold' : 'text-slate-600 hover:text-slate-900' }}"
+                    >
+                        {{ $item['label'] }}
+                    </a>
+                @endforeach
+            </div>
+        @endif
     </div>
 </nav>

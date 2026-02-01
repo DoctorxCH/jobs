@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CouponScope extends Model
 {
+    protected $table = 'coupon_scopes';
+
     protected $fillable = [
         'coupon_id',
         'scope_type',
@@ -19,6 +21,6 @@ class CouponScope extends Model
 
     public function coupon(): BelongsTo
     {
-        return $this->belongsTo(Coupon::class);
+        return $this->belongsTo(Coupon::class, 'coupon_id');
     }
 }

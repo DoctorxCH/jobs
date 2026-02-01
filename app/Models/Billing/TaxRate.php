@@ -7,22 +7,25 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TaxRate extends Model
 {
+    protected $table = 'tax_rates';
+
     protected $fillable = [
-        'country_code',
         'tax_class_id',
-        'rate_percent',
+        'rate',
+        'active',
         'valid_from',
         'valid_to',
     ];
 
     protected $casts = [
-        'rate_percent' => 'decimal:2',
-        'valid_from' => 'date',
-        'valid_to' => 'date',
+        'rate' => 'decimal:2',
+        'active' => 'boolean',
+        'valid_from' => 'datetime',
+        'valid_to' => 'datetime',
     ];
 
     public function taxClass(): BelongsTo
     {
-        return $this->belongsTo(TaxClass::class);
+        return $this->belongsTo(TaxClass::class, 'tax_class_id');
     }
 }

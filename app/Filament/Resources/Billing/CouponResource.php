@@ -16,41 +16,96 @@ class CouponResource extends Resource
 {
     protected static ?string $model = Coupon::class;
 
-    protected static ?string $navigationGroup = 'Finance';
+    protected static ?string $navigationIcon = 'heroicon-o-ticket';
+    protected static ?string $navigationGroup = 'Billing';
     protected static ?string $navigationLabel = 'Coupons';
-    protected static ?string $navigationIcon = 'heroicon-o-tag';
+    protected static ?int $navigationSort = 20;
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\TextInput::make('code')
-                ->required()
-                ->maxLength(255)
-                ->unique(ignoreRecord: true),
-            Forms\Components\TextInput::make('name')
-                ->required()
-                ->maxLength(255),
-            Forms\Components\Textarea::make('description')
-                ->rows(3)
-                ->nullable(),
-            Forms\Components\Select::make('discount_type')
-                ->options(['percent' => 'Percent', 'fixed' => 'Fixed'])
-                ->required(),
-            Forms\Components\TextInput::make('discount_value')
-                ->numeric()
-                ->required(),
-            Forms\Components\TextInput::make('currency')
-                ->maxLength(3)
-                ->nullable(),
-            Forms\Components\DateTimePicker::make('valid_from')->nullable(),
-            Forms\Components\DateTimePicker::make('valid_to')->nullable(),
-            Forms\Components\TextInput::make('min_cart_amount_minor')->numeric()->nullable(),
-            Forms\Components\TextInput::make('max_discount_amount_minor')->numeric()->nullable(),
-            Forms\Components\TextInput::make('usage_limit_total')->numeric()->nullable(),
-            Forms\Components\TextInput::make('usage_limit_per_company')->numeric()->nullable(),
-            Forms\Components\TextInput::make('usage_limit_per_user')->numeric()->nullable(),
-            Forms\Components\Toggle::make('stackable')->default(false),
-            Forms\Components\Toggle::make('active')->default(true),
+            Forms\Components\Section::make('Coupon')
+                ->schema([
+                    Forms\Components\TextInput::make('code')
+                        ->required()
+                        ->maxLength(50)
+                        ->unique(ignoreRecord: true)
+                        ->helperText('Uppercase recommended.'),
+
+                    Forms\Components\TextInput::make('name')
+                        ->required()
+                        ->maxLength(150),
+
+                    Forms\Components\Textarea::make('description')
+                        ->rows(3)
+                        ->nullable(),
+                ])->columns(2),
+
+            Forms\Components\Section::make('Discount')
+                ->schema([
+                    Forms\Components\Select::make('discount_type')
+                        ->options([
+                            'fixed' => 'Fixed',
+                            'percent' => 'Percent',
+                        ])
+                        ->required(),
+
+                    Forms\Components\TextInput::make('discount_value')
+                        ->required()
+                        ->numeric()
+                        ->minValue(0),
+
+                    Forms\Components\TextInput::make('currency')
+                        ->maxLength(3)
+                        ->placeholder('EUR'),
+
+                    Forms\Components\TextInput::make('min_cart_amount_minor')
+                        ->label('Min cart amount (minor)')
+                        ->numeric()
+                        ->minValue(0)
+                        ->nullable(),
+
+                    Forms\Components\TextInput::make('max_discount_amount_minor')
+                        ->label('Max discount amount (minor)')
+                        ->numeric()
+                        ->minValue(0)
+                        ->nullable(),
+                ])->columns(2),
+
+            Forms\Components\Section::make('Validity & limits')
+                ->schema([
+                    Forms\Components\DateTimePicker::make('valid_from')
+                        ->seconds(false)
+                        ->nullable(),
+
+                    Forms\Components\DateTimePicker::make('valid_to')
+                        ->seconds(false)
+                        ->nullable(),
+
+                    Forms\Components\TextInput::make('usage_limit_total')
+                        ->numeric()
+                        ->minValue(0)
+                        ->nullable(),
+
+                    Forms\Components\TextInput::make('usage_limit_per_company')
+                        ->numeric()
+                        ->minValue(0)
+                        ->nullable(),
+
+                    Forms\Components\TextInput::make('usage_limit_per_user')
+                        ->numeric()
+                        ->minValue(0)
+                        ->nullable(),
+                ])->columns(2),
+
+            Forms\Components\Section::make('State')
+                ->schema([
+                    Forms\Components\Toggle::make('stackable')
+                        ->default(false),
+
+                    Forms\Components\Toggle::make('active')
+                        ->default(true),
+                ])->columns(2),
         ]);
     }
 
@@ -58,13 +113,15 @@ class CouponResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('code')->searchable(),
-                Tables\Columns\TextColumn::make('name')->searchable(),
-                Tables\Columns\TextColumn::make('discount_type'),
-                Tables\Columns\TextColumn::make('discount_value'),
-                Tables\Columns\IconColumn::make('active')->boolean(),
-                Tables\Columns\TextColumn::make('valid_from')->dateTime(),
-                Tables\Columns\TextColumn::make('valid_to')->dateTime(),
+                Tables\Columns\TextColumn::make('code')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('name')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('discount_type')->sortable(),
+                Tables\Columns\TextColumn::make('discount_value')->sortable(),
+                Tables\Columns\TextColumn::make('currency')->sortable(),
+                Tables\Columns\IconColumn::make('active')->boolean()->sortable(),
+                Tables\Columns\IconColumn::make('stackable')->boolean()->sortable(),
+                Tables\Columns\TextColumn::make('valid_from')->dateTime()->sortable(),
+                Tables\Columns\TextColumn::make('valid_to')->dateTime()->sortable(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

@@ -2,17 +2,96 @@
     <div class="flex flex-col gap-6">
         <div>
             <a href="{{ route('frontend.billing.products.show', $product) }}"
-               class="text-xs uppercase tracking-[0.2em] text-slate-500">← Back to product</a>
-            <h1 class="mt-2 text-2xl font-bold">Checkout</h1>
+               class="text-xs uppercase tracking-[0.2em] text-slate-500">← {{ __('main.back_to_product') }}</a>
+            <h1 class="mt-2 text-2xl font-bold">{{ __('main.checkout') }}</h1>
             <p class="mt-2 text-sm text-slate-600">
-                Confirm your order details before placing the order.
+                {{ __('main.checkout_confirm') }}
             </p>
         </div>
 
         <div class="pixel-outline p-6 flex flex-col gap-4">
-            <div class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Product</div>
+            <div class="text-[10px] uppercase tracking-[0.28em] text-slate-500">{{ __('main.product') }}</div>
             <div class="text-lg font-bold">{{ $product->name }}</div>
-            <div class="text-sm text-slate-600">{{ $product->description ?? '—' }}</div>
+            <div class="text-sm text-slate-600 whitespace-pre-line leading-6">{{ $product->description ?? '—' }}</div>
+        </div>
+
+        @php
+            $appliedCoupons = session('checkout.coupons', []);
+        @endphp
+
+        <div class="pixel-outline p-6 flex flex-col gap-4">
+            <div class="text-[10px] uppercase tracking-[0.28em] text-slate-500">{{ __('main.coupons') }}</div>
+
+            <form method="POST"
+                  action="{{ route('frontend.billing.coupons.apply') }}"
+                  class="flex flex-col gap-3"
+                  id="couponApplyForm">
+                @csrf
+
+                <div class="flex flex-col gap-3 md:flex-row md:items-end">
+                    <div class="flex-1">
+                        <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">{{ __('main.coupon_code') }}</label>
+                        <input
+                            name="coupon_code"
+                            class="mt-2 pixel-input w-full px-4 py-3 text-sm text-slate-900 outline-none"
+                            placeholder="{{ __('main.coupon_code_placeholder') }}"
+                            value="{{ old('coupon_code') }}"
+                        />
+                        @error('coupon_code')
+                            <div class="mt-2 text-xs text-red-600">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <button type="submit"
+                            class="inline-flex pixel-outline px-6 py-3 text-xs uppercase tracking-[0.2em]">
+                        {{ __('main.apply') }}
+                    </button>
+                </div>
+
+                <input type="hidden" name="qty" id="couponQty" value="{{ (int) old('qty', $qty ?? 1) }}" />
+                <input type="hidden" name="unit_net_minor" id="couponUnitNetMinor" value="{{ (int) $price->unit_net_amount_minor }}" />
+                <input type="hidden" name="currency" value="{{ $price->currency }}" />
+                <input type="hidden" name="product_id" value="{{ $product->id }}" />
+                @if(isset($product->category_id))
+                    <input type="hidden" name="category_id" value="{{ $product->category_id }}" />
+                @endif
+            </form>
+
+            @if (session('coupon_applied'))
+                <div class="text-xs text-green-700">{{ session('coupon_applied') }}</div>
+            @endif
+
+            @if (session('coupon_removed'))
+                <div class="text-xs text-slate-600">{{ session('coupon_removed') }}</div>
+            @endif
+
+            @if (!empty($appliedCoupons))
+                <div class="flex flex-col gap-2 text-sm text-slate-700">
+                    @foreach ($appliedCoupons as $coupon)
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <div class="font-semibold">{{ $coupon['code'] ?? '' }}</div>
+                                <div class="text-xs text-slate-500">
+                                    {{ $coupon['name'] ?? '' }}
+                                    @if (!empty($coupon['discount_type']) && isset($coupon['discount_value']))
+                                        · {{ $coupon['discount_type'] === 'percent' ? $coupon['discount_value'].'%' : $coupon['discount_value'] }}
+                                    @endif
+                                </div>
+                            </div>
+
+                            <form method="POST" action="{{ route('frontend.billing.coupons.remove') }}">
+                                @csrf
+                                <input type="hidden" name="coupon_code" value="{{ $coupon['code'] ?? '' }}" />
+                                <button type="submit" class="text-xs uppercase tracking-[0.2em] text-slate-500 hover:text-slate-900">
+                                    {{ __('main.remove') }}
+                                </button>
+                            </form>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="text-sm text-slate-500">{{ __('main.no_coupons_applied') }}</div>
+            @endif
         </div>
 
         <form method="POST"
@@ -23,11 +102,16 @@
               data-unit-net-minor="{{ (int) $price->unit_net_amount_minor }}"
               data-unit-tax-minor="{{ (int) ($unitTaxMinor ?? 0) }}"
               data-unit-gross-minor="{{ (int) ($unitGrossMinor ?? 0) }}"
+              data-coupons='@json(array_values($appliedCoupons))'
         >
             @csrf
 
+            @foreach ($appliedCoupons as $coupon)
+                <input type="hidden" name="coupon_codes[]" value="{{ $coupon['code'] ?? '' }}" />
+            @endforeach
+
             <div>
-                <div class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Quantity</div>
+                <div class="text-[10px] uppercase tracking-[0.28em] text-slate-500">{{ __('main.quantity') }}</div>
 
                 <div class="mt-2 flex items-center gap-3">
                     <input
@@ -54,29 +138,29 @@
             </div>
 
             <div class="pixel-outline p-4 flex flex-col gap-2 text-sm text-slate-700">
-                <div class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Order summary</div>
+                <div class="text-[10px] uppercase tracking-[0.28em] text-slate-500">{{ __('main.order_summary') }}</div>
 
                 <div class="flex justify-between gap-3">
-                    <span>Unit net price</span>
+                    <span>{{ __('main.unit_net_price') }}</span>
                     <span class="font-bold" id="unitNetDisplay">
                         {{ format_money_minor($price->unit_net_amount_minor, $price->currency) }}
                     </span>
                 </div>
 
                 <div class="flex justify-between gap-3">
-                    <span>VAT rate</span>
+                    <span>{{ __('main.vat_rate') }}</span>
                     <span>{{ number_format($taxRate, 2) }}%</span>
                 </div>
 
                 <div class="flex justify-between gap-3">
-                    <span>Unit VAT amount</span>
+                    <span>{{ __('main.unit_vat_amount') }}</span>
                     <span id="unitTaxDisplay">
                         {{ format_money_minor($unitTaxMinor ?? 0, $price->currency) }}
                     </span>
                 </div>
 
                 <div class="flex justify-between gap-3">
-                    <span>Unit gross total</span>
+                    <span>{{ __('main.unit_gross_total') }}</span>
                     <span class="font-bold" id="unitGrossDisplay">
                         {{ format_money_minor($unitGrossMinor ?? 0, $price->currency) }}
                     </span>
@@ -85,36 +169,50 @@
                 <div class="h-px bg-slate-200 my-2"></div>
 
                 <div class="flex justify-between gap-3">
-                    <span>Subtotal net (qty)</span>
+                    <span>{{ __('main.subtotal_net_qty') }}</span>
                     <span class="font-bold" id="subtotalNetDisplay">
                         {{ format_money_minor($subtotalNetMinor ?? (int) $price->unit_net_amount_minor, $price->currency) }}
                     </span>
                 </div>
 
                 <div class="flex justify-between gap-3">
-                    <span>VAT amount (qty)</span>
+                    <span>{{ __('main.vat_amount_qty') }}</span>
                     <span id="taxDisplay">
                         {{ format_money_minor($taxMinor ?? 0, $price->currency) }}
                     </span>
                 </div>
 
                 <div class="flex justify-between gap-3">
-                    <span>Total (qty)</span>
+                    <span>{{ __('main.discounts') }}</span>
+                    <span id="discountDisplay">
+                        {{ format_money_minor(0, $price->currency) }}
+                    </span>
+                </div>
+
+                <div class="flex justify-between gap-3">
+                    <span>{{ __('main.total_qty') }}</span>
                     <span class="font-bold" id="grossDisplay">
+                        {{ format_money_minor($grossMinor ?? 0, $price->currency) }}
+                    </span>
+                </div>
+
+                <div class="flex justify-between gap-3">
+                    <span>{{ __('main.total_after_discount') }}</span>
+                    <span class="font-bold" id="grossAfterDiscountDisplay">
                         {{ format_money_minor($grossMinor ?? 0, $price->currency) }}
                     </span>
                 </div>
             </div>
 
             <div class="pixel-outline p-4 text-sm text-slate-600">
-                <div class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Tax rule</div>
-                <div class="mt-2">Rule: <span class="font-bold">{{ $taxRule['tax_rule'] ?? '—' }}</span></div>
-                <div>Reverse charge: <span class="font-bold">{{ ($taxRule['reverse_charge'] ?? false) ? 'Yes' : 'No' }}</span></div>
+                <div class="text-[10px] uppercase tracking-[0.28em] text-slate-500">{{ __('main.tax_rule') }}</div>
+                <div class="mt-2">{{ __('main.rule') }}: <span class="font-bold">{{ $taxRule['tax_rule'] ?? '—' }}</span></div>
+                <div>{{ __('main.reverse_charge') }}: <span class="font-bold">{{ ($taxRule['reverse_charge'] ?? false) ? __('main.yes') : __('main.no') }}</span></div>
             </div>
 
             <button type="submit"
                     class="inline-flex pixel-outline px-6 py-3 text-xs uppercase tracking-[0.2em]">
-                Place order
+                {{ __('main.place_order') }}
             </button>
         </form>
     </div>
@@ -128,6 +226,9 @@
             const subtotalNetDisplay = document.getElementById('subtotalNetDisplay');
             const taxDisplay = document.getElementById('taxDisplay');
             const grossDisplay = document.getElementById('grossDisplay');
+            const discountDisplay = document.getElementById('discountDisplay');
+            const grossAfterDiscountDisplay = document.getElementById('grossAfterDiscountDisplay');
+            const couponQtyInput = document.getElementById('couponQty');
 
             if (!form || !qty || !qtyValue || !subtotalNetDisplay || !taxDisplay || !grossDisplay) return;
 
@@ -135,6 +236,7 @@
             const unitNetMinor = parseInt(form.dataset.unitNetMinor || '0', 10);
             const unitTaxMinor = parseInt(form.dataset.unitTaxMinor || '0', 10);
             const unitGrossMinor = parseInt(form.dataset.unitGrossMinor || '0', 10);
+            const coupons = JSON.parse(form.dataset.coupons || '[]');
 
             function money(minor) {
                 const v = (minor / 100).toFixed(2);
@@ -147,9 +249,55 @@
                 qty.value = String(q);
                 qtyValue.textContent = String(q);
 
-                subtotalNetDisplay.textContent = money(unitNetMinor * q);
-                taxDisplay.textContent = money(unitTaxMinor * q);
-                grossDisplay.textContent = money(unitGrossMinor * q);
+                if (couponQtyInput) {
+                    couponQtyInput.value = String(q);
+                }
+
+                const subtotalNet = unitNetMinor * q;
+                const taxTotal = unitTaxMinor * q;
+                const grossTotal = unitGrossMinor * q;
+
+                subtotalNetDisplay.textContent = money(subtotalNet);
+                taxDisplay.textContent = money(taxTotal);
+                grossDisplay.textContent = money(grossTotal);
+
+                const discountTotal = calculateDiscountTotal(subtotalNet, coupons);
+                if (discountDisplay) {
+                    discountDisplay.textContent = money(discountTotal);
+                }
+                if (grossAfterDiscountDisplay) {
+                    const discountedGross = Math.max(0, grossTotal - discountTotal);
+                    grossAfterDiscountDisplay.textContent = money(discountedGross);
+                }
+            }
+
+            function calculateDiscountTotal(subtotalNetMinor, appliedCoupons) {
+                let remaining = subtotalNetMinor;
+                let total = 0;
+
+                appliedCoupons.forEach((coupon) => {
+                    if (remaining <= 0) return;
+
+                    const type = coupon.discount_type || '';
+                    const value = parseFloat(coupon.discount_value || 0);
+                    let discount = 0;
+
+                    if (type === 'percent') {
+                        discount = Math.round(remaining * (value / 100));
+                    } else if (type === 'fixed') {
+                        discount = Math.round(value * 100);
+                    }
+
+                    if (coupon.max_discount_amount_minor) {
+                        discount = Math.min(discount, parseInt(coupon.max_discount_amount_minor, 10));
+                    }
+
+                    discount = Math.max(0, Math.min(discount, remaining));
+                    total += discount;
+                    remaining -= discount;
+                });
+
+                return total;
             }
 
             qty.addEventListener('input', update);

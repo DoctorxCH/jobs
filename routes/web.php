@@ -9,10 +9,12 @@ use App\Http\Controllers\CompanyInvitationController;
 
 use App\Http\Controllers\Frontend\AuthController as FrontendAuthController;
 use App\Http\Controllers\Frontend\DashboardController as FrontendDashboardController;
+use App\Http\Controllers\Frontend\ContactController as FrontendContactController;
 use App\Http\Controllers\Frontend\Billing\InvoiceController as FrontendBillingInvoiceController;
 use App\Http\Controllers\Frontend\Billing\OrderController as FrontendBillingOrderController;
 use App\Http\Controllers\Frontend\Billing\PaymentController as FrontendBillingPaymentController;
 use App\Http\Controllers\Frontend\Billing\ProductController as FrontendBillingProductController;
+use App\Http\Controllers\Frontend\Billing\CouponController as FrontendBillingCouponController;
 use App\Http\Controllers\Frontend\ProfileController as FrontendProfileController;
 use App\Http\Controllers\Frontend\CompanyController as FrontendCompanyController;
 use App\Http\Controllers\Frontend\LegalPageController as FrontendLegalPageController;
@@ -85,6 +87,11 @@ Route::middleware('web')->group(function () {
         Route::post('/dashboard/security', [FrontendSecurityController::class, 'update'])
             ->name('frontend.security.update');
 
+        Route::get('/dashboard/contact', [FrontendContactController::class, 'create'])
+            ->name('frontend.contact');
+        Route::post('/dashboard/contact', [FrontendContactController::class, 'store'])
+            ->name('frontend.contact.store');
+
         Route::prefix('/dashboard/jobs')->group(function () {
             Route::get('/', [FrontendJobController::class, 'index'])
                 ->name('frontend.jobs.index');
@@ -113,6 +120,11 @@ Route::middleware('web')->group(function () {
                 ->name('frontend.billing.products.checkout');
             Route::post('/products/{product}/checkout', [FrontendBillingProductController::class, 'placeOrder'])
                 ->name('frontend.billing.products.checkout.store');
+
+            Route::post('/coupons/apply', [FrontendBillingCouponController::class, 'apply'])
+                ->name('frontend.billing.coupons.apply');
+            Route::post('/coupons/remove', [FrontendBillingCouponController::class, 'remove'])
+                ->name('frontend.billing.coupons.remove');
 
             Route::get('/orders', [FrontendBillingOrderController::class, 'index'])
                 ->name('frontend.billing.orders.index');

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Coupon extends Model
 {
+    protected $table = 'coupons';
+
     protected $fillable = [
         'code',
         'name',
@@ -26,9 +28,9 @@ class Coupon extends Model
     ];
 
     protected $casts = [
-        'discount_value' => 'decimal:2',
         'valid_from' => 'datetime',
         'valid_to' => 'datetime',
+        'discount_value' => 'decimal:2',
         'min_cart_amount_minor' => 'integer',
         'max_discount_amount_minor' => 'integer',
         'usage_limit_total' => 'integer',
@@ -40,11 +42,11 @@ class Coupon extends Model
 
     public function scopes(): HasMany
     {
-        return $this->hasMany(CouponScope::class);
+        return $this->hasMany(CouponScope::class, 'coupon_id');
     }
 
     public function redemptions(): HasMany
     {
-        return $this->hasMany(CouponRedemption::class);
+        return $this->hasMany(CouponRedemption::class, 'coupon_id');
     }
 }

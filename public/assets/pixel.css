@@ -352,3 +352,7 @@ select option.edu-category{
     background-color:var(--accent);
     color: #fff;
 }
+
+.product-details {
+grid-column: span 2;
+}
