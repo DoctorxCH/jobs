@@ -1,45 +1,38 @@
 <x-layouts.pixel>
     <section class="mx-auto flex w-full max-w-6xl flex-col gap-10">
-        <div class="pixel-frame p-10">
-            <div class="flex flex-col gap-6">
-                <div class="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.2em] text-slate-500">
-                    <span class="pixel-chip px-3 py-1">{{ content('home.chips.minimal') }}</span>
-                    <span class="pixel-chip px-3 py-1">{{ content('home.chips.pixel') }}</span>
-                    <span class="pixel-chip px-3 py-1">{{ content('home.chips.hiring') }}</span>
-                </div>
+        <div class="pixel-section pixel-hero">
+            <div class="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.2em] text-slate-500">
+                <span class="pixel-chip px-3 py-1">{{ content('home.chips.minimal') }}</span>
+                <span class="pixel-chip px-3 py-1">{{ content('home.chips.pixel') }}</span>
+                <span class="pixel-chip px-3 py-1">{{ content('home.chips.hiring') }}</span>
+            </div>
 
-                <h1 class="text-4xl font-bold leading-tight">
-                    {{ content('home.hero.title') }}
-                    <span class="accent">{{ content('home.hero.highlight') }}</span>
-                    {{ content('home.hero.title_after') }}
-                </h1>
+            <h1 class="pixel-hero__title">
+                {{ content('home.hero.title') }}
+                <span class="accent">{{ content('home.hero.highlight') }}</span>
+                {{ content('home.hero.title_after') }}
+            </h1>
 
-                <p class="max-w-2xl text-sm text-slate-600">
-                    {{ content('home.hero.lead') }}
-                </p>
+            <p class="pixel-hero__lead">
+                {{ content('home.hero.lead') }}
+            </p>
 
-                <form class="flex flex-col gap-4 md:flex-row" method="get" action="{{ route('jobs.index') }}">
-                    <input type="hidden" name="country" value="SK">
-                    <label class="flex-1 text-xs uppercase tracking-[0.2em] text-slate-500">
-                        {{ content('home.search.label') }}
-                        <div class="mt-2 flex flex-col gap-3 sm:flex-row">
-                            <input
-                                class="pixel-input w-full px-4 py-3 text-sm text-slate-900 outline-none"
-                                placeholder="Pozícia / odvetvie / firma"
-                                type="text"
-                                name="q"
-                                value="{{ request('q') }}"
-                            />
-                            <button class="pixel-button px-6 py-3 text-xs" type="submit">{{ content('home.search.button') }}</button>
-                        </div>
-                    </label>
-                </form>
+            <div class="grid gap-4 md:grid-cols-[1fr_auto] items-end">
+                <label class="pixel-field">
+                    <span class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ content('home.search.label') }}</span>
+                    <input
+                        class="pixel-input pixel-input--soft w-full text-sm text-slate-900 outline-none"
+                        placeholder="{{ content('home.search.placeholder') }}"
+                        type="text"
+                    />
+                </label>
+                <button class="pixel-button pixel-button--soft text-xs">{{ content('home.search.button') }}</button>
             </div>
         </div>
 
         <div class="grid gap-6 md:grid-cols-3">
             @foreach (content('home.features', []) as $feature)
-                <div class="pixel-frame p-6">
+                <div class="pixel-card pixel-card--outline">
                     <p class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ $feature['tag'] ?? '' }}</p>
                     <h2 class="mt-3 text-lg font-bold">{{ $feature['title'] ?? '' }}</h2>
                     <p class="mt-2 text-sm text-slate-600">{{ $feature['text'] ?? '' }}</p>
@@ -62,7 +55,7 @@
 @endphp
 
 @if($partners->count())
-    <div class="pixel-frame p-8">
+    <div class="pixel-section pixel-section--tight">
         <div class="flex flex-col gap-6">
             <h3 class="text-xs uppercase tracking-[0.2em] text-slate-500">
                 {{ content('home.sponsors.title') }}
@@ -98,7 +91,7 @@
     </div>
 @else
     {{-- Fallback: alter statischer Sponsor-Content --}}
-    <div class="pixel-frame p-8">
+    <div class="pixel-section pixel-section--tight">
         <div class="flex flex-col gap-6">
             <h3 class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ content('home.sponsors.title') }}</h3>
 
@@ -111,7 +104,7 @@
     </div>
 @endif
 
-        <div class="pixel-frame p-10">
+        <div class="pixel-section">
             <div class="flex flex-col gap-4">
                 <h3 class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ content('home.blog.kicker') }}</h3>
                 <h2 class="text-2xl font-bold">{{ content('home.blog.title') }}</h2>

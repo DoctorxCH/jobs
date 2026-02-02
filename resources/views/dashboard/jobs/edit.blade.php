@@ -1,4 +1,4 @@
-<x-dashboard.layout title="Edit job">
+<x-dashboard.layout title="{{ __('main.edit_job_title') }}">
     <form
     method="POST"
     action="{{ route('frontend.jobs.update', $job) }}"
@@ -30,13 +30,13 @@
             data-is-archived="{{ $isArchived ? 1 : 0 }}"
             data-is-expired="{{ $isExpired ? 1 : 0 }}">
         <div class="text-xs uppercase tracking-[0.2em] text-slate-500">
-            {{ $isPublished ? 'Change duration' : 'Publish job' }}
+            {{ $isPublished ? __('main.change_duration') : __('main.publish_job') }}
         </div>
 
         <div class="mt-2 text-sm text-slate-600">
-            Available credits: <span class="font-semibold">{{ $availableCredits ?? 0 }}</span>
+            {{ __('main.available_credits') }}: <span class="font-semibold">{{ $availableCredits ?? 0 }}</span>
             @if($isPublished)
-                <span class="ml-3 text-slate-500">Current remaining: <span class="font-semibold">{{ $remainingDays }}</span> days</span>
+                <span class="ml-3 text-slate-500">{{ __('main.current_remaining_days', ['days' => $remainingDays]) }}</span>
             @endif
         </div>
 
@@ -46,45 +46,45 @@
             @csrf
 
             <div>
-                <label class="text-xs uppercase tracking-[0.2em]">Days</label>
+                <label class="text-xs uppercase tracking-[0.2em]">{{ __('main.days') }}</label>
                 <input type="number" name="days" id="post-days" min="1"
                        value="{{ old('days', $isPublished ? $remainingDays : 7) }}"
                        class="mt-2 w-full pixel-outline px-3 py-2" required>
             </div>
 
             <div class="text-xs text-slate-600 space-y-1">
-                <div>Preview expiry: <span id="post-expiry">-</span></div>
+                <div>{{ __('main.preview_expiry') }}: <span id="post-expiry">-</span></div>
 
                 {{-- Only visible when extending --}}
                 <div id="post-required-wrap" class="hidden">
-                    Credits required: <span id="post-credits">-</span>
+                    {{ __('main.credits_required') }}: <span id="post-credits">-</span>
                 </div>
 
                 {{-- Only visible when shortening --}}
                 <div id="post-refund-wrap" class="hidden">
-                    Refund (50%): <span id="post-refund">-</span>
+                    {{ __('main.refund_50') }}: <span id="post-refund">-</span>
                 </div>
 
                 {{-- Notice when no extension --}}
                 <div id="post-free-wrap" class="hidden">
-                    No extra credits needed.
+                    {{ __('main.no_extra_credits') }}
                 </div>
             </div>
 
             <button type="submit" id="job-post-submit" class="pixel-button px-6 py-3 text-xs uppercase tracking-[0.2em]">
-                {{ $isPublished ? 'Update duration' : 'Publish' }}
+                {{ $isPublished ? __('main.update_duration') : __('main.publish') }}
             </button>
         </form>
 
         @if ($isArchived)
             <form method="POST" action="{{ route('frontend.jobs.unarchive', $job) }}" class="mt-4" id="job-unarchive-form">
                 @csrf
-                <button type="submit" id="job-unarchive-submit" class="pixel-outline px-4 py-2 text-xs uppercase tracking-[0.2em]">Unarchive</button>
+                <button type="submit" id="job-unarchive-submit" class="pixel-button-light no-hover-move px-6 py-3 text-xs uppercase tracking-[0.2em]">{{ __('main.unarchive') }}</button>
             </form>
         @else
             <form method="POST" action="{{ route('frontend.jobs.archive', $job) }}" class="mt-4" id="job-archive-form">
                 @csrf
-                <button type="submit" id="job-archive-submit" class="pixel-outline px-4 py-2 text-xs uppercase tracking-[0.2em]">Archive</button>
+                <button type="submit" id="job-archive-submit" class="pixel-button-light no-hover-move px-6 py-3 text-xs uppercase tracking-[0.2em]">{{ __('main.archive') }}</button>
             </form>
         @endif
     </div>
@@ -92,11 +92,11 @@
     <div id="confirm-modal" class="fixed inset-0 z-50 hidden items-center justify-center">
         <div class="absolute inset-0 bg-slate-900/40"></div>
         <div class="relative w-full max-w-md pixel-frame bg-white p-6">
-            <div class="text-xs uppercase tracking-[0.2em] text-slate-500">Please confirm</div>
+            <div class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.please_confirm') }}</div>
             <div id="confirm-message" class="mt-3 text-sm text-slate-700"></div>
             <div class="mt-6 flex gap-3 justify-end">
-                <button type="button" id="confirm-cancel" class="pixel-outline px-4 py-2 text-xs uppercase tracking-[0.2em]">Cancel</button>
-                <button type="button" id="confirm-ok" class="pixel-button px-4 py-2 text-xs uppercase tracking-[0.2em]">Confirm</button>
+                <button type="button" id="confirm-cancel" class="pixel-outline px-4 py-2 text-xs uppercase tracking-[0.2em]">{{ __('main.cancel') }}</button>
+                <button type="button" id="confirm-ok" class="pixel-button px-4 py-2 text-xs uppercase tracking-[0.2em]">{{ __('main.confirm') }}</button>
             </div>
         </div>
     </div>
@@ -104,6 +104,11 @@
     @push('scripts')
     <script>
     (() => {
+            const t = {
+                archive_confirm: @json(__('main.archive_confirm')),
+                unarchive_confirm: @json(__('main.unarchive_confirm')),
+                unarchive_expired_confirm: @json(__('main.unarchive_expired_confirm', ['credits' => ':credits'])),
+            };
             const editForm = document.getElementById('job-edit-form');
             const postForm = document.getElementById('job-post-form');
             const postBtn = document.getElementById('job-post-submit');
@@ -236,7 +241,7 @@
             if (archiveBtn && archiveForm) {
                 archiveBtn.addEventListener('click', (event) => {
                     event.preventDefault();
-                    openConfirm('Archive this job? No credits will be refunded.', () => {
+                    openConfirm(t.archive_confirm, () => {
                         archiveForm.submit();
                     });
                 });
@@ -250,13 +255,14 @@
 
                     if (isArchived && isExpired) {
                         const requiredCredits = getDays() * creditsPerDay;
-                        openConfirm(`This job has expired. Unarchive requires <strong>${requiredCredits}</strong> credits to publish. Continue?`, () => {
+                        const msg = t.unarchive_expired_confirm.replace(':credits', requiredCredits);
+                        openConfirm(msg, () => {
                             postForm?.submit();
                         });
                         return;
                     }
 
-                    openConfirm('Unarchive this job?', () => {
+                    openConfirm(t.unarchive_confirm, () => {
                         unarchiveForm.submit();
                     });
                 });

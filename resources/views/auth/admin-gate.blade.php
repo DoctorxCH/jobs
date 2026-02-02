@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>365Gate · Admin Login</title>
+    <title>{{ __('main.admin_gate_page_title') }}</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=space-mono:400,700&display=swap" rel="stylesheet" />
@@ -65,13 +65,13 @@
         <section class="w-full max-w-md pixel-frame p-8">
             <div class="mb-6">
                 <div class="text-xs uppercase tracking-[0.25em] help">365jobs.sk</div>
-                <h1 class="text-2xl font-bold tracking-tight mt-2">Admin Gate</h1>
-                <p class="mt-3 text-sm help">Login only for platform roles. No /admin/login.</p>
+                <h1 class="text-2xl font-bold tracking-tight mt-2">{{ __('main.admin_gate_heading') }}</h1>
+                <p class="mt-3 text-sm help">{{ __('main.admin_gate_notice') }}</p>
             </div>
 
             @if ($errors->any())
                 <div class="mb-4 px-4 py-3 text-sm" style="box-shadow: inset 0 0 0 var(--border) #b91c1c; background:#fff5f5;">
-                    <div class="font-bold text-red-700 mb-1">Error</div>
+                    <div class="font-bold text-red-700 mb-1">{{ __('main.error_title') }}</div>
                     <ul class="list-disc pl-5 text-red-700">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -84,24 +84,24 @@
                 @csrf
 
                 <div>
-                    <label class="block text-xs uppercase tracking-[0.2em] mb-2 help" for="email">Email</label>
+                    <label class="block text-xs uppercase tracking-[0.2em] mb-2 help" for="email">{{ __('main.email') }}</label>
                     <input id="email" name="email" type="email" value="{{ old('email') }}" required
                         class="w-full px-4 py-3 pixel-input">
                 </div>
 
                 <div>
-                    <label class="block text-xs uppercase tracking-[0.2em] mb-2 help" for="password">Password</label>
+                    <label class="block text-xs uppercase tracking-[0.2em] mb-2 help" for="password">{{ __('main.password') }}</label>
                     <input id="password" name="password" type="password" required
                         class="w-full px-4 py-3 pixel-input">
                 </div>
 
                 <label class="flex items-center gap-3 text-sm help">
                     <input type="checkbox" name="remember" value="1" class="h-4 w-4">
-                    Remember me
+                    {{ __('main.remember_me') }}
                 </label>
 
                 <button type="submit" class="w-full px-4 py-3 pixel-button">
-                    Enter
+                    {{ __('main.enter') }}
                 </button>
             </form>
         </section>

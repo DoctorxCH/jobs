@@ -29,7 +29,7 @@ class ResourcePermissionSeeder extends Seeder
             'cities',
             'education-levels',
             'education-fields',
-            'sknice-positions',
+            'sknace-positions',
 
             // Billing
             'billing/products',

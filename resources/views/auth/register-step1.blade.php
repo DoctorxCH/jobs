@@ -1,4 +1,4 @@
-<x-layouts.pixel title="Register - Step 1">
+<x-layouts.pixel title="{{ __('main.register_step1_title') }}">
     <div class="mx-auto max-w-md">
         <div class="pixel-frame p-6">
             <div class="mb-6">

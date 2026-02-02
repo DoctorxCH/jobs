@@ -68,7 +68,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
         });
 
-        Schema::create('sknice_positions', function (Blueprint $table) {
+        Schema::create('sknace_positions', function (Blueprint $table) {
             $table->id();
             $table->string('code')->unique();
             $table->string('title');
@@ -87,7 +87,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('driving_license_categories');
-        Schema::dropIfExists('sknice_positions');
+        Schema::dropIfExists('sknace_positions');
         Schema::dropIfExists('education_fields');
         Schema::dropIfExists('education_levels');
         Schema::dropIfExists('cities');

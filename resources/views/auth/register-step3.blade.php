@@ -1,4 +1,4 @@
-<x-layouts.pixel title="Register - Step 3">
+<x-layouts.pixel title="{{ __('main.register_step3_title') }}">
     @php
         $locked = $reg['locked'] ?? [];
         $company = $reg['company'] ?? [];

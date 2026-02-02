@@ -53,9 +53,9 @@ class JobController extends Controller
      */
     protected function formLookups(?int $countryId = null, ?int $regionId = null, ?int $companyId = null): array
     {
-        $sknicePositions = DB::table('sknice_positions')->orderBy('title')->get();
+        $sknacePositions = DB::table('sknace_positions')->orderBy('id')->get();
         $benefits = DB::table('benefits')->orderBy('label')->get();
-        $drivingLicenseCategories = DB::table('driving_license_categories')->orderBy('label')->get();
+        $drivingLicenseCategories = DB::table('driving_license_categories')->orderBy('id')->get();
         $skills = DB::table('skills')->orderBy('name')->get();
 
         $educationLevels = DB::table('education_levels')->orderBy('label')->get();
@@ -67,18 +67,20 @@ class JobController extends Controller
 
         $countries = DB::table('countries')->orderBy('name')->get();
 
-        // Languages + levels (falls im Blade verwendet)
-        $languageOptions = [
-            'sk' => 'Slovak',
-            'cs' => 'Czech',
-            'de' => 'German',
-            'en' => 'English',
-            'hu' => 'Hungarian',
-            'pl' => 'Polish',
-            'uk' => 'Ukrainian',
-            'ru' => 'Russian',
-        ];
-        $languageLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'native'];
+        // Languages + levels (aus DB)
+        $languageOptions = DB::table('job_language_options')
+            ->where('is_active', 1)
+            ->orderBy('sort')
+            ->orderBy('label')
+            ->pluck('label', 'code')
+            ->all();
+
+        $languageLevels = DB::table('job_language_levels')
+            ->where('is_active', 1)
+            ->orderBy('sort')
+            ->orderBy('label')
+            ->pluck('label', 'code')
+            ->all();
 
         // Skills levels (falls im Blade verwendet)
         $skillLevels = ['basic', 'intermediate', 'advanced', 'expert'];
@@ -107,7 +109,7 @@ class JobController extends Controller
         }
 
         return compact(
-            'sknicePositions',
+            'sknacePositions',
             'benefits',
             'drivingLicenseCategories',
             'skills',
@@ -193,7 +195,7 @@ class JobController extends Controller
             'country',
             'region',
             'city',
-            'sknicePosition',
+            'sknacePosition',
             'educationLevel',
             'educationField',
             'benefits',

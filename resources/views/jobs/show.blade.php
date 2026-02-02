@@ -115,10 +115,10 @@
                             </div>
                         @endif
 
-                        @if ($job->sknicePosition)
+                        @if ($job->sknacePosition)
                             <div>
                                 <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.category') }}</dt>
-                                <dd class="mt-1 font-semibold text-slate-900">{{ $job->sknicePosition->title }}</dd>
+                                    <dd class="mt-1 font-semibold text-slate-900">{{ $job->sknacePosition->title }}</dd>
                             </div>
                         @endif
 

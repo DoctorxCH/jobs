@@ -15,7 +15,7 @@ class JobStoreRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255'],
-            'sknice_position_id' => ['required', 'integer', 'exists:sknice_positions,id'],
+            'sknace_position_id' => ['required', 'integer', 'exists:sknace_positions,id'],
             'description' => ['nullable', 'string'],
 
             // Work
@@ -66,8 +66,8 @@ class JobStoreRequest extends FormRequest
 
             // Languages
             'job_languages' => ['nullable', 'array'],
-            'job_languages.*.language_code' => ['nullable', 'string', 'max:5'],
-            'job_languages.*.level' => ['nullable', 'string', 'max:20'],
+            'job_languages.*.language_code' => ['nullable', 'string', 'max:10', 'exists:job_language_options,code'],
+            'job_languages.*.level' => ['nullable', 'string', 'max:20', 'exists:job_language_levels,code'],
 
             // Skills
             'job_skills' => ['nullable', 'array'],

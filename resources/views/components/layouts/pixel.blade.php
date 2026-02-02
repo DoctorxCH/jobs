@@ -28,8 +28,12 @@
     <div class="pixel-grid min-h-screen">
         <x-pixel-header />
 
-        <main class="px-6 pt-8 pb-16">
-            {{ $slot }}
+        <main class="px-6 pt-10 pb-20">
+            <div class="pixel-container">
+                <div class="pixel-page">
+                    {{ $slot }}
+                </div>
+            </div>
         </main>
 
         <x-pixel.footer />

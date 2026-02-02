@@ -80,8 +80,8 @@ class JobResource extends Resource
 
             Forms\Components\Section::make('Position & Workload')
                 ->schema([
-                    Forms\Components\Select::make('sknice_position_id')
-                        ->relationship('sknicePosition', 'title')
+                    Forms\Components\Select::make('sknace_position_id')
+                        ->relationship('sknacePosition', 'title')
                         ->required()
                         ->searchable(),
 

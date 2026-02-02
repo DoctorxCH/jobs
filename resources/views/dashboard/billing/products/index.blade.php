@@ -1,16 +1,16 @@
-<x-dashboard.layout title="Billing · Products">
+<x-dashboard.layout title="{{ __('main.billing_products_title') }}">
     <div class="flex flex-col gap-6">
         <div>
-            <div class="text-xs uppercase tracking-[0.2em] text-slate-500">Billing</div>
-            <h1 class="mt-2 text-2xl font-bold">Products</h1>
+            <div class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.billing') }}</div>
+            <h1 class="mt-2 text-2xl font-bold">{{ __('main.products') }}</h1>
             <p class="mt-2 text-sm text-slate-600">
-                Choose a product to purchase for your company.
+                {{ __('main.choose_product_for_company') }}
             </p>
         </div>
 
         @if ($products->isEmpty())
             <div class="pixel-outline p-6 text-sm text-slate-600">
-                No active products are available right now.
+                {{ __('main.no_active_products') }}
             </div>
         @else
             <div class="grid gap-4 md:grid-cols-2">
@@ -28,7 +28,7 @@
                             </div>
                             <div class="mt-2 text-lg font-bold">{{ $product->name }}</div>
                             <p class="mt-2 text-sm text-slate-600 whitespace-pre-line leading-6">
-                                {{ $product->description ?? 'No description provided yet.' }}
+                                {{ $product->description ?? __('main.no_description_yet') }}
                             </p>
                         </div>
 
@@ -45,28 +45,28 @@
                                         }
                                     }
                                 @endphp
-                                <div>Net: <span class="font-bold">{{ format_money_minor($price->unit_net_amount_minor, $price->currency) }}</span></div>
+                                <div>{{ __('main.net') }}: <span class="font-bold">{{ format_money_minor($price->unit_net_amount_minor, $price->currency) }}</span></div>
                                 <div>
-                                    VAT: {{ number_format($taxRate, 2) }}%
+                                    {{ __('main.vat') }}: {{ number_format($taxRate, 2) }}%
                                     @if (($taxClassKey ?? null) === 'neplatca')
                                         <span class="ml-2 font-bold">{{ __('main.not_vat_payer') }}</span>
                                     @endif
                                 </div>
-                                <div>Total: <span class="font-bold">{{ format_money_minor($grossMinor, $price->currency) }}</span></div>
+                                <div>{{ __('main.total') }}: <span class="font-bold">{{ format_money_minor($grossMinor, $price->currency) }}</span></div>
                             @else
-                                <div class="text-slate-500">Pricing not available.</div>
+                                <div class="text-slate-500">{{ __('main.pricing_not_available') }}</div>
                             @endif
                         </div>
 
                         <div>
                             <a href="{{ route('frontend.billing.products.show', $product) }}"
                                class="inline-flex pixel-outline px-4 py-2 text-xs uppercase tracking-[0.2em]">
-                                View details
+                                {{ __('main.view_details') }}
                             </a>
                             @if ($price)
                                 <a href="{{ route('frontend.billing.products.checkout', $product) }}"
                                    class="ml-2 inline-flex pixel-outline px-4 py-2 text-xs uppercase tracking-[0.2em]">
-                                    Buy
+                                    {{ __('main.buy') }}
                                 </a>
                             @endif
                         </div>

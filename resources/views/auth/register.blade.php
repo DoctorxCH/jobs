@@ -1,20 +1,20 @@
-<x-layouts.pixel title="Register">
+<x-layouts.pixel title="{{ __('main.register_title') }}">
     <div class="mx-auto max-w-md">
         <div class="pixel-frame p-6">
             <div class="mb-6">
                 <div class="text-xs uppercase tracking-[0.2em] text-slate-500">365jobs</div>
-                <h1 class="mt-2 text-2xl font-bold">Register</h1>
-                <p class="mt-2 text-slate-600">Create a login for your company</p>
+                <h1 class="mt-2 text-2xl font-bold">{{ __('main.register_title') }}</h1>
+                <p class="mt-2 text-slate-600">{{ __('main.register_subtitle') }}</p>
 
                 <div class="mt-4 grid grid-cols-2 gap-2 text-[10px] uppercase tracking-[0.28em] text-slate-500">
-                    <div id="stepLabel1" class="pixel-outline px-3 py-2 text-center">1) Company</div>
-                    <div id="stepLabel2" class="pixel-outline px-3 py-2 text-center opacity-50">2) Account</div>
+                    <div id="stepLabel1" class="pixel-outline px-3 py-2 text-center">{{ __('main.register_step_company') }}</div>
+                    <div id="stepLabel2" class="pixel-outline px-3 py-2 text-center opacity-50">{{ __('main.register_step_account') }}</div>
                 </div>
             </div>
 
             @if ($errors->any())
                 <div class="pixel-outline mb-5 p-4">
-                    <div class="text-sm font-bold">Error</div>
+                    <div class="text-sm font-bold">{{ __('main.error_title') }}</div>
                     <ul class="mt-2 list-disc pl-5 text-sm text-slate-700">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -29,10 +29,10 @@
                 {{-- STEP 1: ICO only --}}
                 <div id="step1" class="space-y-4">
                     <div class="pixel-outline p-6">
-                        <div class="text-xs uppercase tracking-[0.2em] text-slate-500">Company</div>
+                        <div class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.company_label') }}</div>
 
                         <label class="block mt-4">
-                            <div class="text-[10px] uppercase tracking-[0.28em] text-slate-500">ICO (8 digits) *</div>
+                            <div class="text-[10px] uppercase tracking-[0.28em] text-slate-500">{{ __('main.ico_label') }}</div>
                             <input
                                 id="ico"
                                 name="ico"
@@ -48,7 +48,7 @@
                         </label>
 
                         <button id="btnNext" class="pixel-button w-full px-4 py-3 text-sm mt-5" type="button">
-                            Next
+                            {{ __('main.next') }}
                         </button>
                     </div>
                 </div>
@@ -64,57 +64,57 @@
                 {{-- STEP 2: Account + Company summary --}}
                 <div id="step2" class="space-y-4 hidden">
                     <div class="pixel-outline p-6">
-                        <div class="text-xs uppercase tracking-[0.2em] text-slate-500">Company (from ICO)</div>
+                        <div class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.company_from_ico') }}</div>
 
                         <div class="mt-4 space-y-2 text-sm text-slate-700">
-                            <div><span class="text-xs uppercase tracking-[0.2em] text-slate-500">IČO:</span> <span id="summaryIco">-</span></div>
-                            <div><span class="text-xs uppercase tracking-[0.2em] text-slate-500">Legal name:</span> <span id="summaryName">-</span></div>
-                            <div><span class="text-xs uppercase tracking-[0.2em] text-slate-500">Address:</span> <span id="summaryAddress">-</span></div>
+                            <div><span class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.ico') }}:</span> <span id="summaryIco">-</span></div>
+                            <div><span class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.legal_name') }}:</span> <span id="summaryName">-</span></div>
+                            <div><span class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.address') }}:</span> <span id="summaryAddress">-</span></div>
                             <div class="grid grid-cols-2 gap-3">
-                                <div><span class="text-xs uppercase tracking-[0.2em] text-slate-500">DIČ:</span> <span id="summaryDic">-</span></div>
-                                <div><span class="text-xs uppercase tracking-[0.2em] text-slate-500">IČ DPH:</span> <span id="summaryIcdph">-</span></div>
+                                <div><span class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.dic') }}:</span> <span id="summaryDic">-</span></div>
+                                <div><span class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.ic_dph') }}:</span> <span id="summaryIcdph">-</span></div>
                             </div>
                         </div>
 
                         <div class="mt-4 text-[10px] uppercase tracking-[0.28em] text-slate-500">
-                            If this is not your company, go back and enter a different IČO.
+                            {{ __('main.register_company_not_yours') }}
                         </div>
                     </div>
 
                     <div class="pixel-outline p-6">
-                        <div class="text-xs uppercase tracking-[0.2em] text-slate-500">Account</div>
+                        <div class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.account') }}</div>
 
                         <div class="mt-4">
-                            <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-600">Company bio</label>
+                            <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-600">{{ __('main.company_bio') }}</label>
                             <textarea class="pixel-input w-full px-4 py-3 text-sm" name="bio" rows="5" required>{{ old('bio') }}</textarea>
                         </div>
 
                         <div class="mt-4">
-                            <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-600">Full Name <span class="text-xs cursive">(not legal company name)</span></label>
+                            <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-600">{{ __('main.full_name') }} <span class="text-xs cursive">({{ __('main.full_name_note') }})</span></label>
                             <input class="pixel-input w-full px-4 py-3 text-sm" type="text" name="name" value="{{ old('name') }}" required>
                         </div>
 
                         <div class="mt-4">
-                            <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-600">Email</label>
+                            <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-600">{{ __('main.email') }}</label>
                             <input class="pixel-input w-full px-4 py-3 text-sm" type="email" name="email" value="{{ old('email') }}" required>
                         </div>
 
                         <div class="mt-4">
-                            <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-600">Password</label>
+                            <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-600">{{ __('main.password') }}</label>
                             <input class="pixel-input w-full px-4 py-3 text-sm" type="password" name="password" required>
                         </div>
 
                         <div class="mt-4">
-                            <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-600">Confirm Password</label>
+                            <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-600">{{ __('main.confirm_password') }}</label>
                             <input class="pixel-input w-full px-4 py-3 text-sm" type="password" name="password_confirmation" required>
                         </div>
 
                         <div class="mt-6 grid gap-3 md:grid-cols-2">
                             <button id="btnBack" class="pixel-button w-full px-4 py-3 text-sm" type="button">
-                                Back
+                                {{ __('main.back') }}
                             </button>
                             <button class="pixel-button w-full px-4 py-3 text-sm" type="submit">
-                                Create Account
+                                {{ __('main.create_account') }}
                             </button>
                         </div>
                     </div>
@@ -122,8 +122,8 @@
             </form>
 
             <div class="mt-6 flex items-center justify-between text-xs uppercase tracking-[0.2em] text-slate-600">
-                <a href="{{ route('frontend.login') }}">Login</a>
-                <a href="{{ url('/') }}">Home</a>
+                <a href="{{ route('frontend.login') }}">{{ __('main.login') }}</a>
+                <a href="{{ url('/') }}">{{ __('main.home') }}</a>
             </div>
         </div>
     </div>
@@ -153,8 +153,18 @@
             const sDic = document.getElementById('summaryDic');
             const sIcdph = document.getElementById('summaryIcdph');
 
+            const t = {
+                ico_invalid: @json(__('main.ico_invalid')),
+                lookup_in_progress: @json(__('main.company_lookup_in_progress')),
+                company_not_found_try_another: @json(__('main.company_not_found_try_another')),
+                company_not_found: @json(__('main.company_not_found')),
+                found: @json(__('main.found')),
+                lookup_failed: @json(__('main.company_lookup_failed')),
+                company_name_missing_try_another: @json(__('main.company_name_missing_try_another')),
+            };
+
             function digits8(v) { return (v || '').replace(/\D/g, '').slice(0, 8); }
-            function setHelp(t) { helpEl.textContent = t || ''; }
+            function setHelp(text) { helpEl.textContent = text || ''; }
 
             function showStep(n) {
                 if (n === 1) {
@@ -191,12 +201,12 @@
                 icoEl.value = ico;
 
                 if (ico.length !== 8) {
-                    setHelp('ICO must be exactly 8 digits.');
+                    setHelp(t.ico_invalid);
                     return false;
                 }
 
                 btnNext.disabled = true;
-                setHelp('Looking up company...');
+                setHelp(t.lookup_in_progress);
 
                 try {
                     const res = await fetch(`/api/company-lookup?ico=${ico}`, {
@@ -205,13 +215,13 @@
                     });
 
                     if (!res.ok) {
-                        setHelp('Company not found. Try another ICO.');
+                        setHelp(t.company_not_found_try_another);
                         return false;
                     }
 
                     const json = await res.json();
                     if (!json.ok || !json.data) {
-                        setHelp('Company not found.');
+                        setHelp(t.company_not_found);
                         return false;
                     }
 
@@ -225,10 +235,10 @@
                     postalEl.value = a.postal_code || '';
                     cityEl.value = a.city || '';
 
-                    setHelp('Found.');
+                    setHelp(t.found);
                     return true;
                 } catch (e) {
-                    setHelp('Lookup failed. Try again.');
+                    setHelp(t.lookup_failed);
                     return false;
                 } finally {
                     btnNext.disabled = false;
@@ -240,7 +250,7 @@
                 if (!ok) return;
 
                 if (!nameEl.value) {
-                    setHelp('Company name missing. Try another ICO.');
+                    setHelp(t.company_name_missing_try_another);
                     return;
                 }
 

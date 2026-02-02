@@ -31,12 +31,24 @@
 
 <x-layouts.pixel :title="$title">
     <section class="mx-auto w-full max-w-7xl">
+        <div class="pixel-page__header">
+            <div>
+                <div class="pixel-kicker">{{ __('main.dashboard') }}</div>
+                <div class="pixel-page__title">{{ $title }}</div>
+            </div>
+            @if($creditsAvailable !== null)
+                <div class="text-xs pixel-badge">
+                    {{ __('main.credits') }}: <strong>{{ $creditsAvailable }}</strong>
+                </div>
+            @endif
+        </div>
+
         <div class="grid gap-8 md:grid-cols-[220px_1fr]">
-            <aside class="pixel-frame p-4">
+            <aside class="pixel-panel p-4">
                 <x-dashboard.menu />
             </aside>
 
-            <main class="pixel-frame p-8">
+            <main class="pixel-panel p-8">
                 {{-- Header row --}}
                 
 

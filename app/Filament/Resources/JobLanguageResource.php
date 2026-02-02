@@ -3,7 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\JobLanguageResource\Pages;
-use App\Models\JobLanguage;
+use App\Models\JobLanguageOption;
 use App\Services\PermissionService;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -13,13 +13,14 @@ use Filament\Tables\Table;
 
 class JobLanguageResource extends Resource
 {
-    protected static ?string $model = JobLanguage::class;
+    protected static ?string $model = JobLanguageOption::class;
 
     protected static ?string $navigationGroup = 'Jobs';
     protected static ?string $navigationLabel = 'Job Languages';
     protected static ?string $modelLabel = 'Job Language';
     protected static ?string $pluralModelLabel = 'Job Languages';
     protected static ?string $navigationIcon = 'heroicon-o-language';
+
 
     public static function getPermissionKey(): string
     {
@@ -51,28 +52,23 @@ class JobLanguageResource extends Resource
         return $form->schema([
             Forms\Components\Section::make('Details')
                 ->schema([
-                    Forms\Components\Select::make('job_id')
-                        ->relationship('job', 'title')
-                        ->searchable()
-                        ->required(),
-
-                    Forms\Components\TextInput::make('language_code')
+                    Forms\Components\TextInput::make('code')
                         ->required()
-                        ->maxLength(2),
+                        ->maxLength(10)
+                        ->unique(ignoreRecord: true),
 
-                    Forms\Components\Select::make('level')
-                        ->options([
-                            'A1' => 'A1',
-                            'A2' => 'A2',
-                            'B1' => 'B1',
-                            'B2' => 'B2',
-                            'C1' => 'C1',
-                            'C2' => 'C2',
-                            'native' => 'Native',
-                        ])
-                        ->required(),
+                    Forms\Components\TextInput::make('label')
+                        ->required()
+                        ->maxLength(100),
+
+                    Forms\Components\TextInput::make('sort')
+                        ->numeric()
+                        ->default(0),
+
+                    Forms\Components\Toggle::make('is_active')
+                        ->default(true),
                 ])
-                ->columns(3),
+                ->columns(4),
         ]);
     }
 
@@ -81,13 +77,15 @@ class JobLanguageResource extends Resource
         return $table
             ->defaultSort('id', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('job.title')
-                    ->label('Job')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('language_code')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('level')
+                Tables\Columns\TextColumn::make('code')
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('label')
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\IconColumn::make('is_active')
+                    ->boolean(),
+                Tables\Columns\TextColumn::make('sort')
                     ->sortable(),
             ])
             ->actions([

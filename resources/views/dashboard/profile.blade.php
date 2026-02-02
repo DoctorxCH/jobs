@@ -335,7 +335,7 @@
                     <div class="mt-2" data-quill-wrapper>
                         <input type="hidden" name="bio" value="{{ old('bio', $c?->bio ?? '') }}" data-quill-input>
 
-                        <div class="pixel-outline bg-white">
+                        <div class="pixel-quill">
                             <div data-quill-toolbar></div>
                             <div class="min-h-[220px] text-sm text-slate-900" data-quill-editor></div>
                         </div>
@@ -423,7 +423,7 @@
 
                     const toolbarOptions = [
                         [{ header: [1, 2, 3, false] }],
-                        [{ font: [] }],
+                        [{ font: ['Mono Space', 'roboto', 'helvetica', 'arial', 'sans'] }],
                     //    [{ size: ['small', false, 'large'] }],
                         ['bold', 'italic', 'underline'],
                         [{ color: [] }, { background: [] }],
@@ -435,6 +435,10 @@
                     //    ['link'],
                         ['clean'],
                     ];
+
+                    const Font = Quill.import('formats/font');
+                    Font.whitelist = ['Mono Space', 'roboto', 'helvetica', 'arial', 'sans'];
+                    Quill.register(Font, true);
 
                     const quill = new Quill(editor, {
                         theme: 'snow',

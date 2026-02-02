@@ -12,7 +12,7 @@ return new class extends Migration
             $table->foreignId('company_id')->nullable()->constrained('companies');
             $table->string('title')->nullable();
             $table->longText('description')->nullable();
-            $table->foreignId('sknice_position_id')->nullable()->constrained('sknice_positions');
+            $table->foreignId('sknace_position_id')->nullable()->constrained('sknace_positions');
             $table->enum('employment_type', ['full_time', 'part_time', 'contract', 'freelance', 'internship'])
                 ->nullable();
             $table->unsignedTinyInteger('workload_min')->nullable();
@@ -57,7 +57,7 @@ return new class extends Migration
             $table->index(['company_id', 'status'], 'jobs_company_status_idx');
             $table->index(['expires_at'], 'jobs_expires_at_idx');
             $table->index(['country_id', 'region_id', 'city_id'], 'jobs_location_idx');
-            $table->index(['sknice_position_id'], 'jobs_sknice_position_idx');
+            $table->index(['sknace_position_id'], 'jobs_sknace_position_idx');
         });
     }
 
@@ -67,10 +67,10 @@ return new class extends Migration
             $table->dropIndex('jobs_company_status_idx');
             $table->dropIndex('jobs_expires_at_idx');
             $table->dropIndex('jobs_location_idx');
-            $table->dropIndex('jobs_sknice_position_idx');
+            $table->dropIndex('jobs_sknace_position_idx');
 
             $table->dropForeign(['company_id']);
-            $table->dropForeign(['sknice_position_id']);
+            $table->dropForeign(['sknace_position_id']);
             $table->dropForeign(['country_id']);
             $table->dropForeign(['region_id']);
             $table->dropForeign(['city_id']);
@@ -82,7 +82,7 @@ return new class extends Migration
                 'company_id',
                 'title',
                 'description',
-                'sknice_position_id',
+                'sknace_position_id',
                 'employment_type',
                 'workload_min',
                 'workload_max',

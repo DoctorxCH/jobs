@@ -17,7 +17,7 @@ class Job extends Model
         'company_id',
         'title',
         'description',
-        'sknice_position_id',
+        'sknace_position_id',
         'employment_type',
         'workload_min',
         'workload_max',
@@ -79,9 +79,9 @@ class Job extends Model
         return $this->belongsTo(Company::class);
     }
 
-    public function sknicePosition(): BelongsTo
+    public function sknacePosition(): BelongsTo
     {
-        return $this->belongsTo(SknicePosition::class);
+        return $this->belongsTo(SknacePosition::class);
     }
 
     public function country(): BelongsTo
