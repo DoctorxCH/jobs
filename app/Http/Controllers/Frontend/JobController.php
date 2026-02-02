@@ -263,8 +263,9 @@ class JobController extends Controller
             }
         }
 
+        $salaryNote = null;
         if ($salary && $job->salary_note) {
-            $salary = sprintf('%s (%s)', $salary, $job->salary_note);
+            $salaryNote = $job->salary_note;
         } elseif (! $salary && $job->salary_note) {
             $salary = $job->salary_note;
         }
@@ -278,6 +279,11 @@ class JobController extends Controller
             ->implode(', ');
 
         $postalLine = trim(collect([$company?->postal_code, $locationCity])->filter()->implode(' '));
+
+        $languageOptions = DB::table('job_language_options')
+            ->where('is_active', 1)
+            ->pluck('label', 'code')
+            ->all();
 
         $lat = $job->getAttribute('lat')
             ?? $job->getAttribute('latitude')
@@ -303,11 +309,13 @@ class JobController extends Controller
             'employmentType' => $employmentTypeLabels[$job->employment_type] ?? $job->employment_type,
             'workload' => $workload,
             'salary' => $salary,
+            'salaryNote' => $salaryNote,
             'location' => [
                 'line' => $locationLine,
-                'street' => $company?->street,
-                'postal' => $postalLine,
+                'street' => null,
+                'postal' => null,
             ],
+            'languageOptions' => $languageOptions,
             'map' => [
                 'hasCoordinates' => $hasCoordinates,
                 'lat' => $hasCoordinates ? (float) $lat : null,

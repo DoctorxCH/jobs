@@ -65,94 +65,177 @@
                     <h3 class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.job_info') }}</h3>
                     <dl class="space-y-4 text-sm">
                         @if ($location['line'])
-                            <div>
-                                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.workplace') }}</dt>
-                                <dd class="mt-1 font-semibold text-slate-900">{{ $location['line'] }}</dd>
-                                @if ($location['street'] || $location['postal'])
-                                    <dd class="mt-1 text-xs text-slate-500">
-                                        {{ $location['street'] }}
-                                        @if ($location['street'] && $location['postal'])
-                                            ·
-                                        @endif
-                                        {{ $location['postal'] }}
-                                    </dd>
-                                @endif
+                            <div class="flex gap-3">
+                                <div class="mt-0.5 text-slate-400">
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z" />
+                                        <circle cx="12" cy="10" r="2.5" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.workplace') }}</dt>
+                                    <dd class="mt-1 font-semibold text-slate-900">{{ $location['line'] }}</dd>
+                                </div>
                             </div>
                         @endif
 
                         @if ($employmentType)
-                            <div>
-                                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.employment_type') }}</dt>
-                                <dd class="mt-1 font-semibold text-slate-900">{{ $employmentType }}</dd>
+                            <div class="flex gap-3">
+                                <div class="mt-0.5 text-slate-400">
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2" />
+                                        <rect x="3" y="7" width="18" height="14" rx="2" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h18" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.employment_type') }}</dt>
+                                    <dd class="mt-1 font-semibold text-slate-900">{{ $employmentType }}</dd>
+                                </div>
                             </div>
                         @endif
 
                         @if ($workload)
-                            <div>
-                                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.workload') }}</dt>
-                                <dd class="mt-1 font-semibold text-slate-900">{{ $workload }}</dd>
+                            <div class="flex gap-3">
+                                <div class="mt-0.5 text-slate-400">
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <circle cx="12" cy="12" r="9" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 7v6l4 2" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.workload') }}</dt>
+                                    <dd class="mt-1 font-semibold text-slate-900">{{ $workload }}</dd>
+                                </div>
                             </div>
                         @endif
 
                         @if ($salary)
-                            <div>
-                                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.salary') }}</dt>
-                                <dd class="mt-1 font-semibold text-slate-900">{{ $salary }}</dd>
+                            <div class="flex gap-3">
+                                <div class="mt-0.5 text-slate-400">
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <rect x="3" y="6" width="18" height="12" rx="2" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 12h10" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.salary') }}</dt>
+                                    <dd class="mt-1 font-semibold text-slate-900">{{ $salary }}</dd>
+                                    @if (!empty($salaryNote))
+                                        <dd class="mt-1 text-xs text-slate-500">{{ $salaryNote }}</dd>
+                                    @endif
+                                </div>
                             </div>
                         @endif
 
                         @if ($job->available_from)
-                            <div>
-                                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.start_date') }}</dt>
-                                <dd class="mt-1 font-semibold text-slate-900">{{ $job->available_from->format('d.m.Y') }}</dd>
+                            <div class="flex gap-3">
+                                <div class="mt-0.5 text-slate-400">
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <rect x="3" y="5" width="18" height="16" rx="2" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 3v4M16 3v4M3 11h18" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.start_date') }}</dt>
+                                    <dd class="mt-1 font-semibold text-slate-900">{{ $job->available_from->format('d.m.Y') }}</dd>
+                                </div>
                             </div>
                         @endif
 
                         @if ($job->application_deadline)
-                            <div>
-                                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.application_deadline') }}</dt>
-                                <dd class="mt-1 font-semibold text-slate-900">{{ $job->application_deadline->format('d.m.Y') }}</dd>
+                            <div class="flex gap-3">
+                                <div class="mt-0.5 text-slate-400">
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <rect x="3" y="5" width="18" height="16" rx="2" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 3v4M16 3v4M3 11h18" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 15l2 2 4-4" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.application_deadline') }}</dt>
+                                    <dd class="mt-1 font-semibold text-slate-900">{{ $job->application_deadline->format('d.m.Y') }}</dd>
+                                </div>
                             </div>
                         @endif
 
                         @if ($job->sknacePosition)
-                            <div>
-                                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.category') }}</dt>
+                            <div class="flex gap-3">
+                                <div class="mt-0.5 text-slate-400">
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10l2 5-2 5H7L5 12l2-5z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.category') }}</dt>
                                     <dd class="mt-1 font-semibold text-slate-900">{{ $job->sknacePosition->title }}</dd>
+                                </div>
                             </div>
                         @endif
 
                         @if ($job->educationLevel)
-                            <div>
-                                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.level') }}</dt>
-                                <dd class="mt-1 font-semibold text-slate-900">{{ $job->educationLevel->label }}</dd>
+                            <div class="flex gap-3">
+                                <div class="mt-0.5 text-slate-400">
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 10l9-4 9 4-9 4-9-4z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 12v5l5 2 5-2v-5" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.level') }}</dt>
+                                    <dd class="mt-1 font-semibold text-slate-900">{{ $job->educationLevel->label }}</dd>
+                                </div>
                             </div>
                         @endif
 
                         @if ($job->jobLanguages->isNotEmpty())
-                            <div>
-                                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.languages') }}</dt>
-                                <dd class="mt-1 text-slate-600">
-                                    {{ $job->jobLanguages->map(fn ($lang) => strtoupper($lang->language_code) . ' ' . $lang->level)->implode(', ') }}
-                                </dd>
+                            <div class="flex gap-3">
+                                <div class="mt-0.5 text-slate-400">
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <circle cx="12" cy="12" r="9" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h18M12 3c3 3.5 3 14 0 18M12 3c-3 3.5-3 14 0 18" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.languages') }}</dt>
+                                    <dd class="mt-1 text-slate-600">
+                                        {{ $job->jobLanguages->map(fn ($lang) => ($languageOptions[$lang->language_code] ?? $lang->language_code) . ' ' . $lang->level)->implode(', ') }}
+                                    </dd>
+                                </div>
                             </div>
                         @endif
 
                         @if ($job->jobSkills->isNotEmpty())
-                            <div>
-                                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.skills') }}</dt>
-                                <dd class="mt-1 text-slate-600">
-                                    {{ $job->jobSkills->map(fn ($skill) => $skill->skill?->name ?: null)->filter()->implode(', ') }}
-                                </dd>
+                            <div class="flex gap-3">
+                                <div class="mt-0.5 text-slate-400">
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8 6.8 19l1-5.8L3.6 9.1l5.8-.8L12 3z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.skills') }}</dt>
+                                    <dd class="mt-1 text-slate-600">
+                                        {{ $job->jobSkills->map(fn ($skill) => $skill->skill?->name ?: null)->filter()->implode(', ') }}
+                                    </dd>
+                                </div>
                             </div>
                         @endif
 
                         @if ($job->benefits->isNotEmpty())
-                            <div>
-                                <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.benefits') }}</dt>
-                                <dd class="mt-1 text-slate-600">
-                                    {{ $job->benefits->pluck('label')->implode(', ') }}
-                                </dd>
+                            <div class="flex gap-3">
+                                <div class="mt-0.5 text-slate-400">
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <rect x="3" y="8" width="18" height="12" rx="2" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h18M12 8v12" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8a2.5 2.5 0 115 0" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <dt class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.benefits') }}</dt>
+                                    <dd class="mt-1 text-slate-600">
+                                        {{ $job->benefits->pluck('label')->implode(', ') }}
+                                    </dd>
+                                </div>
                             </div>
                         @endif
                     </dl>

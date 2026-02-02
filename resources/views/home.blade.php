@@ -64,7 +64,7 @@
             <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6 items-center">
                 @foreach ($partners as $c)
                     @php
-                        $href = $c->website_url ?: url('/company/' . $c->slug);
+                        $href = $c->website_url ?: url('/company/' . $c->id);
                         $src = $c->top_partner_logo_path
                             ? \Illuminate\Support\Facades\Storage::disk('public')->url($c->top_partner_logo_path)
                             : null;
