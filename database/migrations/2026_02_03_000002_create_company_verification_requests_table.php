@@ -1,0 +1,42 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('company_verification_requests', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
+            $table->string('method', 20);
+            $table->string('status', 30);
+            $table->foreignId('requested_by_user_id')->constrained('users')->nullOnDelete();
+            $table->string('requested_by_email');
+            $table->string('code_sent_to_email')->nullable();
+            $table->string('code_hash')->nullable();
+            $table->timestamp('code_expires_at')->nullable();
+            $table->timestamp('auto_verified_at')->nullable();
+            $table->unsignedInteger('attempts')->default(0);
+            $table->timestamp('last_sent_at')->nullable();
+            $table->foreignId('invoice_id')->nullable()->constrained('invoices')->nullOnDelete();
+            $table->foreignId('payment_id')->nullable()->constrained('payments')->nullOnDelete();
+            $table->string('bank_reference')->nullable();
+            $table->string('ack_status', 20)->default('pending');
+            $table->timestamp('ack_at')->nullable();
+            $table->foreignId('ack_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->text('admin_note')->nullable();
+            $table->timestamps();
+
+            $table->index(['company_id', 'status']);
+            $table->index(['method', 'ack_status']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('company_verification_requests');
+    }
+};

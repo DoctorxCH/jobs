@@ -10,6 +10,7 @@ use App\Http\Controllers\CompanyInvitationController;
 use App\Http\Controllers\Frontend\AuthController as FrontendAuthController;
 use App\Http\Controllers\Frontend\DashboardController as FrontendDashboardController;
 use App\Http\Controllers\Frontend\ContactController as FrontendContactController;
+use App\Http\Controllers\Frontend\CompanyVerificationController as FrontendCompanyVerificationController;
 use App\Http\Controllers\Frontend\Billing\InvoiceController as FrontendBillingInvoiceController;
 use App\Http\Controllers\Frontend\Billing\OrderController as FrontendBillingOrderController;
 use App\Http\Controllers\Frontend\Billing\PaymentController as FrontendBillingPaymentController;
@@ -104,11 +105,25 @@ Route::middleware('web')->group(function () {
             Route::put('/{job}', [FrontendJobController::class, 'update'])
                 ->name('frontend.jobs.update');
             Route::post('/{job}/post', [FrontendJobController::class, 'post'])
+                ->middleware('company.verified')
                 ->name('frontend.jobs.post');
             Route::post('/{job}/archive', [FrontendJobController::class, 'archive'])
                 ->name('frontend.jobs.archive');
             Route::post('/{job}/unarchive', [FrontendJobController::class, 'unarchive'])
                 ->name('frontend.jobs.unarchive');
+        });
+
+        Route::prefix('/dashboard/company/verification')->group(function () {
+            Route::get('/', [FrontendCompanyVerificationController::class, 'index'])
+                ->name('frontend.company.verification.index');
+            Route::post('/code/start', [FrontendCompanyVerificationController::class, 'startCode'])
+                ->name('frontend.company.verification.code.start');
+            Route::post('/code/confirm', [FrontendCompanyVerificationController::class, 'confirmCode'])
+                ->name('frontend.company.verification.code.confirm');
+            Route::post('/code/resend', [FrontendCompanyVerificationController::class, 'resendCode'])
+                ->name('frontend.company.verification.code.resend');
+            Route::post('/invoice/start', [FrontendCompanyVerificationController::class, 'startInvoice'])
+                ->name('frontend.company.verification.invoice.start');
         });
 
         Route::prefix('/dashboard/billing')->group(function () {
