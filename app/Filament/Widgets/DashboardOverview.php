@@ -9,8 +9,6 @@ use App\Models\Job;
 use App\Models\User;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class DashboardOverview extends StatsOverviewWidget
 {
@@ -25,14 +23,26 @@ class DashboardOverview extends StatsOverviewWidget
         $companiesTotal = Company::query()->count();
         $companiesActive = Company::query()->where('active', true)->count();
 
-        $invoicesTotal = Invoice::query()->count();
+        $invoicesTotal = Invoice::query()
+            ->where('currency', 'EUR')
+            ->count();
         $invoicesUnpaid = Invoice::query()
             ->whereIn('status', ['issued_unpaid', 'overdue'])
+            ->where('currency', 'EUR')
             ->count();
-        $invoicesPaid = Invoice::query()->where('status', 'paid')->count();
+        $invoicesPaid = Invoice::query()
+            ->where('status', 'paid')
+            ->where('currency', 'EUR')
+            ->count();
 
-        $paymentsTotal = Payment::query()->count();
-        $revenueByCurrency = $this->getRevenueByCurrency();
+        $paymentsTotal = Payment::query()
+            ->where('currency', 'EUR')
+            ->count();
+        $paidRevenueMinor = Invoice::query()
+            ->where('status', 'paid')
+            ->where('currency', 'EUR')
+            ->sum('total_gross_minor');
+        $paidRevenueFormatted = format_money_minor((int) $paidRevenueMinor, 'EUR');
 
         return [
             Stat::make('Jobs', number_format($jobsTotal))
@@ -51,27 +61,13 @@ class DashboardOverview extends StatsOverviewWidget
                 ->icon('heroicon-o-document-text')
                 ->color('warning'),
             Stat::make('Payments', number_format($paymentsTotal))
-                ->description('Umsatz: ' . ($revenueByCurrency->isNotEmpty() ? $revenueByCurrency->implode(' · ') : '—'))
+                ->description('Währung: EUR')
                 ->icon('heroicon-o-credit-card')
                 ->color('success'),
+            Stat::make('Billing Umsatz (EUR)', $paidRevenueFormatted)
+                ->description('Summe bezahlter Rechnungen')
+                ->icon('heroicon-o-banknotes')
+                ->color('primary'),
         ];
-    }
-
-    /**
-     * @return Collection<int, string>
-     */
-    private function getRevenueByCurrency(): Collection
-    {
-        return Payment::query()
-            ->select('currency', DB::raw('SUM(amount_minor) as total_minor'))
-            ->groupBy('currency')
-            ->orderBy('currency')
-            ->pluck('total_minor', 'currency')
-            ->map(function ($totalMinor, $currency): string {
-                $amount = number_format(((int) $totalMinor) / 100, 2);
-
-                return strtoupper((string) $currency) . ' ' . $amount;
-            })
-            ->values();
     }
 }
