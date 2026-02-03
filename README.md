@@ -7,6 +7,16 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Admin Dashboard Overview
+
+The Filament admin dashboard includes a consolidated overview for platform activity and billing:
+
+- **Stats overview**: Jobs, users, companies, invoices, payments, and paid revenue totals.
+- **Charts**: 14-day trends for new jobs and payment revenue.
+- **Tables**: Recent jobs and recent invoices with status and amounts.
+
+These widgets are configured in `app/Filament/Pages/Dashboard.php` and the corresponding widgets under `app/Filament/Widgets`.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
