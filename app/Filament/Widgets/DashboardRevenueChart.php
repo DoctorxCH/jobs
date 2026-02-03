@@ -27,7 +27,12 @@ class DashboardRevenueChart extends ChartWidget
             ->pluck('total', 'date');
 
         $labels = $dates->map(fn (CarbonImmutable $date) => $date->format('d.m'));
-        $values = $dates->map(fn (CarbonImmutable $date) => format_money_minor((int) ($sums[$date->toDateString()] ?? 0), 'EUR'));
+  $values = $dates->map(
+    fn (CarbonImmutable $date) => round(
+        ((int) ($sums[$date->toDateString()] ?? 0)) / 100,
+        2
+    )
+);
 
         return [
             'datasets' => [
