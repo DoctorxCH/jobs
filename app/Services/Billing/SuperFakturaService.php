@@ -28,8 +28,13 @@ class SuperFakturaService
         ];
     }
 
-    public function createInvoice(array $payload): array
+    public function createInvoice(array $payload, ?int $timeoutSeconds = null): array
     {
+        if ($timeoutSeconds) {
+            // Placeholder for HTTP client timeout configuration.
+            // Example: Http::timeout($timeoutSeconds)->post(...)
+        }
+
         return [
             'external_id' => null,
             'external_number' => null,

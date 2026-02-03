@@ -1,37 +1,40 @@
 <x-layouts.pixel>
     <section class="mx-auto flex w-full max-w-6xl flex-col gap-10">
-        <div class="pixel-section pixel-hero">
+        <div class="pixel-section-landing pixel-hero">
+                
+
             <div class="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.2em] text-slate-500">
-                <span class="pixel-chip px-3 py-1">{{ content('home.chips.minimal') }}</span>
-                <span class="pixel-chip px-3 py-1">{{ content('home.chips.pixel') }}</span>
-                <span class="pixel-chip px-3 py-1">{{ content('home.chips.hiring') }}</span>
+                <span class="pixel-chip px-3 py-1">{{ __('main.home_content.chips.minimal') }}</span>
+                <span class="pixel-chip px-3 py-1">{{ __('main.home_content.chips.pixel') }}</span>
+                <span class="pixel-chip px-3 py-1">{{ __('main.home_content.chips.hiring') }}</span>
             </div>
 
             <h1 class="pixel-hero__title">
-                {{ content('home.hero.title') }}
-                <span class="accent">{{ content('home.hero.highlight') }}</span>
-                {{ content('home.hero.title_after') }}
+                {{ __('main.home_content.hero.title') }}
+                <span class="accent">{{ __('main.home_content.hero.highlight') }}</span>
+                {{ __('main.home_content.hero.title_after') }}
             </h1>
 
             <p class="pixel-hero__lead">
-                {{ content('home.hero.lead') }}
+                {{ __('main.home_content.hero.lead') }}
             </p>
 
-            <div class="grid gap-4 md:grid-cols-[1fr_auto] items-end">
+            <form class="grid gap-4 md:grid-cols-[1fr_auto] items-end" action="{{ route('jobs.index') }}" method="GET">
                 <label class="pixel-field">
-                    <span class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ content('home.search.label') }}</span>
+                    <span class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.home_content.search.label') }}</span>
                     <input
                         class="pixel-input pixel-input--soft w-full text-sm text-slate-900 outline-none"
-                        placeholder="{{ content('home.search.placeholder') }}"
+                        placeholder="{{ __('main.home_content.search.placeholder') }}"
                         type="text"
+                        name="q"
                     />
                 </label>
-                <button class="pixel-button pixel-button--soft text-xs">{{ content('home.search.button') }}</button>
-            </div>
+                <button type="submit" class="pixel-button pixel-button--soft text-xs">{{ __('main.home_content.search.button') }}</button>
+            </form>
         </div>
 
         <div class="grid gap-6 md:grid-cols-3">
-            @foreach (content('home.features', []) as $feature)
+            @foreach ((array) trans('main.home_content.features') as $feature)
                 <div class="pixel-card pixel-card--outline">
                     <p class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ $feature['tag'] ?? '' }}</p>
                     <h2 class="mt-3 text-lg font-bold">{{ $feature['title'] ?? '' }}</h2>
@@ -58,7 +61,7 @@
     <div class="pixel-section pixel-section--tight">
         <div class="flex flex-col gap-6">
             <h3 class="text-xs uppercase tracking-[0.2em] text-slate-500">
-                {{ content('home.sponsors.title') }}
+                {{ __('main.home_content.sponsors.title') }}
             </h3>
 
             <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6 items-center">
@@ -93,10 +96,10 @@
     {{-- Fallback: alter statischer Sponsor-Content --}}
     <div class="pixel-section pixel-section--tight">
         <div class="flex flex-col gap-6">
-            <h3 class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ content('home.sponsors.title') }}</h3>
+            <h3 class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.home_content.sponsors.title') }}</h3>
 
             <div class="grid gap-4 text-sm font-semibold uppercase tracking-[0.2em] text-slate-600 sm:grid-cols-2 md:grid-cols-4">
-                @foreach (content('home.sponsors.items', []) as $sponsor)
+                @foreach ((array) trans('main.home_content.sponsors.items') as $sponsor)
                     <div class="pixel-outline px-4 py-3 text-center">{{ $sponsor }}</div>
                 @endforeach
             </div>
@@ -106,12 +109,12 @@
 
         <div class="pixel-section">
             <div class="flex flex-col gap-4">
-                <h3 class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ content('home.blog.kicker') }}</h3>
-                <h2 class="text-2xl font-bold">{{ content('home.blog.title') }}</h2>
-                <p class="text-sm text-slate-600">{{ content('home.blog.text') }}</p>
+                <h3 class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.home_content.blog.kicker') }}</h3>
+                <h2 class="text-2xl font-bold">{{ __('main.home_content.blog.title') }}</h2>
+                <p class="text-sm text-slate-600">{{ __('main.home_content.blog.text') }}</p>
 
                 <div class="flex flex-wrap gap-3 text-xs uppercase tracking-[0.2em] text-slate-500">
-                    @foreach (content('home.blog.chips', []) as $chip)
+                    @foreach ((array) trans('main.home_content.blog.chips') as $chip)
                         <span class="pixel-chip px-3 py-1">{{ $chip }}</span>
                     @endforeach
                 </div>

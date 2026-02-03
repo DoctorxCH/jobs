@@ -22,6 +22,7 @@ class CompanyCategoryResource extends Resource
     protected static ?string $modelLabel = 'Company Category';
     protected static ?string $pluralModelLabel = 'Company Categories';
     protected static ?string $navigationIcon = 'heroicon-o-tag';
+    protected static ?int $navigationSort = 20;
 
     public static function getPermissionKey(): string
     {

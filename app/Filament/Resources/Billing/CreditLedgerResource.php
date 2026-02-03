@@ -17,6 +17,7 @@ class CreditLedgerResource extends Resource
     protected static ?string $navigationGroup = 'Finance';
     protected static ?string $navigationLabel = 'Credit Ledger';
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
+    protected static ?int $navigationSort = 100;
 
     public static function canCreate(): bool
     {

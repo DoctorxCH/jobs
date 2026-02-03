@@ -15,7 +15,7 @@ class CookieSettingResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
     protected static ?string $navigationLabel = 'Cookies';
     protected static ?string $navigationGroup = 'Settings';
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 20;
     public static function form(Forms\Form $form): Forms\Form
     {
         return $form->schema([

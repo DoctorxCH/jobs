@@ -17,6 +17,7 @@ class ProductPriceResource extends Resource
     protected static ?string $navigationGroup = 'Finance';
     protected static ?string $navigationLabel = 'Product Prices';
     protected static ?string $navigationIcon = 'heroicon-o-currency-euro';
+    protected static ?int $navigationSort = 50;
 
     public static function form(Form $form): Form
     {

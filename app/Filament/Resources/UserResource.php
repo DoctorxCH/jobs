@@ -23,7 +23,7 @@ class UserResource extends Resource
     protected static ?string $navigationLabel = 'Users';
     protected static ?string $modelLabel = 'User';
     protected static ?string $pluralModelLabel = 'Users';
-    protected static ?string $navigationGroup = 'Admin';
+    protected static ?string $navigationGroup = 'System';
     protected static ?int $navigationSort = 10;
 
     public static function getPermissionKey(): string

@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 class AdminGateController extends Controller
 {
@@ -24,13 +28,49 @@ class AdminGateController extends Controller
             'remember' => ['nullable', 'boolean'],
         ]);
 
+        $settings = null;
+        if (Schema::hasTable('site_settings')) {
+            $settings = SiteSetting::current();
+        }
+
+        $maxAttempts = $settings?->max_login_attempts ?: 10;
+        $lockoutMinutes = $settings?->lockout_minutes ?: 15;
+        $decaySeconds = $lockoutMinutes * 60;
+        $key = 'admin-gate:' . Str::lower($data['email']) . '|' . $request->ip();
+        $storeName = config('cache.default') === 'array' ? 'file' : config('cache.default');
+        $cache = Cache::store($storeName);
+        $now = now()->timestamp;
+        $lockedUntil = (int) $cache->get($key . ':locked_until', 0);
+
+        if ($lockedUntil > $now) {
+            return back()
+                ->withErrors(['email' => 'Zu viele Login-Versuche. Bitte später erneut versuchen.'])
+                ->onlyInput('email');
+        }
+
+        $attempts = (int) $cache->get($key . ':attempts', 0);
+        if ($attempts >= $maxAttempts) {
+            $cache->put($key . ':locked_until', $now + $decaySeconds, $decaySeconds);
+            return back()
+                ->withErrors(['email' => 'Zu viele Login-Versuche. Bitte später erneut versuchen.'])
+                ->onlyInput('email');
+        }
+
         $remember = (bool) ($data['remember'] ?? false);
 
         if (! Auth::attempt(['email' => $data['email'], 'password' => $data['password']], $remember)) {
+            $attempts++;
+            $cache->put($key . ':attempts', $attempts, $decaySeconds);
+            if ($attempts >= $maxAttempts) {
+                $cache->put($key . ':locked_until', $now + $decaySeconds, $decaySeconds);
+            }
             return back()
                 ->withErrors(['email' => 'Login fehlgeschlagen (E-Mail oder Passwort falsch).'])
                 ->onlyInput('email');
         }
+
+        $cache->forget($key . ':attempts');
+        $cache->forget($key . ':locked_until');
 
         $request->session()->regenerate();
 

@@ -20,6 +20,7 @@ class BenefitResource extends Resource
     protected static ?string $modelLabel = 'Benefit';
     protected static ?string $pluralModelLabel = 'Benefits';
     protected static ?string $navigationIcon = 'heroicon-o-sparkles';
+    protected static ?int $navigationSort = 30;
 
     public static function getPermissionKey(): string
     {

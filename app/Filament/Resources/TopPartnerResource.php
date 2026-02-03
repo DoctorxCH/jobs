@@ -15,9 +15,9 @@ class TopPartnerResource extends Resource
     protected static ?string $model = TopPartner::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-star';
-    protected static ?string $navigationGroup = 'Homepage';
+    protected static ?string $navigationGroup = 'Content';
     protected static ?string $navigationLabel = 'Top Partner';
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 20;
 
     public static function form(Form $form): Form
     {

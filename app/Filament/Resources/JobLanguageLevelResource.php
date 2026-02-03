@@ -20,6 +20,7 @@ class JobLanguageLevelResource extends Resource
     protected static ?string $modelLabel = 'Job Language Level';
     protected static ?string $pluralModelLabel = 'Job Language Levels';
     protected static ?string $navigationIcon = 'heroicon-o-adjustments-horizontal';
+    protected static ?int $navigationSort = 60;
 
     public static function getPermissionKey(): string
     {

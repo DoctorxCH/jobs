@@ -157,6 +157,9 @@ Route::middleware('web')->group(function () {
     Route::get('/jobs', [FrontendJobController::class, 'publicIndex'])
         ->name('jobs.index');
 
+    Route::get('/favorites', [FrontendJobController::class, 'favorites'])
+        ->name('frontend.favorites');
+
     Route::get('/jobs/{job}', [FrontendJobController::class, 'show'])
         ->name('jobs.show');
 

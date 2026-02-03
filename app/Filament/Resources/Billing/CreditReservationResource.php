@@ -17,6 +17,7 @@ class CreditReservationResource extends Resource
     protected static ?string $navigationGroup = 'Finance';
     protected static ?string $navigationLabel = 'Credit Reservations';
     protected static ?string $navigationIcon = 'heroicon-o-clock';
+    protected static ?int $navigationSort = 110;
 
     public static function canCreate(): bool
     {

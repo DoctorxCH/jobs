@@ -1,6 +1,8 @@
 {{-- resources/views/jobs/index.blade.php --}}
 
 <x-layouts.pixel>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+
     <section class="mx-auto flex w-full max-w-6xl flex-col gap-6">
         {{-- HEADER --}}
         <div class="pixel-outline p-8">
@@ -22,6 +24,12 @@
                     @endif
                     @if(!empty($selectedCity))
                         <input type="hidden" name="city" value="{{ (int) $selectedCity }}">
+                    @endif
+                    @if(!empty($salaryMin))
+                        <input type="hidden" name="salary_min" value="{{ (int) $salaryMin }}">
+                    @endif
+                    @if(!empty($salaryMax))
+                        <input type="hidden" name="salary_max" value="{{ (int) $salaryMax }}">
                     @endif
 
                     <div class="flex w-full gap-3">
@@ -79,18 +87,203 @@
                         </select>
                     </label>
 
-                    <div class="border-t border-slate-200 pt-4">
-                        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ __('main.more_filters') }}</p>
+                    <div class="border-t border-slate-200 pt-4 space-y-6">
+                        <div class="space-y-3">
+                            <p class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ __('main.more_filters') }}</p>
 
-                        <label class="mt-3 block text-xs uppercase tracking-[0.2em] text-slate-500">
-                            {{ __('main.salary_from') }}
-                            <input
-                                class="pixel-input mt-2 w-full px-4 py-3 text-sm text-slate-900"
-                                placeholder="{{ __('main.salary_placeholder') }}"
-                                type="text"
-                                disabled
-                            />
-                        </label>
+                            <label class="block text-xs uppercase tracking-[0.2em] text-slate-500">
+                                {{ __('main.salary_from') }}
+                                <input
+                                    class="pixel-input mt-2 w-full px-4 py-3 text-sm text-slate-900"
+                                    placeholder="{{ __('main.salary_placeholder') }}"
+                                    type="number"
+                                    name="salary_min"
+                                    value="{{ $salaryMin ?? '' }}"
+                                />
+                            </label>
+
+                            <label class="block text-xs uppercase tracking-[0.2em] text-slate-500">
+                                {{ __('main.salary_to') }}
+                                <input
+                                    class="pixel-input mt-2 w-full px-4 py-3 text-sm text-slate-900"
+                                    placeholder="{{ __('main.salary_placeholder') }}"
+                                    type="number"
+                                    name="salary_max"
+                                    value="{{ $salaryMax ?? '' }}"
+                                />
+                            </label>
+                        </div>
+
+                        <div class="space-y-3">
+                            <p class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ __('main.filter_section_job_type') }}</p>
+
+                            <label class="block text-xs uppercase tracking-[0.2em] text-slate-500">
+                                {{ __('main.job_type') }}
+                                <select class="pixel-input mt-2 w-full px-4 py-3 text-sm" name="employment_type">
+                                    <option value="">{{ __('main.select') }}</option>
+                                    @foreach ($employmentTypeOptions ?? [] as $typeValue => $typeLabel)
+                                        <option value="{{ $typeValue }}" @selected($employmentType === $typeValue)>{{ $typeLabel }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="block text-xs uppercase tracking-[0.2em] text-slate-500">
+                                    {{ __('main.workload_min') }}
+                                    <input
+                                        class="pixel-input mt-2 w-full px-4 py-3 text-sm text-slate-900"
+                                        type="number"
+                                        name="workload_min"
+                                        min="0"
+                                        max="100"
+                                        value="{{ $workloadMinFilter ?? '' }}"
+                                    />
+                                </label>
+
+                                <label class="block text-xs uppercase tracking-[0.2em] text-slate-500">
+                                    {{ __('main.workload_max') }}
+                                    <input
+                                        class="pixel-input mt-2 w-full px-4 py-3 text-sm text-slate-900"
+                                        type="number"
+                                        name="workload_max"
+                                        min="0"
+                                        max="100"
+                                        value="{{ $workloadMaxFilter ?? '' }}"
+                                    />
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <p class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ __('main.filter_section_experience') }}</p>
+
+                            <label class="block text-xs uppercase tracking-[0.2em] text-slate-500">
+                                {{ __('main.education_level') }}
+                                <select class="pixel-input mt-2 w-full px-4 py-3 text-sm" name="education_level">
+                                    <option value="">{{ __('main.select') }}</option>
+                                    @foreach ($educationLevels as $level)
+                                        <option value="{{ $level->id }}" @selected((int) $educationLevelId === (int) $level->id)>{{ $level->label }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+
+                            <label class="block text-xs uppercase tracking-[0.2em] text-slate-500">
+                                {{ __('main.education_field') }}
+                                <select class="pixel-input mt-2 w-full px-4 py-3 text-sm" name="education_field">
+                                    <option value="">{{ __('main.select') }}</option>
+                                    @foreach ($educationFields as $field)
+                                        <option value="{{ $field->id }}" @selected((int) $educationFieldId === (int) $field->id)>{{ $field->label }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+
+                            <label class="block text-xs uppercase tracking-[0.2em] text-slate-500">
+                                {{ __('main.min_years_experience') }}
+                                <input
+                                    type="number"
+                                    min="0"
+                                    class="pixel-input mt-2 w-full px-4 py-3 text-sm text-slate-900"
+                                    name="experience_min"
+                                    value="{{ $experienceMin ?? '' }}"
+                                />
+                            </label>
+                        </div>
+
+                        <div class="space-y-3">
+                            <p class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ __('main.filter_section_special_attributes') }}</p>
+
+                            <div class="flex flex-col gap-2">
+                                <label class="flex items-center gap-2 rounded border border-slate-200 px-3 py-2 text-xs uppercase tracking-[0.2em] text-slate-500">
+                                    <input type="checkbox" name="is_remote" value="1" @checked($filterRemote) />
+                                    {{ __('main.remote') }}
+                                </label>
+                                <label class="flex items-center gap-2 rounded border border-slate-200 px-3 py-2 text-xs uppercase tracking-[0.2em] text-slate-500">
+                                    <input type="checkbox" name="is_hybrid" value="1" @checked($filterHybrid) />
+                                    {{ __('main.hybrid') }}
+                                </label>
+                                <label class="flex items-center gap-2 rounded border border-slate-200 px-3 py-2 text-xs uppercase tracking-[0.2em] text-slate-500">
+                                    <input type="checkbox" name="travel_required" value="1" @checked($filterTravel) />
+                                    {{ __('main.travel_required') }}
+                                </label>
+                                <label class="flex items-center gap-2 rounded border border-slate-200 px-3 py-2 text-xs uppercase tracking-[0.2em] text-slate-500">
+                                    <input type="checkbox" name="is_for_graduates" value="1" @checked($filterGraduates) />
+                                    {{ __('main.for_graduates') }}
+                                </label>
+                                <label class="flex items-center gap-2 rounded border border-slate-200 px-3 py-2 text-xs uppercase tracking-[0.2em] text-slate-500">
+                                    <input type="checkbox" name="is_for_disabled" value="1" @checked($filterDisabled) />
+                                    {{ __('main.for_disabled_candidates') }}
+                                </label>
+                                <label class="flex items-center gap-2 rounded border border-slate-200 px-3 py-2 text-xs uppercase tracking-[0.2em] text-slate-500">
+                                    <input type="checkbox" name="has_company_car" value="1" @checked($filterCompanyCar) />
+                                    {{ __('main.company_car') }}
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <p class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ __('main.filter_section_skills') }}</p>
+
+                            @php
+                                $selectedSkillIds = $selectedSkills ?? [];
+                                $selectedBenefitIds = $selectedBenefits ?? [];
+                                $selectedLanguageCodes = $selectedLanguages ?? [];
+                            @endphp
+
+                            <label class="block text-xs uppercase tracking-[0.2em] text-slate-500">
+                                {{ __('main.skills') }}
+                                <select
+                                    class="pixel-input mt-2 w-full px-4 py-3 text-sm text-slate-900 js-multi-select"
+                                    name="skills[]"
+                                    multiple
+                                >
+                                    @foreach ($skills as $id => $label)
+                                        <option value="{{ $id }}" @selected(in_array($id, $selectedSkillIds))>
+                                            {{ $label }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </label>
+
+                            <label class="block text-xs uppercase tracking-[0.2em] text-slate-500">
+                                {{ __('main.benefits') }}
+                                <select
+                                    class="pixel-input mt-2 w-full px-4 py-3 text-sm text-slate-900 js-multi-select"
+                                    name="benefits[]"
+                                    multiple
+                                >
+                                    @foreach ($benefits as $groupLabel => $items)
+                                        @if (is_array($items))
+                                            <optgroup label="{{ $groupLabel }}">
+                                                @foreach ($items as $id => $label)
+                                                    <option value="{{ $id }}" @selected(in_array($id, $selectedBenefitIds))>
+                                                        {{ $label }}
+                                                    </option>
+                                                @endforeach
+                                            </optgroup>
+                                        @else
+                                            <option value="{{ $groupLabel }}" @selected(in_array($groupLabel, $selectedBenefitIds))>
+                                                {{ $items }}
+                                            </option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                            </label>
+
+                            <label class="block text-xs uppercase tracking-[0.2em] text-slate-500">
+                                {{ __('main.languages') }}
+                                <select
+                                    class="pixel-input mt-2 w-full px-4 py-3 text-sm text-slate-900 js-multi-select"
+                                    name="languages[]"
+                                    multiple
+                                >
+                                    @foreach ($languageOptions as $code => $label)
+                                        <option value="{{ $code }}" @selected(in_array($code, $selectedLanguageCodes))>
+                                            {{ $label }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </label>
+                        </div>
                     </div>
 
                     <div class="mt-4 flex gap-3">
@@ -141,14 +334,11 @@
                         $companyUrl = $company ? url('/company/' . $company->id) : null;
                     @endphp
 
-                    {{-- CLICKABLE CARD (no outer <a>) --}}
-                    <article
-                        class="job-card pixel-frame pixel-card bg-white p-6 cursor-pointer"
-                        data-job-url="{{ $jobUrl }}"
-                        role="link"
-                        tabindex="0"
-                    >
-                        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    {{-- CLICKABLE CARD (job link overlay + separate company link) --}}
+                    <article class="job-card pixel-frame pixel-card bg-white p-6 relative">
+                        <a href="{{ $jobUrl }}" class="absolute inset-0 z-0" aria-label="{{ $job->title }}"></a>
+
+                        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between relative z-10 pointer-events-none">
                             <div class="space-y-2 min-w-0">
                                 <div class="text-lg font-bold text-blue-700">
                                     {{ $job->title }}
@@ -157,7 +347,7 @@
                                 @if ($company)
                                     <a
                                         href="{{ $companyUrl }}"
-                                        class="no-card-click text-sm text-slate-600 hover:underline inline-block"
+                                        class="pointer-events-auto text-sm text-slate-600 hover:underline inline-block"
                                     >
                                         {{ $company->legal_name }}
                                     </a>
@@ -186,15 +376,11 @@
                             </div>
 
                             <div class="flex flex-col items-center gap-2 md:justify-end shrink-0">
-                                {{-- Logo -> company profile; placeholder keeps layout but invisible --}}
+                                {{-- Logo placeholder keeps layout --}}
                                 <div class="flex h-20 w-20 items-center justify-center">
-                                    @if ($company && $companyUrl)
-                                        <a href="{{ $companyUrl }}" class="no-card-click block h-20 w-20">
-                                            @if ($logoUrl)
-                                                <img class="max-h-20 w-auto" src="{{ $logoUrl }}" alt="{{ $company?->legal_name }}" />
-                                            @else
-                                                <div class="h-20 w-20 opacity-0"></div>
-                                            @endif
+                                    @if ($logoUrl)
+                                        <a href="{{ $companyUrl }}" class="pointer-events-auto block">
+                                            <img class="max-h-20 w-auto" src="{{ $logoUrl }}" alt="{{ $company?->legal_name }}" />
                                         </a>
                                     @else
                                         <div class="h-20 w-20 opacity-0"></div>
@@ -203,7 +389,7 @@
 
                                 {{-- Favorite (cookie 6 months) --}}
                                 <button
-                                    class="no-card-click pixel-outline grid h-10 w-10 place-items-center"
+                                    class="pixel-outline shadow-none grid h-10 w-10 place-items-center pointer-events-auto text-slate-700 hover:text-red-500 transition-colors"
                                     type="button"
                                     aria-label="{{ __('main.favorite') }}"
                                     data-fav-btn
@@ -231,32 +417,27 @@
     </section>
 
     {{-- Card click handling + favorites cookie --}}
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script>
     (function () {
-        function shouldIgnoreCardClick(target) {
-            return !!target.closest('.no-card-click');
+        function initMultiSelects() {
+            if (!window.Choices) return;
+
+            document.querySelectorAll('.js-multi-select').forEach((select) => {
+                if (select.dataset.choicesInitialized) return;
+
+                new Choices(select, {
+                    removeItemButton: true,
+                    searchEnabled: true,
+                    shouldSort: false,
+                    itemSelectText: '',
+                    placeholder: true,
+                    placeholderValue: select.getAttribute('placeholder') || '',
+                });
+
+                select.dataset.choicesInitialized = 'true';
+            });
         }
-
-        function openUrl(url) {
-            if (!url) return;
-            window.location.href = url;
-        }
-
-        document.addEventListener('click', function (e) {
-            const card = e.target.closest('.job-card[data-job-url]');
-            if (!card) return;
-            if (shouldIgnoreCardClick(e.target)) return;
-            openUrl(card.getAttribute('data-job-url'));
-        });
-
-        document.addEventListener('keydown', function (e) {
-            const card = e.target.closest && e.target.closest('.job-card[data-job-url]');
-            if (!card) return;
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                openUrl(card.getAttribute('data-job-url'));
-            }
-        });
 
         // Favorites cookie (6 months)
         const COOKIE_NAME = 'job_favs_v1';
@@ -268,9 +449,10 @@
         }
 
         function setCookie(name, value, maxAgeSeconds) {
+            const secure = location.protocol === 'https:' ? '; Secure' : '';
             document.cookie = name + '=' + encodeURIComponent(value)
                 + '; Max-Age=' + maxAgeSeconds
-                + '; Path=/; SameSite=Lax; Secure';
+                + '; Path=/; SameSite=Lax' + secure;
         }
 
         function readFavs() {
@@ -293,8 +475,16 @@
             document.querySelectorAll('[data-fav-btn]').forEach(btn => {
                 const id = Number(btn.getAttribute('data-job-id'));
                 const active = favs.includes(id);
+                const svg = btn.querySelector('svg');
                 btn.setAttribute('aria-pressed', active ? 'true' : 'false');
                 btn.classList.toggle('is-fav', active);
+                if (active) {
+                    btn.style.color = '#ef4444';
+                    if (svg) svg.setAttribute('fill', 'currentColor');
+                } else {
+                    btn.style.color = '';
+                    if (svg) svg.setAttribute('fill', 'none');
+                }
             });
         }
 
@@ -302,7 +492,7 @@
             const btn = e.target.closest && e.target.closest('[data-fav-btn]');
             if (!btn) return;
 
-            // stop card navigation
+            // stop card navigation (button inside <a>)
             e.preventDefault();
             e.stopPropagation();
 
@@ -314,9 +504,18 @@
 
             writeFavs(favs);
             renderFavButtons();
+            
+            // Trigger header icon update
+            if (window.updateHeaderFavIcon) {
+                window.updateHeaderFavIcon();
+            }
         });
 
-        document.addEventListener('DOMContentLoaded', renderFavButtons);
+        document.addEventListener('DOMContentLoaded', function () {
+            initMultiSelects();
+            renderFavButtons();
+        });
+        initMultiSelects();
         renderFavButtons();
     })();
     </script>

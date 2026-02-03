@@ -6,12 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\JobPostRequest;
 use App\Http\Requests\JobStoreRequest;
 use App\Http\Requests\JobUpdateRequest;
+use App\Models\Benefit;
+use App\Models\City;
 use App\Models\Company;
 use App\Models\CompanyUser;
 use App\Models\Country;
-use App\Models\Region;
-use App\Models\City;
+use App\Models\EducationField;
+use App\Models\EducationLevel;
 use App\Models\Job;
+use App\Models\JobLanguageOption;
+use App\Models\Region;
+use App\Models\Skill;
 use App\Services\Billing\CreditService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -131,6 +136,31 @@ class JobController extends Controller
         $regionId = $request->integer('region') ?: null;
         $cityId = $request->integer('city') ?: null;
         $countryCode = strtoupper((string) $request->get('country', 'SK'));
+        $salaryMin = $request->integer('salary_min') ?: null;
+        $salaryMax = $request->integer('salary_max') ?: null;
+
+        $employmentType = (string) $request->get('employment_type', '');
+        $workloadMinFilter = $request->filled('workload_min') ? $request->integer('workload_min') : null;
+        $workloadMaxFilter = $request->filled('workload_max') ? $request->integer('workload_max') : null;
+        $educationLevelId = $request->filled('education_level') ? $request->integer('education_level') : null;
+        $educationFieldId = $request->filled('education_field') ? $request->integer('education_field') : null;
+        $experienceMin = $request->filled('experience_min') ? $request->integer('experience_min') : null;
+
+        $filterRemote = $request->boolean('is_remote');
+        $filterHybrid = $request->boolean('is_hybrid');
+        $filterTravel = $request->boolean('travel_required');
+        $filterGraduates = $request->boolean('is_for_graduates');
+        $filterDisabled = $request->boolean('is_for_disabled');
+        $filterCompanyCar = $request->boolean('has_company_car');
+
+        $skillIds = array_filter((array) $request->input('skills', []), fn ($value) => $value !== null && $value !== '');
+        $skillIds = array_values(array_map('intval', $skillIds));
+
+        $benefitIds = array_filter((array) $request->input('benefits', []), fn ($value) => $value !== null && $value !== '');
+        $benefitIds = array_values(array_map('intval', $benefitIds));
+
+        $languageCodes = array_filter((array) $request->input('languages', []), fn ($value) => $value !== null && $value !== '');
+        $languageCodes = array_values(array_unique($languageCodes));
 
         $countryId = Country::query()
             ->where('code', $countryCode)
@@ -164,6 +194,86 @@ class JobController extends Controller
             $jobsQuery->where('city_id', $cityId);
         }
 
+        if ($salaryMin) {
+            $jobsQuery->where(function ($query) use ($salaryMin) {
+                $query->where('salary_min_gross_month', '>=', $salaryMin)
+                    ->orWhere('salary_max_gross_month', '>=', $salaryMin);
+            });
+        }
+
+        if ($salaryMax) {
+            $jobsQuery->where(function ($query) use ($salaryMax) {
+                $query->where('salary_min_gross_month', '<=', $salaryMax)
+                    ->orWhere('salary_max_gross_month', '<=', $salaryMax);
+            });
+        }
+
+        if ($employmentType !== '') {
+            $jobsQuery->where('employment_type', $employmentType);
+        }
+
+        if ($workloadMinFilter !== null) {
+            $jobsQuery->where('workload_max', '>=', $workloadMinFilter);
+        }
+
+        if ($workloadMaxFilter !== null) {
+            $jobsQuery->where('workload_min', '<=', $workloadMaxFilter);
+        }
+
+        if ($educationLevelId !== null) {
+            $jobsQuery->where('education_level_id', $educationLevelId);
+        }
+
+        if ($educationFieldId !== null) {
+            $jobsQuery->where('education_field_id', $educationFieldId);
+        }
+
+        if ($experienceMin !== null) {
+            $jobsQuery->where('min_years_experience', '>=', $experienceMin);
+        }
+
+        if ($filterRemote) {
+            $jobsQuery->where('is_remote', 1);
+        }
+
+        if ($filterHybrid) {
+            $jobsQuery->where('is_hybrid', 1);
+        }
+
+        if ($filterTravel) {
+            $jobsQuery->where('travel_required', 1);
+        }
+
+        if ($filterGraduates) {
+            $jobsQuery->where('is_for_graduates', 1);
+        }
+
+        if ($filterDisabled) {
+            $jobsQuery->where('is_for_disabled', 1);
+        }
+
+        if ($filterCompanyCar) {
+            $jobsQuery->where('has_company_car', 1);
+        }
+
+        if (!empty($skillIds)) {
+            $jobsQuery->whereHas('jobSkills', function ($query) use ($skillIds) {
+                $query->whereIn('skill_id', $skillIds);
+            });
+        }
+
+        if (!empty($benefitIds)) {
+            $jobsQuery->whereHas('benefits', function ($query) use ($benefitIds) {
+                $query->whereIn('benefits.id', $benefitIds);
+            });
+        }
+
+        if (!empty($languageCodes)) {
+            $jobsQuery->whereHas('jobLanguages', function ($query) use ($languageCodes) {
+                $query->whereIn('language_code', $languageCodes);
+            });
+        }
+
         $jobs = $jobsQuery
             ->orderByDesc('published_at')
             ->paginate(15)
@@ -177,6 +287,46 @@ class JobController extends Controller
             ? City::query()->where('region_id', $regionId)->orderBy('name')->get()
             : collect();
 
+        $employmentTypeOptions = [
+            'full_time' => __('main.full_time'),
+            'part_time' => __('main.part_time'),
+            'contract' => __('main.contract'),
+            'freelance' => __('main.freelance'),
+            'internship' => __('main.internship'),
+        ];
+
+        $educationLevels = EducationLevel::query()->orderBy('label')->get();
+        $educationFields = EducationField::query()->orderBy('label')->get();
+        $benefitsRaw = Benefit::query()
+            ->orderBy('sort')
+            ->orderBy('label')
+            ->get(['id', 'label']);
+
+        $benefitsList = [];
+        foreach ($benefitsRaw as $benefit) {
+            $label = trim((string) $benefit->label);
+            $category = 'Other';
+            $name = $label;
+
+            if (str_contains($label, '/')) {
+                [$cat, $rest] = array_map('trim', explode('/', $label, 2));
+                if ($cat !== '') {
+                    $category = $cat;
+                }
+                if ($rest !== '') {
+                    $name = $rest;
+                }
+            }
+
+            $benefitsList[$category][$benefit->id] = $name;
+        }
+        $skillsList = Skill::query()->orderBy('name')->pluck('name', 'id')->toArray();
+        $languageOptions = JobLanguageOption::query()
+            ->where('is_active', 1)
+            ->orderBy('sort')
+            ->pluck('label', 'code')
+            ->toArray();
+
         return view('jobs.index', [
             'jobs' => $jobs,
             'search' => $search,
@@ -185,6 +335,62 @@ class JobController extends Controller
             'cities' => $cities,
             'selectedRegion' => $regionId,
             'selectedCity' => $cityId,
+            'salaryMin' => $salaryMin,
+            'salaryMax' => $salaryMax,
+            'employmentType' => $employmentType,
+            'employmentTypeOptions' => $employmentTypeOptions,
+            'workloadMinFilter' => $workloadMinFilter,
+            'workloadMaxFilter' => $workloadMaxFilter,
+            'educationLevelId' => $educationLevelId,
+            'educationLevels' => $educationLevels,
+            'educationFieldId' => $educationFieldId,
+            'educationFields' => $educationFields,
+            'experienceMin' => $experienceMin,
+            'filterRemote' => $filterRemote,
+            'filterHybrid' => $filterHybrid,
+            'filterTravel' => $filterTravel,
+            'filterGraduates' => $filterGraduates,
+            'filterDisabled' => $filterDisabled,
+            'filterCompanyCar' => $filterCompanyCar,
+            'skills' => $skillsList,
+            'selectedSkills' => $skillIds,
+            'benefits' => $benefitsList,
+            'selectedBenefits' => $benefitIds,
+            'languageOptions' => $languageOptions,
+            'selectedLanguages' => $languageCodes,
+        ]);
+    }
+
+    public function favorites(Request $request): View
+    {
+        $favIds = [];
+        $cookie = $request->cookie('job_favs_v1');
+        
+        if ($cookie) {
+            try {
+                $favIds = json_decode($cookie, true) ?: [];
+                $favIds = array_map('intval', $favIds);
+            } catch (\Exception $e) {
+                $favIds = [];
+            }
+        }
+
+        $jobs = $favIds ? Job::query()
+            ->with(['company', 'region', 'city'])
+            ->whereIn('id', $favIds)
+            ->get()
+            : collect();
+
+        // Sort by the order in favIds
+        if ($jobs->isNotEmpty() && $favIds) {
+            $jobs = $jobs->sortBy(function ($job) use ($favIds) {
+                return array_search($job->id, $favIds);
+            })->values();
+        }
+
+        return view('jobs.favorites', [
+            'jobs' => $jobs,
+            'favIds' => $favIds,
         ]);
     }
 

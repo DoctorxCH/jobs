@@ -31,6 +31,7 @@ class ResourcePermissionResource extends Resource
     protected static ?string $modelLabel = 'Permission Setting';
     protected static ?string $pluralModelLabel = 'Permission Settings';
     protected static ?string $navigationIcon = 'heroicon-o-lock-closed';
+    protected static ?int $navigationSort = 30;
 
     public static function getPermissionKey(): string
     {

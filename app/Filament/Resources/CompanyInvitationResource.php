@@ -26,6 +26,7 @@ class CompanyInvitationResource extends Resource
     protected static ?string $modelLabel = 'Invitation';
     protected static ?string $pluralModelLabel = 'Invitations';
     protected static ?string $navigationGroup = 'Companies';
+    protected static ?int $navigationSort = 40;
 
     public static function getPermissionKey(): string
     {

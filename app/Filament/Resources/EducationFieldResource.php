@@ -20,6 +20,7 @@ class EducationFieldResource extends Resource
     protected static ?string $modelLabel = 'Education Field';
     protected static ?string $pluralModelLabel = 'Education Fields';
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static ?int $navigationSort = 80;
 
     public static function getPermissionKey(): string
     {

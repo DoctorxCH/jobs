@@ -20,6 +20,7 @@ class CountryResource extends Resource
     protected static ?string $modelLabel = 'Country';
     protected static ?string $pluralModelLabel = 'Countries';
     protected static ?string $navigationIcon = 'heroicon-o-globe-europe-africa';
+    protected static ?int $navigationSort = 10;
 
     public static function getPermissionKey(): string
     {

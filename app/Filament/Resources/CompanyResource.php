@@ -26,6 +26,7 @@ class CompanyResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-building-office';
     protected static ?string $navigationGroup = 'Companies';
     protected static ?string $navigationLabel = 'Companies';
+    protected static ?int $navigationSort = 10;
 
     public static function getPermissionKey(): string
     {

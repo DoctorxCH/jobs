@@ -17,6 +17,7 @@ class TaxRateResource extends Resource
     protected static ?string $navigationGroup = 'Finance';
     protected static ?string $navigationLabel = 'Tax Rates';
     protected static ?string $navigationIcon = 'heroicon-o-receipt-percent';
+    protected static ?int $navigationSort = 80;
 
     public static function form(Form $form): Form
     {

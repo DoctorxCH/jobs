@@ -5,6 +5,7 @@ namespace App\Services\Billing;
 use App\Models\Billing\Invoice;
 use App\Models\Billing\InvoiceExternal;
 use App\Models\Billing\Payment;
+use App\Models\SiteSetting;
 
 class InvoiceService
 {
@@ -17,8 +18,28 @@ class InvoiceService
 
     public function exportToSuperfaktura(Invoice $invoice): InvoiceExternal
     {
+        $settings = SiteSetting::current();
+
+        if ($settings && $settings->superfaktura_enabled === false) {
+            return InvoiceExternal::query()->updateOrCreate(
+                ['invoice_id' => $invoice->id],
+                [
+                    'provider' => 'superfaktura',
+                    'external_invoice_id' => null,
+                    'external_invoice_number' => null,
+                    'external_pdf_url' => null,
+                    'sync_status' => 'disabled',
+                    'last_synced_at' => now(),
+                    'last_error' => 'SuperFaktura disabled in settings.',
+                ]
+            );
+        }
+
         $payload = $this->superFakturaService->buildInvoicePayload($invoice);
-        $response = $this->superFakturaService->createInvoice($payload);
+        $timeoutSeconds = $settings?->superfaktura_timeout_seconds
+            ? (int) $settings->superfaktura_timeout_seconds
+            : null;
+        $response = $this->superFakturaService->createInvoice($payload, $timeoutSeconds);
 
         return InvoiceExternal::query()->updateOrCreate(
             ['invoice_id' => $invoice->id],

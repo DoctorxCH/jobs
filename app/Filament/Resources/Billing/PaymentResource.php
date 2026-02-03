@@ -17,6 +17,7 @@ class PaymentResource extends Resource
     protected static ?string $navigationGroup = 'Finance';
     protected static ?string $navigationLabel = 'Payments';
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
+    protected static ?int $navigationSort = 30;
 
     public static function canCreate(): bool
     {

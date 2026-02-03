@@ -20,6 +20,7 @@ class SkillResource extends Resource
     protected static ?string $modelLabel = 'Skill';
     protected static ?string $pluralModelLabel = 'Skills';
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
+    protected static ?int $navigationSort = 40;
 
     public static function getPermissionKey(): string
     {

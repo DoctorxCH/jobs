@@ -20,6 +20,7 @@ class RegionResource extends Resource
     protected static ?string $modelLabel = 'Region';
     protected static ?string $pluralModelLabel = 'Regions';
     protected static ?string $navigationIcon = 'heroicon-o-map';
+    protected static ?int $navigationSort = 20;
 
     public static function getPermissionKey(): string
     {

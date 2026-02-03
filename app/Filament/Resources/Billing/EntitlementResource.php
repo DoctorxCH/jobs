@@ -17,6 +17,7 @@ class EntitlementResource extends Resource
     protected static ?string $navigationGroup = 'Finance';
     protected static ?string $navigationLabel = 'Entitlements';
     protected static ?string $navigationIcon = 'heroicon-o-star';
+    protected static ?int $navigationSort = 90;
 
     public static function canCreate(): bool
     {

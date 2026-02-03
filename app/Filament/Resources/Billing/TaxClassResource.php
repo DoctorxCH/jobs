@@ -17,7 +17,7 @@ class TaxClassResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-receipt-percent';
     protected static ?string $navigationGroup = 'Finance';
     protected static ?string $navigationLabel = 'Tax classes';
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 70;
 
     public static function form(Form $form): Form
     {

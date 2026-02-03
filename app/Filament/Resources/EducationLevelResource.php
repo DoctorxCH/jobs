@@ -20,6 +20,7 @@ class EducationLevelResource extends Resource
     protected static ?string $modelLabel = 'Education Level';
     protected static ?string $pluralModelLabel = 'Education Levels';
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
+    protected static ?int $navigationSort = 70;
 
     public static function getPermissionKey(): string
     {

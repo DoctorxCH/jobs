@@ -29,6 +29,7 @@ class CompanyUserResource extends Resource
     protected static ?string $modelLabel = 'Company Member';
     protected static ?string $pluralModelLabel = 'Company Members';
     protected static ?string $navigationGroup = 'Companies';
+    protected static ?int $navigationSort = 30;
 
     public static function getPermissionKey(): string
     {

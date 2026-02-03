@@ -24,6 +24,7 @@ class JobResource extends Resource
     protected static ?string $modelLabel = 'Job';
     protected static ?string $pluralModelLabel = 'Jobs';
     protected static ?string $navigationIcon = 'heroicon-o-briefcase';
+    protected static ?int $navigationSort = 10;
 
     public static function getPermissionKey(): string
     {

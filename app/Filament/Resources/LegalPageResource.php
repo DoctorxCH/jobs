@@ -14,8 +14,9 @@ class LegalPageResource extends Resource
 {
     protected static ?string $model = LegalPage::class;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static ?string $navigationGroup = 'Settings';
+    protected static ?string $navigationGroup = 'Content';
     protected static ?string $navigationLabel = 'Legal Pages';
+    protected static ?int $navigationSort = 10;
 
     public static function form(Form $form): Form
     {

@@ -75,12 +75,71 @@ return [
   ,'remember_me' => 'Zapamätať si ma'
   ,'log_in' => 'Prihlásiť sa'
   ,'home' => 'Domov'
+  ,'home_content' => [
+    'chips' => [
+      'minimal' => 'Minimal',
+      'pixel' => 'Pixel',
+      'hiring' => 'Nábor',
+    ],
+    'hero' => [
+      'title' => 'Nájdite si ďalšiu',
+      'highlight' => 'prácu',
+      'title_after' => 'za pár minút',
+      'lead' => 'Prehľad ponúk od overených spoločností.',
+    ],
+    'search' => [
+      'label' => 'Názov pozície',
+      'placeholder' => 'napr. UI dizajnér',
+      'button' => 'Hľadať pozície',
+    ],
+    'features' => [
+      [
+        'tag' => 'RÝCHLO',
+        'title' => 'Rýchle vyhľadávanie',
+        'text' => 'Nájdite relevantné ponuky v pár klikoch.',
+      ],
+      [
+        'tag' => 'PREHĽADNE',
+        'title' => 'Jasné mzdy',
+        'text' => 'Mzdy uvidíte ešte pred prihlásením.',
+      ],
+      [
+        'tag' => 'OVERENÉ',
+        'title' => 'Overené spoločnosti',
+        'text' => 'Na platforme sú iba overení zamestnávatelia.',
+      ],
+    ],
+    'sponsors' => [
+      'title' => 'Top partneri',
+      'items' => [
+        'Acme',
+        'PixelWorks',
+        'Nordic Labs',
+        'Bluewave',
+      ],
+    ],
+    'blog' => [
+      'kicker' => 'Inšpirácie',
+      'title' => 'Tipy pre lepšie hľadanie práce',
+      'text' => 'Krátke návody o trendoch a kariérnom raste.',
+      'chips' => [
+        'Nábor',
+        'Kariéra',
+        'Mzda',
+      ],
+    ],
+  ]
   ,'terms_title' => 'Všeobecné obchodné podmienky'
   ,'terms_default_title' => 'Všeobecné obchodné podmienky (AGB)'
   ,'last_updated' => 'Naposledy aktualizované:'
   ,'terms_effective_from' => 'Tieto podmienky sú účinné od :date.'
   ,'terms_missing' => 'Obsah podmienok ešte nie je nastavený. Kontaktujte podporu.'
   ,'jobs_listing_title' => 'Prehľad dostupných pozícií'
+    ,'job_type' => 'Typ pozície'
+    ,'filter_section_job_type' => 'Typ pozície a úväzok'
+    ,'filter_section_experience' => 'Skúsenosti a vzdelanie'
+    ,'filter_section_special_attributes' => 'Špeciálne vlastnosti'
+    ,'filter_section_skills' => 'Zručnosti, benefity a jazyky'
   ,'search_job_title_placeholder' => 'Hľadať podľa názvu pozície…'
   ,'search' => 'Hľadať'
   ,'jobs_found' => 'Nájdené pozície: :count'
@@ -88,13 +147,16 @@ return [
   ,'all_cities' => 'Všetky mestá'
   ,'more_filters' => 'Ďalšie filtre'
   ,'salary_from' => 'Mzda od'
+  ,'salary_to' => 'Mzda do'
   ,'salary_placeholder' => 'napr. 1 800 €'
-  ,'apply_filters' => 'Použiť filtre'
+  ,'apply_filters' => 'Použiť filter'
   ,'reset' => 'Reset'
-  ,'salary_range' => ' =>min–:max :currency'
+  ,'salary_range' => ':min–:max :currency'
   ,'salary_from_value' => 'od :min :currency'
   ,'salary_up_to' => 'do :max :currency'
   ,'favorite' => 'Obľúbené'
+  ,'favorites' => 'Moje obľúbené pracovné ponuky'
+  ,'no_favorites' => 'Zatiaľ nemáte žiadne obľúbené ponuky. Začnite pridávať pozície do obľúbených!'
   ,'no_jobs_found' => 'Žiadne pozície sa nenašli.'
   ,'company_short_description' => 'Krátky popis'
   ,'about_us' => 'O nás'

@@ -75,12 +75,71 @@ return [
   ,'remember_me' => 'Remember me'
   ,'log_in' => 'Log in'
   ,'home' => 'Home'
+  ,'home_content' => [
+    'chips' => [
+      'minimal' => 'Minimal',
+      'pixel' => 'Pixel',
+      'hiring' => 'Hiring',
+    ],
+    'hero' => [
+      'title' => 'Find your next',
+      'highlight' => 'job',
+      'title_after' => 'in minutes',
+      'lead' => 'Browse curated openings from verified companies.',
+    ],
+    'search' => [
+      'label' => 'Job title',
+      'placeholder' => 'e.g. UI Designer',
+      'button' => 'Search jobs',
+    ],
+    'features' => [
+      [
+        'tag' => 'FAST',
+        'title' => 'Quick search',
+        'text' => 'Find relevant jobs in a few clicks.',
+      ],
+      [
+        'tag' => 'TRANSPARENT',
+        'title' => 'Clear salary ranges',
+        'text' => 'See pay ranges before you apply.',
+      ],
+      [
+        'tag' => 'TRUSTED',
+        'title' => 'Verified companies',
+        'text' => 'Only reviewed employers on the platform.',
+      ],
+    ],
+    'sponsors' => [
+      'title' => 'Top partners',
+      'items' => [
+        'Acme',
+        'PixelWorks',
+        'Nordic Labs',
+        'Bluewave',
+      ],
+    ],
+    'blog' => [
+      'kicker' => 'Insights',
+      'title' => 'Tips for a smarter job search',
+      'text' => 'Read short guides on hiring trends and career growth.',
+      'chips' => [
+        'Hiring',
+        'Career',
+        'Salary',
+      ],
+    ],
+  ]
   ,'terms_title' => 'Terms & Conditions'
   ,'terms_default_title' => 'Terms & Conditions (AGB)'
   ,'last_updated' => 'Last updated:'
   ,'terms_effective_from' => 'These Terms & Conditions are effective from :date.'
   ,'terms_missing' => 'Terms & Conditions content is not yet configured. Please contact support.'
   ,'jobs_listing_title' => 'Listing of available jobs'
+    ,'job_type' => 'Job type'
+    ,'filter_section_job_type' => 'Job type & workload'
+    ,'filter_section_experience' => 'Experience & education'
+    ,'filter_section_special_attributes' => 'Special attributes'
+    ,'filter_section_skills' => 'Skills, benefits & languages'
   ,'search_job_title_placeholder' => 'Search job title…'
   ,'search' => 'Search'
   ,'jobs_found' => ':count Jobs found'
@@ -88,6 +147,7 @@ return [
   ,'all_cities' => 'All cities'
   ,'more_filters' => 'More filters'
   ,'salary_from' => 'Salary from'
+  ,'salary_to' => 'Salary to'
   ,'salary_placeholder' => 'e.g. 1,800 €'
   ,'apply_filters' => 'Apply filters'
   ,'reset' => 'Reset'
@@ -95,6 +155,8 @@ return [
   ,'salary_from_value' => 'from :min :currency'
   ,'salary_up_to' => 'up to :max :currency'
   ,'favorite' => 'Favorite'
+  ,'favorites' => 'My Favorite jobs'
+  ,'no_favorites' => 'No favorite jobs yet. Start adding jobs to your favorites!'
   ,'no_jobs_found' => 'No jobs found.'
   ,'company_short_description' => 'Short description'
   ,'about_us' => 'About us'

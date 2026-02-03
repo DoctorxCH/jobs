@@ -92,8 +92,9 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .pixel-grid{
-  background-color: var(--bg);
-  background-image: none;
+  /* background-color: var(--bg); */
+  background-image: url(/storage/app/public/backgrounds/background.svg);
+
 }
 
 /* stronger content separation */
@@ -104,6 +105,30 @@ h1, h2, h3, h4, h5, h6,
 .pixel-outline{
   background: var(--paper);
   box-shadow: 0 10px 22px rgba(8, 22, 47, 0.10);
+}
+
+
+h1.pixel-hero-z.pixel-hero__title {
+    z-index: 10;
+}
+
+#pixel-mask {
+    width: 100%;
+    height: 100%;
+}
+.pixel-hero { position: relative; overflow: hidden; }
+.pixel-mask { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; }
+
+
+
+.pixel-section-landing.pixel-hero {
+    background: var(--paper);
+    box-shadow: var(--shadow-hard);
+    padding: 2rem;
+    /* background-image: url(https://jobs.kurka.ch/storage/backgrounds/bratislava.jpg); */
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
 .pixel-card--outline{
@@ -390,8 +415,6 @@ p{ color: var(--muted); }
   max-width: 1280px;
   margin: 0 auto;
   padding: 5px 0;
-  background-color: #fff;
-  box-shadow: 0 12px 30px rgba(8, 22, 47, 0.12);
 }
 
 .pixel-page{

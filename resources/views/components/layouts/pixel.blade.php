@@ -26,6 +26,15 @@
 
 <body class="min-h-screen">
     <div class="pixel-grid min-h-screen">
+        @php($siteSettings = \App\Models\SiteSetting::current())
+        @if ($siteSettings?->maintenance_banner_enabled && filled($siteSettings->maintenance_banner_text))
+            <div class="px-6 pt-6">
+                <div class="pixel-outline px-4 py-3 text-sm border-2 border-amber-500 bg-amber-50 text-amber-900">
+                    {{ $siteSettings->maintenance_banner_text }}
+                </div>
+            </div>
+        @endif
+
         <x-pixel-header />
 
         <main class="px-6 pt-10 pb-20">

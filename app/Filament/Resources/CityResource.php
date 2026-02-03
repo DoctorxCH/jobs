@@ -20,6 +20,7 @@ class CityResource extends Resource
     protected static ?string $modelLabel = 'City';
     protected static ?string $pluralModelLabel = 'Cities';
     protected static ?string $navigationIcon = 'heroicon-o-building-office';
+    protected static ?int $navigationSort = 30;
 
     public static function getPermissionKey(): string
     {

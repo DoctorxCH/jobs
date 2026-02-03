@@ -20,6 +20,7 @@ class SknacePositionResource extends Resource
     protected static ?string $modelLabel = 'Sknace Position';
     protected static ?string $pluralModelLabel = 'Sknace Positions';
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document';
+    protected static ?int $navigationSort = 20;
 
     public static function getPermissionKey(): string
     {

@@ -68,6 +68,14 @@
 
         {{-- Right side --}}
         <div class="flex items-center gap-3">
+            {{-- Favorites icon (shows if cookies have favorites) --}}
+            <a href="{{ route('frontend.favorites') }}" class="relative pixel-outline px-3 py-2" id="fav-link" style="display: none; color: currentColor;">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
+                </svg>
+                <span class="absolute -right-2 -top-2 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center" id="fav-count">0</span>
+            </a>
+
             @guest
                 <a class="pixel-outline px-4 py-2 text-xs uppercase tracking-[0.2em]" href="{{ route('frontend.login') }}">
                     Login
@@ -127,3 +135,50 @@
         </div>
     </div>
 </header>
+
+<script>
+(function () {
+    const COOKIE_NAME = 'job_favs_v1';
+
+    function getCookie(name) {
+        const m = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()[\]\\\/+^])/g,'\\$1') + '=([^;]*)'));
+        return m ? decodeURIComponent(m[1]) : null;
+    }
+
+    function readFavs() {
+        try {
+            const raw = getCookie(COOKIE_NAME);
+            if (!raw) return [];
+            const arr = JSON.parse(raw);
+            return Array.isArray(arr) ? arr.map(Number) : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function updateFavIcon() {
+        const favs = readFavs();
+        const link = document.getElementById('fav-link');
+        const count = document.getElementById('fav-count');
+        const svg = link.querySelector('svg');
+        
+        if (favs.length > 0) {
+            link.style.display = 'flex';
+            link.style.color = '#ef4444';
+            svg.style.fill = '#ef4444';
+            count.textContent = favs.length;
+        } else {
+            link.style.display = 'none';
+        }
+    }
+
+    // Make updateFavIcon available globally for other pages
+    window.updateHeaderFavIcon = updateFavIcon;
+
+    document.addEventListener('DOMContentLoaded', updateFavIcon);
+    updateFavIcon();
+    
+    // Listen for storage changes from other tabs/windows
+    window.addEventListener('storage', updateFavIcon);
+})();
+</script>
