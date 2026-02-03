@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->alias([
             'auth' => \App\Http\Middleware\Authenticate::class,
+            'company.verified' => \App\Http\Middleware\EnsureCompanyVerified::class,
         ]);
         $middleware->web(append: [
             \App\Http\Middleware\SetLocaleFromSiteSettings::class,

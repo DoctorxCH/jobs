@@ -39,6 +39,13 @@ class Company extends Model
         'founded_year',
         'status',
         'verified_at',
+        'verified_method',
+        'verified_by_user_id',
+        'verified_by_email',
+        'verification_ack_status',
+        'verification_ack_at',
+        'verification_ack_by',
+        'verification_ack_note',
         'active',
         'notes_internal',
         'seats_purchased',
@@ -48,6 +55,7 @@ class Company extends Model
     protected $casts = [
         'social_links' => 'array',
         'verified_at' => 'datetime',
+        'verification_ack_at' => 'datetime',
         'active' => 'boolean',
         'seats_purchased' => 'integer',
         'seats_locked' => 'integer',
@@ -113,6 +121,11 @@ class Company extends Model
             ->count();
 
         return ($purchased - $reserved - $used) > 0;
+    }
+
+    public function isVerified(): bool
+    {
+        return (bool) $this->verified_at;
     }
 
         public function scopeActiveTopPartners($query)
