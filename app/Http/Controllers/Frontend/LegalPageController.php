@@ -8,10 +8,10 @@ use Illuminate\View\View;
 
 class LegalPageController extends Controller
 {
-    public function agb(): View
+    private function resolvePage(string $slug): ?LegalPage
     {
         $page = LegalPage::query()
-            ->where('slug', 'agb')
+            ->where('slug', $slug)
             ->where('is_active', true)
             ->orderByDesc('updated_at')
             ->first();
@@ -23,7 +23,23 @@ class LegalPageController extends Controller
                 ->first();
         }
 
+        return $page;
+    }
+
+    public function agb(): View
+    {
+        $page = $this->resolvePage('agb');
+
         return view('legal.agb', [
+            'page' => $page,
+        ]);
+    }
+
+    public function privacy(): View
+    {
+        $page = $this->resolvePage('privacy');
+
+        return view('legal.privacy', [
             'page' => $page,
         ]);
     }

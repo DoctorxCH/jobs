@@ -91,7 +91,7 @@
 
             <form method="POST" action="{{ route('frontend.company.verification.invoice.start') }}">
                 @csrf
-                <button type="submit" class="pixel-button px-4 py-2 text-xs uppercase tracking-[0.2em]">Invoice request starten</button>
+                <button type="submit" class="pixel-button px-4 py-2 text-xs uppercase tracking-[0.2em]">{{ __('main.invoice_request_start') }}</button>
             </form>
         </div>
     </div>

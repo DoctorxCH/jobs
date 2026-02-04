@@ -175,24 +175,24 @@ class DashboardController extends Controller
         if ($company) {
             if (!$company->verified_at) {
                 $todos[] = [
-                    'label' => 'Company not verified',
-                    'hint' => 'Complete your company profile and request verification.',
-                    'url' => route('frontend.profile'),
+                    'label' => __('main.todo_company_not_verified'),
+                    'hint' => __('main.todo_company_not_verified_hint'),
+                    'url' => route('frontend.company.verification.index'),
                 ];
             }
 
             if (($invoiceCounts['overdue'] ?? 0) > 0) {
                 $todos[] = [
-                    'label' => 'Overdue invoices',
-                    'hint' => 'Please pay overdue invoices to avoid service restrictions.',
+                    'label' => __('main.todo_overdue_invoices'),
+                    'hint' => __('main.todo_overdue_invoices_hint'),
                     'url' => route('frontend.billing.invoices.index'),
                 ];
             }
 
             if (is_int($creditsAvailable) && $creditsAvailable <= 0) {
                 $todos[] = [
-                    'label' => 'No credits available',
-                    'hint' => 'Buy credits to post or renew jobs.',
+                    'label' => __('main.todo_no_credits'),
+                    'hint' => __('main.todo_no_credits_hint'),
                     'url' => route('frontend.billing.products.index'),
                 ];
             }
@@ -205,8 +205,8 @@ class DashboardController extends Controller
 
             if ($expiringSoon > 0) {
                 $todos[] = [
-                    'label' => 'Jobs expiring soon',
-                    'hint' => $expiringSoon . ' job(s) will expire within 7 days.',
+                    'label' => __('main.todo_jobs_expiring'),
+                    'hint' => __('main.todo_jobs_expiring_hint', ['count' => $expiringSoon]),
                     'url' => route('frontend.jobs.index'),
                 ];
             }
@@ -221,8 +221,8 @@ class DashboardController extends Controller
                 $activity[] = [
                     'at' => $j->updated_at ?? $j->created_at,
                     'type' => 'job',
-                    'title' => $j->title ?: 'Untitled job',
-                    'hint' => 'Job updated',
+                    'title' => $j->title ?: __('main.untitled_job'),
+                    'hint' => __('main.activity_job_updated'),
                     'url' => route('frontend.jobs.edit', $j),
                 ];
             }
@@ -230,7 +230,7 @@ class DashboardController extends Controller
             // Invoices
             if (Schema::hasTable('invoices')) {
                 foreach (Invoice::query()->where('company_id', $companyId)->orderByDesc('created_at')->limit(5)->get() as $inv) {
-                    $label = 'Invoice created';
+                    $label = __('main.activity_invoice_created');
                     if (Schema::hasColumn('invoices', 'status') && $inv->status) {
                         $label .= ' (' . $inv->status . ')';
                     }
@@ -238,7 +238,7 @@ class DashboardController extends Controller
                     $activity[] = [
                         'at' => $inv->created_at,
                         'type' => 'invoice',
-                        'title' => 'Invoice',
+                        'title' => __('main.activity_invoice_title'),
                         'hint' => $label,
                         'url' => route('frontend.billing.invoices.show', $inv),
                     ];
@@ -251,8 +251,8 @@ class DashboardController extends Controller
                     $activity[] = [
                         'at' => $o->created_at,
                         'type' => 'order',
-                        'title' => 'Order',
-                        'hint' => 'Order placed',
+                        'title' => __('main.activity_order_title'),
+                        'hint' => __('main.activity_order_placed'),
                         'url' => route('frontend.billing.orders.show', $o),
                     ];
                 }
@@ -263,8 +263,8 @@ class DashboardController extends Controller
                 $activity[] = [
                     'at' => $inv->created_at,
                     'type' => 'team',
-                    'title' => $inv->email ?? 'Invitation',
-                    'hint' => 'Team invite sent',
+                    'title' => $inv->email ?? __('main.activity_invitation_fallback'),
+                    'hint' => __('main.activity_team_invite_sent'),
                     'url' => route('frontend.team'),
                 ];
             }

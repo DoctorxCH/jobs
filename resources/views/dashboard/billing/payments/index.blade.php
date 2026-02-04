@@ -1,27 +1,27 @@
-<x-dashboard.layout title="Billing · Payments">
+<x-dashboard.layout title="{{ __('main.billing_payments_title') }}">
     <div class="flex flex-col gap-6">
         <div>
-            <div class="text-xs uppercase tracking-[0.2em] text-slate-500">Billing</div>
-            <h1 class="mt-2 text-2xl font-bold">Payments</h1>
+            <div class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.billing') }}</div>
+            <h1 class="mt-2 text-2xl font-bold">{{ __('main.payments') }}</h1>
             <p class="mt-2 text-sm text-slate-600">
-                Payments recorded for your invoices.
+                {{ __('main.payments_intro') }}
             </p>
         </div>
 
         @if ($payments->isEmpty())
             <div class="pixel-outline p-6 text-sm text-slate-600">
-                No payments yet.
+                {{ __('main.no_payments_yet') }}
             </div>
         @else
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
                     <thead>
                         <tr class="text-xs uppercase tracking-[0.2em] text-slate-500">
-                            <th class="py-2">Payment</th>
-                            <th class="py-2">Date</th>
-                            <th class="py-2">Status</th>
-                            <th class="py-2">Amount</th>
-                            <th class="py-2">Invoice</th>
+                            <th class="py-2">{{ __('main.payment') }}</th>
+                            <th class="py-2">{{ __('main.date') }}</th>
+                            <th class="py-2">{{ __('main.status') }}</th>
+                            <th class="py-2">{{ __('main.amount') }}</th>
+                            <th class="py-2">{{ __('main.invoice') }}</th>
                             <th class="py-2"></th>
                         </tr>
                     </thead>
@@ -44,7 +44,7 @@
                                 <td class="py-3 text-right">
                                     <a href="{{ route('frontend.billing.payments.show', $payment) }}"
                                        class="inline-flex pixel-outline px-3 py-1 text-xs uppercase tracking-[0.2em]">
-                                        View
+                                        {{ __('main.view') }}
                                     </a>
                                 </td>
                             </tr>

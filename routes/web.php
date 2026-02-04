@@ -183,6 +183,9 @@ Route::middleware('web')->group(function () {
 
     Route::get('/agb', [FrontendLegalPageController::class, 'agb'])
         ->name('legal.agb');
+
+    Route::get('/privacy', [FrontendLegalPageController::class, 'privacy'])
+        ->name('legal.privacy');
         
     Route::get('/jobs', [FrontendJobController::class, 'publicIndex'])
         ->name('jobs.index');
