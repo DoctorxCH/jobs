@@ -1,6 +1,6 @@
-<x-dashboard.layout title="Company invitation">
+<x-dashboard.layout title="{{ __('main.company_invitation_title') }}">
     <div class="max-w-xl">
-        <h1 class="text-xl font-bold mb-4">No free seats</h1>
-        <p class="text-sm">This company currently has no free seats available. Please contact the company owner.</p>
+        <h1 class="text-xl font-bold mb-4">{{ __('main.invitation_no_seats_title') }}</h1>
+        <p class="text-sm">{{ __('main.invitation_no_seats_body') }}</p>
     </div>
 </x-dashboard.layout>

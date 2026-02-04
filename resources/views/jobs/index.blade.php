@@ -53,9 +53,22 @@
             </div>
         </div>
 
+        <div class="flex items-center justify-between gap-3 lg:hidden">
+            <div class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.filters') }}</div>
+            <button
+                type="button"
+                class="pixel-outline px-4 py-2 text-xs uppercase tracking-[0.2em]"
+                data-filter-toggle
+                aria-expanded="false"
+                aria-controls="job-filters"
+            >
+                {{ __('main.show_filters') }}
+            </button>
+        </div>
+
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-4">
             {{-- FILTERS --}}
-            <aside class="pixel-frame p-6 lg:col-span-1">
+            <aside class="pixel-frame p-6 hidden lg:block lg:col-span-1" id="job-filters" data-filter-panel>
                 <form class="space-y-4" method="get" action="{{ route('jobs.index') }}">
                     <input type="hidden" name="country" value="{{ $countryCode ?? 'SK' }}">
                     {{-- keep search when applying filters --}}
@@ -420,6 +433,21 @@
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script>
     (function () {
+        const filterToggle = document.querySelector('[data-filter-toggle]');
+        const filterPanel = document.querySelector('[data-filter-panel]');
+
+        if (filterToggle && filterPanel) {
+            const showLabel = {{ Js::from(__('main.show_filters')) }};
+            const hideLabel = {{ Js::from(__('main.hide_filters')) }};
+
+            filterToggle.addEventListener('click', () => {
+                const isHidden = filterPanel.classList.contains('hidden');
+                filterPanel.classList.toggle('hidden', !isHidden);
+                filterToggle.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+                filterToggle.textContent = isHidden ? hideLabel : showLabel;
+            });
+        }
+
         function initMultiSelects() {
             if (!window.Choices) return;
 

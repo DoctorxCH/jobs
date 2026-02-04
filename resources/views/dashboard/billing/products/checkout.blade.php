@@ -1,4 +1,4 @@
-<x-dashboard.layout title="Billing · Checkout">
+<x-dashboard.layout title="{{ __('main.billing_checkout_title') }}">
     <div class="flex flex-col gap-6">
         <div>
             <a href="{{ route('frontend.billing.products.show', $product) }}"

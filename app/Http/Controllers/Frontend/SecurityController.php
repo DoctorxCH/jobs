@@ -35,27 +35,27 @@ class SecurityController extends Controller
             'requirements' => [
                 [
                     'key' => 'min',
-                    'label' => "At least {$min} characters",
+                    'label' => __('main.password_req_min', ['min' => $min]),
                     'js' => "value.length >= {$min}",
                 ],
                 [
                     'key' => 'lower',
-                    'label' => 'At least one lowercase letter (a-z)',
+                    'label' => __('main.password_req_lower'),
                     'js' => "/[a-z]/.test(value)",
                 ],
                 [
                     'key' => 'upper',
-                    'label' => 'At least one uppercase letter (A-Z)',
+                    'label' => __('main.password_req_upper'),
                     'js' => "/[A-Z]/.test(value)",
                 ],
                 [
                     'key' => 'number',
-                    'label' => 'At least one number (0-9)',
+                    'label' => __('main.password_req_number'),
                     'js' => "/[0-9]/.test(value)",
                 ],
                 [
                     'key' => 'symbol',
-                    'label' => 'At least one symbol (!@#$...)',
+                    'label' => __('main.password_req_symbol'),
                     'js' => "/[^A-Za-z0-9]/.test(value)",
                 ],
             ],
@@ -80,8 +80,8 @@ class SecurityController extends Controller
             'current_password' => ['required', 'current_password'],
             'password' => ['required', 'confirmed', $policy['rule']],
         ], [
-            'current_password.current_password' => 'Your current password is incorrect.',
-            'password.confirmed' => 'The new passwords do not match.',
+            'current_password.current_password' => __('main.password_current_incorrect'),
+            'password.confirmed' => __('main.password_confirmation_mismatch'),
         ]);
 
         $user = $request->user();
