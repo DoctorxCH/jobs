@@ -22,8 +22,9 @@ return [
   'profile_updated' => 'Profil bol úspešne aktualizovaný.',
   'password_updated' => 'Heslo bolo úspešne aktualizované.',
   'invite_own_email_error' => 'Nemôžete pozvať vlastný e‑mail.',
-  'invitation_sent' => 'Pozvánka bola odoslaná.'
-  ,'register_title' => 'Registrácia'
+  'invitation_sent' => 'Pozvánka bola odoslaná.',
+  'others' => 'Ostatné',
+  'register_title' => 'Registrácia'
   ,'register_step1_subtitle' => 'Krok 1: Vyhľadanie spoločnosti'
   ,'register_step2_subtitle' => 'Krok 2: Údaje o spoločnosti'
   ,'register_step3_subtitle' => 'Krok 3: Účet'
@@ -75,71 +76,12 @@ return [
   ,'remember_me' => 'Zapamätať si ma'
   ,'log_in' => 'Prihlásiť sa'
   ,'home' => 'Domov'
-  ,'home_content' => [
-    'chips' => [
-      'minimal' => 'Minimal',
-      'pixel' => 'Pixel',
-      'hiring' => 'Nábor',
-    ],
-    'hero' => [
-      'title' => 'Nájdite si ďalšiu',
-      'highlight' => 'prácu',
-      'title_after' => 'za pár minút',
-      'lead' => 'Prehľad ponúk od overených spoločností.',
-    ],
-    'search' => [
-      'label' => 'Názov pozície',
-      'placeholder' => 'napr. UI dizajnér',
-      'button' => 'Hľadať pozície',
-    ],
-    'features' => [
-      [
-        'tag' => 'RÝCHLO',
-        'title' => 'Rýchle vyhľadávanie',
-        'text' => 'Nájdite relevantné ponuky v pár klikoch.',
-      ],
-      [
-        'tag' => 'PREHĽADNE',
-        'title' => 'Jasné mzdy',
-        'text' => 'Mzdy uvidíte ešte pred prihlásením.',
-      ],
-      [
-        'tag' => 'OVERENÉ',
-        'title' => 'Overené spoločnosti',
-        'text' => 'Na platforme sú iba overení zamestnávatelia.',
-      ],
-    ],
-    'sponsors' => [
-      'title' => 'Top partneri',
-      'items' => [
-        'Acme',
-        'PixelWorks',
-        'Nordic Labs',
-        'Bluewave',
-      ],
-    ],
-    'blog' => [
-      'kicker' => 'Inšpirácie',
-      'title' => 'Tipy pre lepšie hľadanie práce',
-      'text' => 'Krátke návody o trendoch a kariérnom raste.',
-      'chips' => [
-        'Nábor',
-        'Kariéra',
-        'Mzda',
-      ],
-    ],
-  ]
   ,'terms_title' => 'Všeobecné obchodné podmienky'
   ,'terms_default_title' => 'Všeobecné obchodné podmienky (AGB)'
   ,'last_updated' => 'Naposledy aktualizované:'
   ,'terms_effective_from' => 'Tieto podmienky sú účinné od :date.'
   ,'terms_missing' => 'Obsah podmienok ešte nie je nastavený. Kontaktujte podporu.'
   ,'jobs_listing_title' => 'Prehľad dostupných pozícií'
-    ,'job_type' => 'Typ pozície'
-    ,'filter_section_job_type' => 'Typ pozície a úväzok'
-    ,'filter_section_experience' => 'Skúsenosti a vzdelanie'
-    ,'filter_section_special_attributes' => 'Špeciálne vlastnosti'
-    ,'filter_section_skills' => 'Zručnosti, benefity a jazyky'
   ,'search_job_title_placeholder' => 'Hľadať podľa názvu pozície…'
   ,'search' => 'Hľadať'
   ,'jobs_found' => 'Nájdené pozície: :count'
@@ -147,16 +89,13 @@ return [
   ,'all_cities' => 'Všetky mestá'
   ,'more_filters' => 'Ďalšie filtre'
   ,'salary_from' => 'Mzda od'
-  ,'salary_to' => 'Mzda do'
   ,'salary_placeholder' => 'napr. 1 800 €'
-  ,'apply_filters' => 'Použiť filter'
+  ,'apply_filters' => 'Použiť filtre'
   ,'reset' => 'Reset'
-  ,'salary_range' => ':min–:max :currency'
+  ,'salary_range' => ' =>min–:max :currency'
   ,'salary_from_value' => 'od :min :currency'
   ,'salary_up_to' => 'do :max :currency'
   ,'favorite' => 'Obľúbené'
-  ,'favorites' => 'Moje obľúbené pracovné ponuky'
-  ,'no_favorites' => 'Zatiaľ nemáte žiadne obľúbené ponuky. Začnite pridávať pozície do obľúbených!'
   ,'no_jobs_found' => 'Žiadne pozície sa nenašli.'
   ,'company_short_description' => 'Krátky popis'
   ,'about_us' => 'O nás'
@@ -200,6 +139,8 @@ return [
   ,'back_to_product' => 'Späť na produkt'
   ,'checkout' => 'Objednávka'
   ,'checkout_confirm' => 'Skontrolujte detaily objednávky pred odoslaním.'
+  ,'legal_agree_1' => 'Súhlasím s'
+  ,'legal_terms_link' => 'obchodnými podmienkami.'
   ,'product' => 'Produkt'
   ,'coupons' => 'Kupóny'
   ,'coupon_code' => 'Kód kupónu'
@@ -313,6 +254,8 @@ return [
   ,'billing_products_title' => 'Fakturácia · Produkty'
   ,'billing_product_title' => 'Fakturácia · Produkt'
   ,'choose_product_for_company' => 'Vyberte produkt na nákup pre vašu spoločnosť.'
+  ,'how_credits_work_title' => 'Ako fungujú kredity'
+  ,'how_credits_work_text' => "Kredity sú interné platobné jednotky platformy, ktoré sa používajú na platbu za služby, ako sú inzercia pracovných ponúk, zvýraznenie inzerátov, propagácia spoločnosti a reklama.\n\nÚčtujú sa vám len skutočné dni, kedy je služba aktívna. Pracovné ponuky a propagácie môžete kedykoľvek upravovať, skrátiť alebo pozastaviť.\n\nAk skrátite aktívne obdobie, 50 % nevyužitých kreditov sa automaticky vráti na váš účet.\nKredity nie sú časovo obmedzené, zostávajú na vašom účte a nie je možné ich vybrať ani vymeniť za peniaze."
   ,'no_active_products' => 'Momentálne nie sú dostupné žiadne aktívne produkty.'
   ,'no_description_yet' => 'Popis zatiaľ nie je k dispozícii.'
   ,'net' => 'Bez DPH'
@@ -446,6 +389,56 @@ return [
   ,'skill' => 'Zručnosť'
   ,'add_skill' => 'Pridať zručnosť'
   ,'add_multiple_skills' => 'Pridajte viac zručností s úrovňou.'
+  ,'home_content' => [
+    'chips' => [
+      'minimal' => 'Minimal',
+      'pixel' => 'Pixel UI',
+      'hiring' => 'Moderný nábor',
+    ],
+    'hero' => [
+      'title' => 'Nájdi svoju ďalšiu prácu v',
+      'highlight' => 'čistom, pixel‑presnom',
+      'title_after' => 'prostredí.',
+      'lead' => '365jobs spája zamestnávateľov a talenty — minimalisticky, sústredene a stále prívetivo. Bez rušenia. Len relevantné pozície v pokojnom pixel štýle.',
+    ],
+    'search' => [
+      'label' => 'Hľadať',
+      'placeholder' => 'Názov pozície, lokalita alebo zručnosť',
+      'button' => 'Nájsť prácu',
+    ],
+    'features' => [
+      [
+        'tag' => 'Fokus',
+        'title' => 'Cielené zhody',
+        'text' => 'Len relevantné pozície s jasnými požiadavkami a férovými tímami.',
+      ],
+      [
+        'tag' => 'Transparentnosť',
+        'title' => 'Jasné detaily',
+        'text' => 'Rozpätia miezd, režimy práce a stack na prvý pohľad.',
+      ],
+      [
+        'tag' => 'Pixel dizajn',
+        'title' => 'Minimal & modern',
+        'text' => 'Retro bez gýča — pokojné, ostré, profesionálne.',
+      ],
+    ],
+    'sponsors' => [
+      'title' => 'Partneri',
+      'items' => [
+        'Nebula Labs',
+        'Nordic Stack',
+        'Cloudform',
+        'Axiom Tools',
+      ],
+    ],
+    'blog' => [
+      'kicker' => 'Blog',
+      'title' => 'Priamo k veci v modernom hľadaní práce',
+      'text' => 'Krátke, úprimné, bez buzzwordov. Tipy na pohovory, remote postrehy, realita náboru — malé kúsky, ktoré hneď využiješ.',
+      'chips' => ['Návody', 'Remote práca', 'Trendy náboru'],
+    ],
+  ]
 ];
 
 

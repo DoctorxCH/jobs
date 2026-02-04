@@ -92,8 +92,7 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .pixel-grid{
-  /* background-color: var(--bg); */
-  background-image: url(/storage/app/public/backgrounds/background.svg);
+  background-color: var(--bg);
 
 }
 
@@ -333,7 +332,6 @@ h1.pixel-hero-z.pixel-hero__title {
 a{ color: inherit; }
 a:hover {
     color: var(--accent);
-    font-weight: 600;
 }
 a.px-3.py-2.text-xs.uppercase.tracking-\[0\.2em\].pixel-button {
     color: white;
@@ -497,7 +495,6 @@ p{ color: var(--muted); }
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1.25rem 1.5rem;
   background: var(--paper);
   box-shadow: var(--shadow-soft);
 }
@@ -807,13 +804,7 @@ select option.edu-category{
     color: #fff;
 }
 
-.product-details {
-grid-column: span 2;
-}
 
-button.pixel-button-light.no-hover-move.px-6.py-3.text-xs.uppercase.tracking-\[0\.2em\].remove-skill {
-    MARGIN-TOP: 32px;
-}
 
 .ts-dropdown {
     z-index: 999!important;
@@ -822,4 +813,8 @@ button.pixel-button-light.no-hover-move.px-6.py-3.text-xs.uppercase.tracking-\[0
 
 .ts-dropdown:hover {
     z-index: 999!important;
+}
+
+.need-margin-top {
+    margin-top: 8px;
 }

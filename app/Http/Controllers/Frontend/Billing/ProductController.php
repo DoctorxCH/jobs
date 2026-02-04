@@ -167,6 +167,12 @@ public function placeOrder(Request $request, Product $product): RedirectResponse
                 ->with('status', 'Invalid quantity. Please choose between 1 and 100.');
         }
 
+        if (!$request->has('legal_consent')) {
+            return redirect()
+                ->route('frontend.billing.products.checkout', $product)
+                ->with('error', 'You must agree to the Terms and Conditions to proceed.');
+        }
+
         $taxRule = $this->taxRuleService->determineForCompany($company);
         $taxRate = $this->resolveTaxRate($price, $company, $taxRule);
 

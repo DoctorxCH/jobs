@@ -16,7 +16,43 @@
         $initials = strtoupper(mb_substr($first, 0, 1) . mb_substr($last, 0, 1));
         $initials = trim($initials) ?: 'U';
     }
+
+    $companyName = null;
+    if (isset($company)) {
+        if (is_array($company)) {
+            $companyName = $company['name'] ?? null;
+        } else {
+            $companyName = $company->name ?? null;
+        }
+    }
 @endphp
+@php
+    // Credits badge (simple v1):
+    // - resolves company by owner_user_id (works for owner accounts)
+    // - available = sum(credit_ledger.change) - sum(active reservations not expired)
+    $creditsAvailable = null;
+
+    if (auth()->check()) {
+        $companyId = \App\Models\Company::query()
+            ->where('owner_user_id', auth()->id())
+            ->value('id');
+
+        if ($companyId) {
+            $creditsTotal = (int) \Illuminate\Support\Facades\DB::table('credit_ledger')
+                ->where('company_id', $companyId)
+                ->sum('change');
+
+            $creditsReserved = (int) \Illuminate\Support\Facades\DB::table('credit_reservations')
+                ->where('company_id', $companyId)
+                ->whereIn('status', ['active', 'reserved'])
+                ->where('expires_at', '>', now())
+                ->sum('amount');
+
+            $creditsAvailable = max(0, $creditsTotal - $creditsReserved);
+        }
+    }
+@endphp
+
 
 <header class="px-6 pt-6">
     <div class="mx-auto flex w-full max-w-7xl items-center justify-between gap-6">
@@ -69,18 +105,29 @@
         {{-- Right side --}}
         <div class="flex items-center gap-3">
             {{-- Favorites icon (shows if cookies have favorites) --}}
-            <a href="{{ route('frontend.favorites') }}" class="relative pixel-outline px-3 py-2" id="fav-link" style="display: none; color: currentColor;">
+            <a href="{{ route('frontend.favorites') }}" class="relative pixel-outline flex items-center h-12 px-3" id="fav-link" style="display: none; color: currentColor;">
                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
                 </svg>
                 <span class="absolute -right-2 -top-2 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center" id="fav-count">0</span>
             </a>
 
+            @auth
+                @if (isset($creditsAvailable))
+                    <a href="{{ route('frontend.billing.products.index') }}" class="pixel-outline flex items-center gap-2 px-3 h-12 text-xs transition-colors hover:text-[var(--accent)]" title="Credits">
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M21 9.5C21 11.9853 16.9706 14 12 14M21 9.5C21 7.01472 16.9706 5 12 5C7.02944 5 3 7.01472 3 9.5M21 9.5V15C21 17.2091 16.9706 19 12 19M12 14C7.02944 14 3 11.9853 3 9.5M12 14V19M3 9.5V15C3 17.2091 7.02944 19 12 19M7 18.3264V13.2422M17 18.3264V13.2422" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>                        
+                        <span class="font-bold">{{ $creditsAvailable }}</span>
+                    </a>
+                @endif
+            @endauth
+
             @guest
-                <a class="pixel-outline px-4 py-2 text-xs uppercase tracking-[0.2em]" href="{{ route('frontend.login') }}">
+                <a class="pixel-outline flex items-center h-12 px-4 text-xs uppercase tracking-[0.2em]" href="{{ route('frontend.login') }}">
                     Login
                 </a>
-                <a class="pixel-button px-4 py-2 text-xs" href="{{ route('frontend.register') }}">
+                <a class="pixel-button flex items-center h-12 px-4 text-xs" href="{{ route('frontend.register') }}">
                     Register
                 </a>
             @endguest
@@ -88,7 +135,7 @@
             @auth
                 <div class="relative">
                     <button
-                        class="pixel-outline flex items-center gap-3 px-3 py-2 text-xs uppercase tracking-[0.2em]"
+                        class="pixel-outline flex items-center gap-3 px-3 h-12 text-xs uppercase tracking-[0.2em]"
                         data-dropdown-toggle="pixel-user-menu"
                         type="button"
                         aria-haspopup="true"
@@ -99,8 +146,18 @@
                         </span>
 
                         <span class="hidden sm:block">
-                            Signed in<br>
-                            <span class="font-bold normal-case tracking-normal">{{ auth()->user()->name }}</span>
+                            @php
+                                $companyLegalName = \App\Models\Company::query()
+                                    ->where('owner_user_id', auth()->id())
+                                    ->value('legal_name');
+                            @endphp
+                            @if($companyLegalName)
+                                <span class="text-[10px] text-slate-500 block">{{ $companyLegalName }}</span>
+                            @endif
+
+                            <span class="flex items-center gap-2 font-bold normal-case tracking-normal">
+                                <span>{{ auth()->user()->name }}</span>
+                            </span>
                         </span>
 
                         <span class="text-slate-500">▼</span>
@@ -117,7 +174,7 @@
                         </a>
 
                         <a class="block px-3 py-2 text-xs uppercase tracking-[0.2em] hover:text-slate-900"
-                           href="{{ route('frontend.jobs.index') }}">
+                           href="{{ route('frontend.jobs.create') }}">
                             Post a Job
                         </a>
 

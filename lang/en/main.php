@@ -22,8 +22,9 @@ return [
   'profile_updated' => 'Profile updated successfully.',
   'password_updated' => 'Password updated successfully.',
   'invite_own_email_error' => 'Cannot invite your own email.',
-  'invitation_sent' => 'Invitation sent.'
-  ,'register_title' => 'Register'
+  'invitation_sent' => 'Invitation sent.',
+  'others' => 'Others',
+  'register_title' => 'Register'
   ,'register_step1_subtitle' => 'Step 1: Company lookup'
   ,'register_step2_subtitle' => 'Step 2: Company details'
   ,'register_step3_subtitle' => 'Step 3: Account'
@@ -75,71 +76,12 @@ return [
   ,'remember_me' => 'Remember me'
   ,'log_in' => 'Log in'
   ,'home' => 'Home'
-  ,'home_content' => [
-    'chips' => [
-      'minimal' => 'Minimal',
-      'pixel' => 'Pixel',
-      'hiring' => 'Hiring',
-    ],
-    'hero' => [
-      'title' => 'Find your next',
-      'highlight' => 'job',
-      'title_after' => 'in minutes',
-      'lead' => 'Browse curated openings from verified companies.',
-    ],
-    'search' => [
-      'label' => 'Job title',
-      'placeholder' => 'e.g. UI Designer',
-      'button' => 'Search jobs',
-    ],
-    'features' => [
-      [
-        'tag' => 'FAST',
-        'title' => 'Quick search',
-        'text' => 'Find relevant jobs in a few clicks.',
-      ],
-      [
-        'tag' => 'TRANSPARENT',
-        'title' => 'Clear salary ranges',
-        'text' => 'See pay ranges before you apply.',
-      ],
-      [
-        'tag' => 'TRUSTED',
-        'title' => 'Verified companies',
-        'text' => 'Only reviewed employers on the platform.',
-      ],
-    ],
-    'sponsors' => [
-      'title' => 'Top partners',
-      'items' => [
-        'Acme',
-        'PixelWorks',
-        'Nordic Labs',
-        'Bluewave',
-      ],
-    ],
-    'blog' => [
-      'kicker' => 'Insights',
-      'title' => 'Tips for a smarter job search',
-      'text' => 'Read short guides on hiring trends and career growth.',
-      'chips' => [
-        'Hiring',
-        'Career',
-        'Salary',
-      ],
-    ],
-  ]
   ,'terms_title' => 'Terms & Conditions'
   ,'terms_default_title' => 'Terms & Conditions (AGB)'
   ,'last_updated' => 'Last updated:'
   ,'terms_effective_from' => 'These Terms & Conditions are effective from :date.'
   ,'terms_missing' => 'Terms & Conditions content is not yet configured. Please contact support.'
   ,'jobs_listing_title' => 'Listing of available jobs'
-    ,'job_type' => 'Job type'
-    ,'filter_section_job_type' => 'Job type & workload'
-    ,'filter_section_experience' => 'Experience & education'
-    ,'filter_section_special_attributes' => 'Special attributes'
-    ,'filter_section_skills' => 'Skills, benefits & languages'
   ,'search_job_title_placeholder' => 'Search job title…'
   ,'search' => 'Search'
   ,'jobs_found' => ':count Jobs found'
@@ -147,7 +89,6 @@ return [
   ,'all_cities' => 'All cities'
   ,'more_filters' => 'More filters'
   ,'salary_from' => 'Salary from'
-  ,'salary_to' => 'Salary to'
   ,'salary_placeholder' => 'e.g. 1,800 €'
   ,'apply_filters' => 'Apply filters'
   ,'reset' => 'Reset'
@@ -155,8 +96,6 @@ return [
   ,'salary_from_value' => 'from :min :currency'
   ,'salary_up_to' => 'up to :max :currency'
   ,'favorite' => 'Favorite'
-  ,'favorites' => 'My Favorite jobs'
-  ,'no_favorites' => 'No favorite jobs yet. Start adding jobs to your favorites!'
   ,'no_jobs_found' => 'No jobs found.'
   ,'company_short_description' => 'Short description'
   ,'about_us' => 'About us'
@@ -200,6 +139,8 @@ return [
   ,'back_to_product' => 'Back to product'
   ,'checkout' => 'Checkout'
   ,'checkout_confirm' => 'Confirm your order details before placing the order.'
+  ,'legal_agree_1' => 'I agree to the'
+  ,'legal_terms_link' => 'Terms and Conditions.'
   ,'product' => 'Product'
   ,'coupons' => 'Coupons'
   ,'coupon_code' => 'Coupon code'
@@ -313,6 +254,8 @@ return [
   ,'billing_products_title' => 'Billing · Products'
   ,'billing_product_title' => 'Billing · Product'
   ,'choose_product_for_company' => 'Choose a product to purchase for your company.'
+  ,'how_credits_work_title' => 'How credits work'
+  ,'how_credits_work_text' => "Credits are the internal payment units of the platform used to pay for services such as job postings, highlighted listings, company promotion, and advertising.\n\nYou are charged only for the actual days a service is active. Job postings and promotions can be edited, shortened, or paused at any time.\n\nIf you shorten the active period, 50% of unused credits are automatically refunded to your account.\nCredits are not time-limited, remain on your account, and cannot be withdrawn or exchanged for money."
   ,'no_active_products' => 'No active products are available right now.'
   ,'no_description_yet' => 'No description provided yet.'
   ,'net' => 'Net'
@@ -446,6 +389,56 @@ return [
   ,'skill' => 'Skill'
   ,'add_skill' => 'Add skill'
   ,'add_multiple_skills' => 'Add multiple skills with level.'
+  ,'home_content' => [
+    'chips' => [
+      'minimal' => 'Minimal',
+      'pixel' => 'Pixel UI',
+      'hiring' => 'Modern Hiring',
+    ],
+    'hero' => [
+      'title' => 'Find your next job in a',
+      'highlight' => 'clean, pixel-precise',
+      'title_after' => 'platform.',
+      'lead' => '365jobs connects employers and talent — minimal, focused, and still welcoming. No distractions. Only relevant roles in a calm pixel style.',
+    ],
+    'search' => [
+      'label' => 'Search',
+      'placeholder' => 'Job title, location, or skill',
+      'button' => 'Find jobs',
+    ],
+    'features' => [
+      [
+        'tag' => 'Focus',
+        'title' => 'Targeted matches',
+        'text' => 'Only relevant roles with clear requirements and honest teams.',
+      ],
+      [
+        'tag' => 'Transparency',
+        'title' => 'Clear details',
+        'text' => 'Salary ranges, work modes, and stacks at a glance.',
+      ],
+      [
+        'tag' => 'Pixel Design',
+        'title' => 'Minimal & modern',
+        'text' => 'Retro feel without gimmicks — calm, sharp, professional.',
+      ],
+    ],
+    'sponsors' => [
+      'title' => 'Sponsors',
+      'items' => [
+        'Nebula Labs',
+        'Nordic Stack',
+        'Cloudform',
+        'Axiom Tools',
+      ],
+    ],
+    'blog' => [
+      'kicker' => 'Blog',
+      'title' => 'Plain talk for modern job search',
+      'text' => 'Short, honest, no buzzwords. Interview tips, remote insights, hiring realities — small pieces you can use immediately.',
+      'chips' => ['Guides', 'Remote Work', 'Hiring Trends'],
+    ],
+  ]
 ];
 
 

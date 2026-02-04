@@ -16,13 +16,24 @@ class EditContactRequest extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('save')
+                ->label('Save')
+                ->action(fn () => $this->save()),
+        ];
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getSaveFormAction(),
             Actions\Action::make('sendReply')
                 ->label('Send reply')
                 ->icon('heroicon-o-paper-airplane')
                 ->requiresConfirmation()
                 ->action(function () {
                     $record = $this->record;
-                    $replyBody = (string) ($record->reply_body ?? '');
+                    $state = $this->form->getState();
+                    $replyBody = (string) ($state['reply_body'] ?? $record->reply_body ?? '');
 
                     if (trim(strip_tags($replyBody)) === '') {
                         Notification::make()
@@ -35,8 +46,13 @@ class EditContactRequest extends EditRecord
                     $settings = ContactSetting::query()->first();
                     $fromAddress = $settings?->outbox_email;
 
-                    Mail::html($replyBody, function ($message) use ($record, $fromAddress) {
-                        $subject = $record->subject ? 'Re: ' . $record->subject : 'Reply';
+                    $subject = $record->subject ? 'Re: ' . $record->subject : 'Reply';
+
+                    Mail::send('mails.contact-reply', [
+                        'replyBody' => $replyBody,
+                        'subject' => $subject,
+                        'footer' => '365jobs · Reply from support',
+                    ], function ($message) use ($record, $fromAddress, $subject) {
                         $message->to($record->email, $record->name)->subject($subject);
                         if ($fromAddress) {
                             $message->from($fromAddress);
@@ -44,6 +60,7 @@ class EditContactRequest extends EditRecord
                     });
 
                     $record->update([
+                        'reply_body' => $replyBody,
                         'status' => 'replied',
                         'replied_at' => now(),
                         'reply_sent_by' => auth()->id(),

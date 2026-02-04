@@ -83,6 +83,7 @@ class JobResource extends Resource
                 ->schema([
                     Forms\Components\Select::make('sknace_position_id')
                         ->relationship('sknacePosition', 'title')
+                        ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->code} - {$record->title}")
                         ->required()
                         ->searchable(),
 
@@ -215,7 +216,16 @@ class JobResource extends Resource
                     Forms\Components\Select::make('benefits')
                         ->relationship('benefits', 'label')
                         ->multiple()
-                        ->searchable(),
+                        ->searchable()
+                        ->preload()
+                        ->options(function () {
+                            return \App\Models\Benefit::all()
+                                ->groupBy(fn($b) => str_contains($b->label, '/') ? trim(explode('/', $b->label)[0]) : __('main.others'))
+                                ->map(fn($items) => $items->pluck('label', 'id')->map(function($label) {
+                                    return str_contains($label, '/') ? trim(explode('/', $label, 2)[1]) : $label;
+                                }))
+                                ->toArray();
+                        }),
 
                     Forms\Components\Select::make('drivingLicenseCategories')
                         ->relationship('drivingLicenseCategories', 'label')

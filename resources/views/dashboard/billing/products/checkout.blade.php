@@ -9,6 +9,12 @@
             </p>
         </div>
 
+        @if (session('error'))
+            <div class="pixel-outline p-4 bg-red-50 text-red-700 text-sm">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <div class="pixel-outline p-6 flex flex-col gap-4">
             <div class="text-[10px] uppercase tracking-[0.28em] text-slate-500">{{ __('main.product') }}</div>
             <div class="text-lg font-bold">{{ $product->name }}</div>
@@ -43,7 +49,7 @@
                     </div>
 
                     <button type="submit"
-                            class="inline-flex pixel-outline px-6 py-3 text-xs uppercase tracking-[0.2em]">
+                            class="pixel-button inline-flex pixel-outline px-6 py-3 text-xs uppercase tracking-[0.2em]">
                         {{ __('main.apply') }}
                     </button>
                 </div>
@@ -82,7 +88,7 @@
                             <form method="POST" action="{{ route('frontend.billing.coupons.remove') }}">
                                 @csrf
                                 <input type="hidden" name="coupon_code" value="{{ $coupon['code'] ?? '' }}" />
-                                <button type="submit" class="text-xs uppercase tracking-[0.2em] text-slate-500 hover:text-slate-900">
+                                <button type="submit" class="pixel-button-light text-xs uppercase tracking-[0.2em] text-slate-500 hover:text-slate-900">
                                     {{ __('main.remove') }}
                                 </button>
                             </form>
@@ -96,7 +102,7 @@
 
         <form method="POST"
               action="{{ route('frontend.billing.products.checkout.store', $product) }}"
-              class="pixel-outline p-6 flex flex-col gap-5"
+              class="pixel-outline p-6 w-3/5 flex flex-col gap-5"
               id="checkoutForm"
               data-currency="{{ $price->currency }}"
               data-unit-net-minor="{{ (int) $price->unit_net_amount_minor }}"
@@ -204,14 +210,36 @@
                 </div>
             </div>
 
-            <div class="pixel-outline p-4 text-sm text-slate-600">
-                <div class="text-[10px] uppercase tracking-[0.28em] text-slate-500">{{ __('main.tax_rule') }}</div>
-                <div class="mt-2">{{ __('main.rule') }}: <span class="font-bold">{{ $taxRule['tax_rule'] ?? '—' }}</span></div>
-                <div>{{ __('main.reverse_charge') }}: <span class="font-bold">{{ ($taxRule['reverse_charge'] ?? false) ? __('main.yes') : __('main.no') }}</span></div>
+            @php
+                $taxClassKey = $product->taxClass?->key ?? $price?->taxClass?->key ?? null;
+                if (! $taxClassKey) {
+                    $taxClassId = $product->tax_class_id ?? $price?->tax_class_id ?? null;
+                    if ($taxClassId) {
+                        $taxClassKey = \Illuminate\Support\Facades\DB::table('tax_classes')
+                            ->where('id', $taxClassId)
+                            ->value('key');
+                    }
+                }
+            @endphp
+
+            @if ($taxClassKey === 'neplatca')
+                <div class="pixel-outline p-4 text-sm text-slate-600">
+                    {{ __('main.not_vat_payer') }}
+                </div>
+            @endif
+
+            <div class="flex items-center gap-2 p-1">
+                <input type="checkbox" name="legal_consent" id="legal_consent" required class="w-4 h-4 accent-indigo-600 cursor-pointer">
+                <label for="legal_consent" class="text-sm text-slate-600 cursor-pointer select-none">
+                    {{ __('main.legal_agree_1') }}
+                    <a href="{{ route('legal.agb') }}" target="_blank" class="underline hover:text-[var(--accent)] transition-colors">
+                        {{ __('main.legal_terms_link') }}
+                    </a>
+                </label>
             </div>
 
             <button type="submit"
-                    class="inline-flex pixel-outline px-6 py-3 text-xs uppercase tracking-[0.2em]">
+                    class="pixel-button inline-flex pixel-outline px-6 py-3 text-xs uppercase tracking-[0.2em]">
                 {{ __('main.place_order') }}
             </button>
         </form>

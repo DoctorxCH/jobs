@@ -12,7 +12,7 @@ class CompanyVerificationRequestResource extends Resource
 {
     protected static ?string $model = CompanyVerificationRequest::class;
 
-    protected static ?string $navigationIcon = "heroicon-o-shield-check";
+    protected static \BackedEnum|string|null $navigationIcon = 'heroicon-o-shield-check';
     protected static ?string $navigationLabel = 'Verification Center';
     protected static ?string $modelLabel = 'Verification Request';
     protected static ?string $pluralModelLabel = 'Verification Requests';

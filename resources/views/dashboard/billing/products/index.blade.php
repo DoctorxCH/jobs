@@ -3,10 +3,14 @@
         <div>
             <div class="text-xs uppercase tracking-[0.2em] text-slate-500">{{ __('main.billing') }}</div>
             <h1 class="mt-2 text-2xl font-bold">{{ __('main.products') }}</h1>
-            <p class="mt-2 text-sm text-slate-600">
-                {{ __('main.choose_product_for_company') }}
-            </p>
         </div>
+
+        
+        <h2 class="text-lg font-bold">{{ __('main.how_credits_work_title') }}</h2>
+        <p class="mt-1 text-sm text-slate-600 whitespace-pre-line leading-relaxed">
+            {{ __('main.how_credits_work_text') }}
+        </p>
+      
 
         @if ($products->isEmpty())
             <div class="pixel-outline p-6 text-sm text-slate-600">
@@ -21,7 +25,7 @@
                         $grossMinor = $product->current_total_gross_minor;
                     @endphp
 
-                    <div class="pixel-outline p-6 flex flex-col gap-4 product-details">
+                    <div class="pixel-outline pixel-card p-6 flex flex-col gap-4">
                         <div>
                             <div class="text-[10px] uppercase tracking-[0.28em] text-slate-500">
                                 {{ $product->product_type }}
@@ -59,16 +63,18 @@
                         </div>
 
                         <div>
-                            <a href="{{ route('frontend.billing.products.show', $product) }}"
-                               class="inline-flex pixel-outline px-4 py-2 text-xs uppercase tracking-[0.2em]">
-                                {{ __('main.view_details') }}
-                            </a>
-                            @if ($price)
-                                <a href="{{ route('frontend.billing.products.checkout', $product) }}"
-                                   class="ml-2 inline-flex pixel-outline px-4 py-2 text-xs uppercase tracking-[0.2em]">
-                                    {{ __('main.buy') }}
+                            <div class="flex flex-wrap gap-2">
+                                <a href="{{ route('frontend.billing.products.show', $product) }}"
+                                   class="pixel-button inline-flex px-4 py-2 text-xs uppercase tracking-[0.2em]">
+                                    {{ __('main.view_details') }}
                                 </a>
-                            @endif
+                                @if ($price)
+                                    <a href="{{ route('frontend.billing.products.checkout', $product) }}"
+                                       class="pixel-button inline-flex px-4 py-2 text-xs uppercase tracking-[0.2em]">
+                                        {{ __('main.buy') }}
+                                    </a>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 @endforeach

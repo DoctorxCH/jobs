@@ -31,17 +31,7 @@
 
 <x-layouts.pixel :title="$title">
     <section class="mx-auto w-full max-w-7xl">
-        <div class="pixel-page__header">
-            <div>
-                <div class="pixel-kicker">{{ __('main.dashboard') }}</div>
-                <div class="pixel-page__title">{{ $title }}</div>
-            </div>
-            @if($creditsAvailable !== null)
-                <div class="text-xs pixel-badge">
-                    {{ __('main.credits') }}: <strong>{{ $creditsAvailable }}</strong>
-                </div>
-            @endif
-        </div>
+        
 
         <div class="grid gap-8 md:grid-cols-[220px_1fr]">
             <aside class="pixel-panel p-4">
@@ -50,9 +40,10 @@
 
             <main class="pixel-panel p-8">
                 {{-- Header row --}}
-                
-
-                {{-- Alerts --}}
+                <div class="pixel-page__header">
+                    
+                   
+                </div>                {{-- Alerts --}}
                 @if (session('status') || session('success'))
                     <div class="mb-6 pixel-outline px-4 py-3 text-sm border-2 border-green-600 bg-green-50 text-green-800">
                         {{ session('status') ?? session('success') }}

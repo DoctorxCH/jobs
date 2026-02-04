@@ -10,35 +10,24 @@ return new class extends Migration
     {
         Schema::create('company_verification_requests', function (Blueprint $table) {
             $table->id();
-
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
-
-            $table->string('method', 20); // code|invoice
-            $table->string('status', 30); // pending|code_sent|auto_verified|awaiting_payment|approved|rejected|expired|canceled
-
-            // Who initiated (team member audit)
-            $table->foreignId('requested_by_user_id')->constrained('users')->cascadeOnDelete();
+            $table->string('method', 20);
+            $table->string('status', 30);
+            $table->foreignId('requested_by_user_id')->constrained('users')->nullOnDelete();
             $table->string('requested_by_email');
-
-            // Code flow
             $table->string('code_sent_to_email')->nullable();
             $table->string('code_hash')->nullable();
             $table->timestamp('code_expires_at')->nullable();
             $table->timestamp('auto_verified_at')->nullable();
             $table->unsignedInteger('attempts')->default(0);
             $table->timestamp('last_sent_at')->nullable();
-
-            // Invoice flow (optional links)
             $table->foreignId('invoice_id')->nullable()->constrained('invoices')->nullOnDelete();
             $table->foreignId('payment_id')->nullable()->constrained('payments')->nullOnDelete();
             $table->string('bank_reference')->nullable();
-
-            // Admin acknowledgement (also for auto-verified)
-            $table->string('ack_status', 20)->default('pending'); // pending|ok|flagged
+            $table->string('ack_status', 20)->default('pending');
             $table->timestamp('ack_at')->nullable();
             $table->foreignId('ack_by')->nullable()->constrained('users')->nullOnDelete();
             $table->text('admin_note')->nullable();
-
             $table->timestamps();
 
             $table->index(['company_id', 'status']);

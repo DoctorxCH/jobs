@@ -11,15 +11,12 @@
         <form method="POST" action="{{ route('frontend.contact.store') }}" class="pixel-outline p-6 flex flex-col gap-4 max-w-2xl">
             @csrf
 
-            @if (session('status'))
-                <div class="text-sm text-green-700">{{ session('status') }}</div>
-            @endif
-
             @if ($form && is_array($form->fields) && count($form->fields) > 0)
                 <div class="grid gap-4 md:grid-cols-2">
                 @foreach ($form->fields as $field)
                     @php
                         $key = $field['key'] ?? null;
+                        $inputKey = $key ? \Illuminate\Support\Str::slug($key, '_') : null;
                         $label = $field['label'] ?? $key;
                         $type = $field['type'] ?? 'text';
                         $required = (bool) ($field['required'] ?? false);
@@ -31,40 +28,40 @@
                             : ($width === 'third' ? 'md:col-span-1 lg:col-span-1' : 'md:col-span-2');
                     @endphp
 
-                    @if ($key)
+                    @if ($inputKey)
                         <div class="{{ $widthClass }}">
                             <label class="text-[10px] uppercase tracking-[0.28em] text-slate-500">{{ $label }}</label>
 
                             @if ($type === 'textarea')
                                 <textarea
-                                    name="{{ $key }}"
+                                    name="{{ $inputKey }}"
                                     rows="6"
                                     class="mt-2 pixel-input w-full px-4 py-3 text-sm text-slate-900 outline-none"
                                     @if($required) required @endif
                                     @if($placeholder) placeholder="{{ $placeholder }}" @endif
-                                >{{ old($key) }}</textarea>
+                                >{{ old($inputKey) }}</textarea>
                             @elseif ($type === 'select')
                                 <select
-                                    name="{{ $key }}"
+                                    name="{{ $inputKey }}"
                                     class="mt-2 pixel-input w-full px-4 py-3 text-sm text-slate-900 outline-none"
                                     @if($required) required @endif
                                 >
                                     @foreach ($options as $option)
-                                        <option value="{{ $option }}" @selected(old($key) == $option)>{{ $option }}</option>
+                                        <option value="{{ $option }}" @selected(old($inputKey) == $option)>{{ $option }}</option>
                                     @endforeach
                                 </select>
                             @else
                                 <input
-                                    name="{{ $key }}"
+                                    name="{{ $inputKey }}"
                                     type="{{ $type }}"
                                     class="mt-2 pixel-input w-full px-4 py-3 text-sm text-slate-900 outline-none"
-                                    value="{{ old($key) }}"
+                                    value="{{ old($inputKey) }}"
                                     @if($required) required @endif
                                     @if($placeholder) placeholder="{{ $placeholder }}" @endif
                                 />
                             @endif
 
-                            @error($key)
+                            @error($inputKey)
                                 <div class="mt-2 text-xs text-red-600">{{ $message }}</div>
                             @enderror
                         </div>

@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class ContactController extends Controller
@@ -39,7 +40,8 @@ class ContactController extends Controller
         if ($form && is_array($form->fields) && count($form->fields) > 0) {
             foreach ($form->fields as $field) {
                 $key = $field['key'] ?? null;
-                if (! $key) {
+                $inputKey = $key ? Str::slug($key, '_') : null;
+                if (! $inputKey) {
                     continue;
                 }
 
@@ -59,7 +61,7 @@ class ContactController extends Controller
                     $fieldRules[] = 'max:150';
                 }
 
-                $rules[$key] = $fieldRules;
+                $rules[$inputKey] = $fieldRules;
             }
         } else {
             $rules = [
@@ -102,10 +104,29 @@ class ContactController extends Controller
         if ($form && is_array($form->fields) && count($form->fields) > 0) {
             foreach ($form->fields as $field) {
                 $key = $field['key'] ?? null;
-                if (! $key) {
+                $inputKey = $key ? Str::slug($key, '_') : null;
+                if (! $key || ! $inputKey) {
                     continue;
                 }
-                $payload[$key] = $data[$key] ?? null;
+
+                $payload[$key] = $data[$inputKey] ?? null;
+
+                $label = (string) ($field['label'] ?? $key);
+                $labelKey = Str::slug($label, '_');
+                $type = $field['type'] ?? 'text';
+
+                if (! $name && (str_contains($labelKey, 'name') || str_contains($labelKey, 'meno'))) {
+                    $name = $data[$inputKey] ?? $name;
+                }
+                if (! $email && ($type === 'email' || str_contains($labelKey, 'email'))) {
+                    $email = $data[$inputKey] ?? $email;
+                }
+                if (! $subject && (str_contains($labelKey, 'subject') || str_contains($labelKey, 'predmet'))) {
+                    $subject = $data[$inputKey] ?? $subject;
+                }
+                if (! $message && ($type === 'textarea' || str_contains($labelKey, 'message') || str_contains($labelKey, 'sprava'))) {
+                    $message = $data[$inputKey] ?? $message;
+                }
             }
         }
 

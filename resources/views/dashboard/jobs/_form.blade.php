@@ -75,7 +75,7 @@
                     <option value="">{{ __('main.select') }}</option>
                     @foreach ($sknacePositions as $position)
                         <option value="{{ $position->id }}" @selected((string) old('sknace_position_id', $job?->sknace_position_id) === (string) $position->id)>
-                            {{ $position->title }}
+                            {{ $position->code }} - {{ $position->title }}
                         </option>
                     @endforeach
                 </select>
@@ -356,11 +356,30 @@
                     @if ($benefits->isEmpty())
                         <option value="" disabled>{{ __('main.no_benefits_available') }}</option>
                     @endif
-                    @foreach ($benefits as $benefit)
-                        @php($benefitLabel = (string) $benefit->label)
-                        <option value="{{ $benefit->id }}" @selected(in_array($benefit->id, $selectedBenefits, true))>
-                            {{ $benefitLabel }}
-                        </option>
+                    
+                    @php
+                        $categorizedBenefits = $benefits->groupBy(function($b) {
+                            if (str_contains($b->label, '/')) {
+                                return trim(explode('/', $b->label)[0]);
+                            }
+                            return __('main.others');
+                        });
+                    @endphp
+
+                    @foreach ($categorizedBenefits as $category => $items)
+                        <optgroup label="{{ $category }}">
+                            @foreach ($items as $benefit)
+                                @php
+                                    $benefitLabel = (string) $benefit->label;
+                                    $displayLabel = str_contains($benefitLabel, '/') 
+                                        ? trim(explode('/', $benefitLabel, 2)[1]) 
+                                        : $benefitLabel;
+                                @endphp
+                                <option value="{{ $benefit->id }}" @selected(in_array($benefit->id, $selectedBenefits, true))>
+                                    {{ $displayLabel }}
+                                </option>
+                            @endforeach
+                        </optgroup>
                     @endforeach
                 </select>
             </div>
@@ -398,7 +417,7 @@
 
         <div id="language-rows" class="space-y-2">
             @foreach ($languageRows as $index => $row)
-                <div class="grid gap-2 md:grid-cols-[1fr_1fr_auto] items-start">
+                <div class="grid gap-2 md:grid-cols-[1fr_1fr_auto] items-end">
                     <div>
                         <label class="{{ $fieldLabelClass }} pixel-help-label" data-help="{{ __('main.help_language') }}">{{ __('main.language') }}</label>
                         <select name="job_languages[{{ $index }}][language_code]" class="mt-2 w-full pixel-outline px-3 py-2">
@@ -418,8 +437,8 @@
                             @endforeach
                         </select>
                     </div>
-
-                    <button type="button" class="pixel-button-light no-hover-move px-6 py-3 text-xs uppercase tracking-[0.2em] remove-language">{{ __('main.remove') }}</button>
+                    
+                    <button type="button" class="pixel-button-light no-hover-move px-6 py-2 text-xs uppercase tracking-[0.2em] remove-language h-[42px]">{{ __('main.remove') }}</button>
                 </div>
             @endforeach
         </div>
@@ -438,7 +457,7 @@
 
         <div id="skill-rows" class="space-y-2">
             @foreach ($skillRows as $index => $row)
-                <div class="grid gap-2 md:grid-cols-[1fr_1fr_auto] items-start">
+                <div class="grid gap-2 md:grid-cols-[1fr_1fr_auto] items-end">
                     <div>
                         <label class="{{ $fieldLabelClass }} pixel-help-label" data-help="{{ __('main.help_skill') }}">{{ __('main.skill') }}</label>
                         <select name="job_skills[{{ $index }}][skill_id]" class="mt-2 w-full pixel-outline px-3 py-2">
@@ -459,7 +478,7 @@
                         </select>
                     </div>
 
-                    <button type="button" class="pixel-button-light no-hover-move px-6 py-3 text-xs uppercase tracking-[0.2em] remove-skill">{{ __('main.remove') }}</button>
+                    <button type="button" class="pixel-button-light no-hover-move px-6 py-2 text-xs uppercase tracking-[0.2em] remove-skill h-[42px]">{{ __('main.remove') }}</button>
                 </div>
             @endforeach
         </div>
@@ -624,7 +643,7 @@
 
     document.getElementById('add-language')?.addEventListener('click', () => {
         addRow(languageRowsEl, (index) => `
-            <div class="grid gap-2 md:grid-cols-[1fr_1fr_auto] items-start">
+            <div class="grid gap-2 md:grid-cols-[1fr_1fr_auto] items-end">
                 <div>
                     <label class="{{ $fieldLabelClass }} pixel-help-label" data-help="{{ __('main.help_language') }}">${t.language}</label>
                     <select name="job_languages[${index}][language_code]" class="mt-2 w-full pixel-outline px-3 py-2">
@@ -639,14 +658,14 @@
                         ${Object.entries(@json($languageLevels)).map(([code,label]) => `<option value="${code}">${label}</option>`).join('')}
                     </select>
                 </div>
-                <button type="button" class="pixel-button-light no-hover-move px-6 py-3 text-xs uppercase tracking-[0.2em] remove-language">${t.remove}</button>
+                <button type="button" class="pixel-button-light no-hover-move px-6 py-2 text-xs uppercase tracking-[0.2em] remove-language h-[42px]">${t.remove}</button>
             </div>
         `);
     });
 
     document.getElementById('add-skill')?.addEventListener('click', () => {
         addRow(skillRowsEl, (index) => `
-            <div class="grid gap-2 md:grid-cols-[1fr_1fr_auto] items-start">
+            <div class="grid gap-2 md:grid-cols-[1fr_1fr_auto] items-end">
                 <div>
                     <label class="{{ $fieldLabelClass }} pixel-help-label" data-help="{{ __('main.help_skill') }}">${t.skill}</label>
                     <select name="job_skills[${index}][skill_id]" class="mt-2 w-full pixel-outline px-3 py-2">
@@ -661,7 +680,7 @@
                         ${@json($skillLevels).map(level => `<option value="${level}">${level}</option>`).join('')}
                     </select>
                 </div>
-                <button type="button" class="pixel-button-light no-hover-move px-6 py-3 text-xs uppercase tracking-[0.2em] remove-skill">${t.remove}</button>
+                <button type="button" class="pixel-button-light no-hover-move px-6 py-2 text-xs uppercase tracking-[0.2em] remove-skill h-[42px]">${t.remove}</button>
             </div>
         `);
     });
